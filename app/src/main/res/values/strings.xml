@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MyCart</string>
+    <string name="username_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="password_reenter_label">ReEnter Password</string>
+    <string name="login_btn_label">Login</string>
+    <string name="register_label">Register</string>
+    <string name="forgot_password_label">Forgot Password?</string>
+    <string name="registration_label">Register</string>
+    <string name="reset_password">ResetPassword</string>
+    <string name="back_to_login">Back To Login</string>
+    <string name="store_name_label">StoreName</string>
+    <string name="store_location_label">City</string>
+    <string name="store_pincode_label">PinCode</string>
+    <string name ="user_mobile">Mobile Number</string>
+    <string name="user_email_required_error">User Email is Required</string>
+</resources>
