@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.User
 import com.mycart.ui.category.viewmodel.CategoryViewModel
@@ -39,7 +40,7 @@ import com.mycart.ui.register.viewmodel.ValidationState
 import org.koin.androidx.compose.get
 
 @Composable
-fun Register(registrationViewModel: RegistrationViewModel = get()) {
+fun Register(navController: NavHostController, registrationViewModel: RegistrationViewModel = get()) {
 
 // Observe the validationResult from the ViewModel
 
@@ -53,6 +54,11 @@ fun Register(registrationViewModel: RegistrationViewModel = get()) {
                     val user = event.user
                     println("Registered User is $user")
                     Toast.makeText(context, "Success", Toast.LENGTH_LONG).show()
+                    navController.navigate("loginScreen")
+                }
+                is ValidationState.Error -> {
+                    val errorMessage = event.errorMessage
+                    Toast.makeText(context,errorMessage,Toast.LENGTH_LONG).show()
                 }
                 else -> {}
             }
@@ -206,7 +212,7 @@ fun Register(registrationViewModel: RegistrationViewModel = get()) {
 @Preview
 fun RegisterPreview() {
 
-    Register()
+   // Register()
 }
 
 

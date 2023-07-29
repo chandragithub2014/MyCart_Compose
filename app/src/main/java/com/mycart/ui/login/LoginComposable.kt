@@ -1,20 +1,19 @@
 package com.mycart.ui.login
 
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,12 +24,34 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.mycart.R
+import com.mycart.ui.login.viewmodel.LoginViewModel
+import com.mycart.ui.register.viewmodel.RegistrationViewModel
+import com.mycart.ui.register.viewmodel.ValidationState
+import org.koin.androidx.compose.get
 
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel = get()) {
     var userEmail by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    LaunchedEffect(key1 = context) {
+        loginViewModel.validationEvent.collect { event ->
+            when (event) {
+                is ValidationState.Success -> {
+                    val user = event.user
+                    println("Login User is $user")
+                    Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
+                    navController.navigate("category")
+                }
+                is ValidationState.Error -> {
+                    val errorMessage = event.errorMessage
+                    Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+                }
+                else -> {}
+            }
+        }
+    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -64,7 +85,7 @@ fun LoginScreen(navController: NavHostController) {
             }
 
             OutlinedButton(
-                onClick = { navController.navigate("category")},
+                onClick = { loginViewModel.fetchLoggedInUserInfo(email = userEmail,password=password)},
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                 modifier = Modifier.fillMaxWidth().height(50.dp).padding(start = 50.dp, end = 50.dp)
             ) {

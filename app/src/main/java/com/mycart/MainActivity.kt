@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
 fun Navigator(navHostController: NavHostController){
     NavHost(navController = navHostController, startDestination = "loginScreen") {
         composable("loginScreen") { LoginScreen(navController = navHostController) }
-        composable("registrationScreen") { Register() }
+        composable("registrationScreen") { Register(navController = navHostController) }
         composable("forgotPasswordScreen") { ForgotPassword(navHostController) }
         composable("category"){ Category() }
     }

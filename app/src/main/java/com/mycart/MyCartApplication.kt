@@ -5,6 +5,7 @@ import com.mycart.data.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import com.facebook.stetho.Stetho
 
 class MyCartApplication : Application() {
     override fun onCreate() {
@@ -14,6 +15,7 @@ class MyCartApplication : Application() {
             androidContext(this@MyCartApplication)
             modules(appModule)
         }
+        Stetho.initializeWithDefaults(this)
     }
 
     override fun onTerminate() {
