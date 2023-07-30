@@ -17,11 +17,9 @@ import com.mycart.R
 
 @Composable
 fun InputTextField(
-    input: String = "",
     onValueChanged: (String) -> Unit,
     label: String,
     error: String="",
-    responseError:String = "",
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
