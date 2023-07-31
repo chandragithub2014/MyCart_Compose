@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.ui.common.ValidationState
+import com.mycart.ui.register.viewmodel.FormValidationResult
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -50,6 +53,27 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
 
             } catch (e: Exception) {
 
+            }
+        }
+    }
+
+    val validationEvent = MutableSharedFlow<ValidationState>()
+    private var _isAdminState = mutableStateOf(false)
+    val isAdminState: State<Boolean> = _isAdminState
+    fun checkForAdmin(email:String){
+        viewModelScope.launch {
+            try{
+                val  user =  myCartRepository.fetchUserInfoByEmail(email)
+                user?.let { userInfo ->
+                   _isAdminState.value = userInfo.isAdmin
+                    validationEvent.emit(ValidationState.Success(userInfo))
+                }?: run{
+                    validationEvent.emit(ValidationState.Error("Login Failed"))
+                }
+
+            }
+            catch (e:Exception){
+                e.printStackTrace()
             }
         }
     }

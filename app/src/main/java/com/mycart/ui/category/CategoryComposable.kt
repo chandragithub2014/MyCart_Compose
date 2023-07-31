@@ -1,40 +1,67 @@
 package com.mycart.ui.category
 
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.mycart.domain.model.Category
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
 import com.mycart.R
 import com.mycart.domain.model.SeasonalCategory
+import com.mycart.ui.common.FloatingActionComposable
+import com.mycart.ui.common.ValidationState
+import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.utils.DisplayLabel
 import com.mycart.ui.utils.DisplayOutLinedLabel
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 
 @Composable
-fun Category() {
+fun Category(userEmail:String?,categoryViewModel: CategoryViewModel= get()) {
+    println("Received UserEmail is....... $userEmail")
+    userEmail?.let {email ->
+        categoryViewModel.checkForAdmin(email)
+    }
+
+    val context = LocalContext.current
+    LaunchedEffect(key1 = context) {
+        categoryViewModel.validationEvent.collect { event ->
+            when (event) {
+                is ValidationState.Success -> {
+                    Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
+                }
+                is ValidationState.Error -> {
+                    val errorMessage = event.errorMessage
+                    Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+                }
+                else -> {}
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = "My Cart") }
             )
-        }
+        },
+                floatingActionButton = {
+                 FloatingActionComposable(categoryViewModel.isAdminState.value)
+        },
+        floatingActionButtonPosition = FabPosition.End
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
@@ -42,13 +69,17 @@ fun Category() {
 
             ) {
                 item {
-                    DisplayLabel("Hot Deals", modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp))
+                    DisplayLabel("Hot Deals", modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 10.dp))
                 }
                 item{
                     DealsComposable()
                 }
                  item {
-                     DisplayLabel("Shop By Category", modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp))
+                     DisplayLabel("Shop By Category", modifier = Modifier
+                         .fillMaxWidth()
+                         .padding(start = 16.dp, top = 10.dp))
                   }
                   item {
                       CategoryScreen()

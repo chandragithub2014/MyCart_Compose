@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.login.LoginScreen
@@ -49,7 +51,13 @@ fun Navigator(navHostController: NavHostController){
         composable("loginScreen") { LoginScreen(navController = navHostController) }
         composable("registrationScreen") { Register(navController = navHostController) }
         composable("forgotPasswordScreen") { ForgotPassword(navHostController) }
-        composable("category"){ Category() }
+        //composable("category"){ Category() }
+        composable(
+            "category/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getString("emailId")?.let { email -> Category(email) }
+        }
     }
 
 }

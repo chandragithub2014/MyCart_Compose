@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import com.mycart.ui.common.ValidationState
 
 class RegistrationViewModel(private val myCartRepository: MyCartRepository) : ViewModel(),
     LifecycleObserver {

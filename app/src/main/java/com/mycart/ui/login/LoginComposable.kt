@@ -23,10 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.mycart.R
+import com.mycart.ui.common.ValidationState
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
-import com.mycart.ui.register.viewmodel.ValidationState
 import org.koin.androidx.compose.get
 
 
@@ -42,8 +44,10 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
                     val user = event.user
                     println("Login User is $user")
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
-                    navController.navigate("category")
-                }
+                    navController.navigate("category/${user.userEmail}")
+                   // navController.navigate("category")
+                //    navController.navigate("category/{emailKey}", arguments = listOf(navArgument("emailKey") {  type = NavType.StringType }))
+                             }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()

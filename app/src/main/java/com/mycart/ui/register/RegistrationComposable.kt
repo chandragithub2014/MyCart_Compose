@@ -33,10 +33,10 @@ import com.mycart.R
 import com.mycart.domain.model.User
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.InputTextField
+import com.mycart.ui.common.ValidationState
 import com.mycart.ui.login.ImageItem
 import com.mycart.ui.register.viewmodel.RegistrationEvent
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
-import com.mycart.ui.register.viewmodel.ValidationState
 import org.koin.androidx.compose.get
 
 @Composable

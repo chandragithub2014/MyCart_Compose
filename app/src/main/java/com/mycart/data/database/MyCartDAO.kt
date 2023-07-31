@@ -21,4 +21,7 @@ interface MyCartDAO {
     @Query("SELECT * FROM users WHERE userEmail = :email AND userPassword = :password")
     suspend fun getLoggedInUserInfo(email: String, password: String): User?
 
+    @Query("SELECT * FROM users WHERE userEmail = :email")
+    suspend fun getLoggedInUserInfoByEmail(email: String): User?
+
 }

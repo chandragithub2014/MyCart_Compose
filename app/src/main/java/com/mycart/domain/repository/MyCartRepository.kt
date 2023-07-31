@@ -13,4 +13,5 @@ interface MyCartRepository {
     suspend fun insert(user: User):Long
     suspend fun isUserAvailable(email:String):Boolean
     suspend fun isValidLoggedInUser(email: String,password:String):User?
+    suspend fun fetchUserInfoByEmail(email: String):User?
 }

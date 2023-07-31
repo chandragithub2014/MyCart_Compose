@@ -1,4 +1,4 @@
-package com.mycart.ui.register.viewmodel
+package com.mycart.ui.common
 
 import com.mycart.domain.model.User
 

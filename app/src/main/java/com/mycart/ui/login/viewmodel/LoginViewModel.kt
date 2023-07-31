@@ -3,7 +3,7 @@ package com.mycart.ui.login.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.repository.MyCartRepository
-import com.mycart.ui.register.viewmodel.ValidationState
+import com.mycart.ui.common.ValidationState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception

@@ -25,4 +25,8 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
         return myCartDAO.getLoggedInUserInfo(email, password)
     }
 
+    override suspend fun fetchUserInfoByEmail(email: String): User? {
+       return myCartDAO.getLoggedInUserInfoByEmail(email)
+    }
+
 }
