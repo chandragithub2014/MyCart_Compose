@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
+import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.register.Register
@@ -33,10 +34,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                   // Greeting("Android")
-                 //   LoginScreen()
-                   // Register()
-                   // ForgotPassword()
+                    // Greeting("Android")
+                    //   LoginScreen()
+                    // Register()
+                    // ForgotPassword()
                     val navController = rememberNavController()
                     Navigator(navController)
                 }
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Navigator(navHostController: NavHostController){
+fun Navigator(navHostController: NavHostController) {
     NavHost(navController = navHostController, startDestination = "loginScreen") {
         composable("loginScreen") { LoginScreen(navController = navHostController) }
         composable("registrationScreen") { Register(navController = navHostController) }
@@ -56,7 +57,15 @@ fun Navigator(navHostController: NavHostController){
             "category/{emailId}",
             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
         ) { backStackEntry ->
-            backStackEntry.arguments?.getString("emailId")?.let { email -> Category(email) }
+            backStackEntry.arguments?.getString("emailId")
+                ?.let { email -> Category(email, navController = navHostController) }
+        }
+
+        composable(
+            "createCategory/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getString("emailId")?.let { email -> CreateCategory(email) }
         }
     }
 

@@ -10,13 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun FloatingActionComposable(isAdmin:Boolean = false){
+fun FloatingActionComposable(isAdmin:Boolean = false,navigateToScreen: () -> Unit){
     if(isAdmin) {
         FloatingActionButton(
             shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 50)),
             backgroundColor = Color.Blue,
             contentColor = Color.White,
-            onClick = { }) {
+            onClick = {navigateToScreen() }) {
             Icon(Icons.Default.Add, contentDescription = null)
         }
     }

@@ -57,7 +57,7 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
         }
     }
 
-    val validationEvent = MutableSharedFlow<ValidationState>()
+    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
     private var _isAdminState = mutableStateOf(false)
     val isAdminState: State<Boolean> = _isAdminState
     fun checkForAdmin(email:String){
@@ -77,5 +77,7 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
             }
         }
     }
+
+
 
 }

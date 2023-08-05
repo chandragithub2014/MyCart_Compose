@@ -23,7 +23,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
 
     private var _errorState = mutableStateOf(FormValidationResult())
     val errorState: State<FormValidationResult> = _errorState
-    val validationEvent = MutableSharedFlow<ValidationState>()
+    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
     fun onAction(registrationEvent: RegistrationEvent) {
         when (registrationEvent) {
             is RegistrationEvent.EmailChanged -> {

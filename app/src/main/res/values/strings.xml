@@ -14,4 +14,6 @@
     <string name="store_pincode_label">PinCode</string>
     <string name ="user_mobile">Mobile Number</string>
     <string name="user_email_required_error">User Email is Required</string>
+    <string name="category_title">Category Name</string>
+    <string name = "create_title">Create</string>
 </resources>

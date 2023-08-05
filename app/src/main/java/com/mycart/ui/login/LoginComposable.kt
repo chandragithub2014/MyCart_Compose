@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.mycart.R
+import com.mycart.domain.model.User
 import com.mycart.ui.common.ValidationState
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
@@ -41,10 +42,10 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
         loginViewModel.validationEvent.collect { event ->
             when (event) {
                 is ValidationState.Success -> {
-                    val user = event.user
+                    val user = event.data as? User
                     println("Login User is $user")
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
-                    navController.navigate("category/${user.userEmail}")
+                    navController.navigate("category/${user?.userEmail}")
                    // navController.navigate("category")
                 //    navController.navigate("category/{emailKey}", arguments = listOf(navArgument("emailKey") {  type = NavType.StringType }))
                              }

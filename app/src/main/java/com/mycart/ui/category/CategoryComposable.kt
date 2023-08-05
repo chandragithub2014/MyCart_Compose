@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.mycart.domain.model.Category
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
@@ -31,7 +32,7 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 
 @Composable
-fun Category(userEmail:String?,categoryViewModel: CategoryViewModel= get()) {
+fun Category(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
     println("Received UserEmail is....... $userEmail")
     userEmail?.let {email ->
         categoryViewModel.checkForAdmin(email)
@@ -59,7 +60,11 @@ fun Category(userEmail:String?,categoryViewModel: CategoryViewModel= get()) {
             )
         },
                 floatingActionButton = {
-                 FloatingActionComposable(categoryViewModel.isAdminState.value)
+                 FloatingActionComposable(categoryViewModel.isAdminState.value){
+
+                         navController.navigate("createCategory/${userEmail}")
+
+                 }
         },
         floatingActionButtonPosition = FabPosition.End
     ) {

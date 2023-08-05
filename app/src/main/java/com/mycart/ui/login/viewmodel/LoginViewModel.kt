@@ -10,7 +10,7 @@ import java.lang.Exception
 
 class LoginViewModel(private val myCartRepository: MyCartRepository): ViewModel() {
 
-    val validationEvent = MutableSharedFlow<ValidationState>()
+    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
 
      fun fetchLoggedInUserInfo(email:String,password:String){
          viewModelScope.launch {
