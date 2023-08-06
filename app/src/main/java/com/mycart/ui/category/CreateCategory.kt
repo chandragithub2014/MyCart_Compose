@@ -45,6 +45,14 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
     var selectedCategoryUrl by rememberSaveable{
         mutableStateOf(defaultCategoryImageURL)
     }
+    var isDeal by rememberSaveable { mutableStateOf(false) }
+    var dealInfo by rememberSaveable{
+        mutableStateOf("")
+    }
+    var isSeasonal by rememberSaveable{
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(key1 = context) {
         userEmail?.let {  email ->
             categoryViewModel.checkForAdmin(email)
@@ -125,7 +133,7 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
-                            .padding(start = 50.dp, end = 50.dp,top=20.dp),
+                            .padding(start = 50.dp, end = 50.dp, top = 20.dp),
                     style = TextStyle(fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Blue,
@@ -139,8 +147,48 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                            .padding(start = 50.dp, end = 50.dp)) {
                        selectedCategoryUrl?.let { it1 -> FetchImageFromURLWithPlaceHolder(imageUrl = it1) }
                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .padding(end = 50.dp)
+                        .align(Alignment.End)
+                ) {
+                    Text(text = "Is Seasonal ?")
+                    Switch(
+                        checked = isSeasonal, onCheckedChange = {
+                            isSeasonal = it
+                        },
+                        colors = SwitchDefaults.colors(checkedThumbColor = Color.Blue)
+                    )
 
 
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .padding(end = 50.dp)
+                        .align(Alignment.End)
+                ) {
+                    Text(text = "Is deal for category ?")
+                    Switch(
+                        checked = isDeal, onCheckedChange = {
+                            isDeal = it
+                        },
+                        colors = SwitchDefaults.colors(checkedThumbColor = Color.Blue)
+                    )
+
+
+                }
+                if (isDeal) {
+                    InputTextField(
+                        onValueChanged = {
+                            dealInfo =  it
+                        },
+                        label = stringResource(R.string.deal_info_title)
+                    )
+                }
                 OutlinedButton(
                     onClick = {
                        showDialog = true
@@ -166,7 +214,7 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                                 selectedCategoryUrl?.let {  imageUrl ->
 
                                     val category = com.mycart.domain.model.Category(categoryName = selectedCategory,
-                                        categoryImage = imageUrl, userEmail = email, storeLoc = storeLocation, storeName = storeName)
+                                        categoryImage = imageUrl, userEmail = email, storeLoc = storeLocation, storeName = storeName, isDeal = isDeal, dealInfo = dealInfo, isSeasonal = isSeasonal)
                                     categoryViewModel.createCategory(category)
                                 }
                             }

@@ -13,5 +13,8 @@ data class Category(
     val categoryImage: String,
     val userEmail: String = "",
     val storeLoc: String = "",
-    val storeName:String = ""
+    val storeName:String = "",
+    val isSeasonal:Boolean = false,
+    val isDeal:Boolean = false,
+    val dealInfo:String = ""
 )

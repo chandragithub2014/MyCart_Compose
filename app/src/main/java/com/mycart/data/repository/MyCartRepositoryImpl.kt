@@ -38,4 +38,15 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
     override suspend fun fetchAllCategories(storeLoc: String, storeName: String, email: String) =
         myCartDAO.fetchCategories(storeLoc, storeName, email)
 
+    override suspend fun fetchAllDeals(
+        storeLoc: String,
+        storeName: String,
+        email: String
+    ) = myCartDAO.fetchDeals(storeLoc,storeName,email)
+
+    override suspend fun fetchSeasonalDeals(
+        storeLoc: String,
+        storeName: String,
+        email: String
+    ) = myCartDAO.fetchSeasonalDeals(storeLoc,storeName,email)
 }

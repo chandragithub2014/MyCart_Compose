@@ -13,6 +13,7 @@ sealed class ValidationState<out T> {
 
 enum class DataType {
     CATEGORY,
-    OTHER_TYPE,
+    DEALS,
+    SEASONALDEALS
     // Add more types as needed
 }

@@ -37,6 +37,8 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 fun Category(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
     println("Received UserEmail is....... $userEmail")
     var categoryList by rememberSaveable { mutableStateOf(listOf<Category>()) }
+    var dealList by rememberSaveable { mutableStateOf(listOf<Category>()) }
+    var seasonalDeals by rememberSaveable { mutableStateOf(listOf<Category>()) }
 
     userEmail?.let {email ->
         categoryViewModel.checkForAdmin(email)
@@ -53,6 +55,8 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                             val user: User = data
                             if(user.isAdmin){
                                 categoryViewModel.fetchCategoryForAdmin(user)
+                                categoryViewModel.fetchDealsForAdmin(user)
+                                categoryViewModel.fetchSeasonalDealsForAdmin(user)
                             }
 
                         }
@@ -67,8 +71,11 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                         DataType.CATEGORY -> {
                             categoryList = event.dataList.filterIsInstance<Category>()
                         }
-                        DataType.OTHER_TYPE -> {
-                            // Handle other types
+                        DataType.DEALS -> {
+                            dealList = event.dataList.filterIsInstance<Category>()
+                        }
+                        DataType.SEASONALDEALS -> {
+                            seasonalDeals = event.dataList.filterIsInstance<Category>()
                         }
                         // Add more cases as needed
                     }
@@ -110,7 +117,7 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                         .padding(start = 16.dp, top = 10.dp))
                 }
                 item{
-                    DealsComposable()
+                    DealsComposable(dealList)
                 }
                  item {
                      DisplayLabel("Shop By Category", modifier = Modifier
@@ -122,7 +129,8 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                       CategoryScreen(categoryList)
                   }
                   item {
-                      SeasonalCategoryComposable()
+                    //  SeasonalCategoryComposable()
+                      SeasonalCategoryRow(seasonalDeals)
                   }
 
             }
@@ -177,7 +185,7 @@ fun CategoryGrid(categories: List<Category>) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.height(400.dp),
+        modifier = Modifier.height(300.dp),
         contentPadding = PaddingValues(16.dp)
     ) {
         items(categories.size) { index ->

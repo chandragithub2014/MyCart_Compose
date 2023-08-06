@@ -17,7 +17,7 @@ interface MyCartDAO {
     suspend fun insert(user: User): Long
 
     @Query("SELECT * FROM users WHERE userEmail = :email")
-    suspend fun isUserAvailable(email:String):User?
+    suspend fun isUserAvailable(email: String): User?
 
     @Query("SELECT * FROM users WHERE userEmail = :email AND userPassword = :password")
     suspend fun getLoggedInUserInfo(email: String, password: String): User?
@@ -29,9 +29,18 @@ interface MyCartDAO {
     suspend fun insertCategory(category: Category): Long
 
     @Query("SELECT * from category where categoryName=:name")
-    suspend fun isCategoryAvailable(name:String):Category?
+    suspend fun isCategoryAvailable(name: String): Category?
 
     @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email")
-    suspend fun fetchCategories(storeLocation:String, storeName:String,email:String):List<Category>
+    suspend fun fetchCategories(
+        storeLocation: String,
+        storeName: String,
+        email: String
+    ): List<Category>
 
+    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isDeal = true")
+    suspend fun fetchDeals(storeLocation: String, storeName: String, email: String): List<Category>
+
+    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isSeasonal = true")
+    suspend fun fetchSeasonalDeals(storeLocation: String, storeName: String, email: String): List<Category>
 }

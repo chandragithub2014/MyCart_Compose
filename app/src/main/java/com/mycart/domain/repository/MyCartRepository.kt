@@ -17,4 +17,6 @@ interface MyCartRepository {
     suspend fun createCategory(category: Category):Long
     suspend fun isCategoryAvailable(name:String):Boolean
     suspend fun fetchAllCategories(storeLoc:String,storeName:String,email:String):List<Category>
+    suspend fun fetchAllDeals(storeLoc:String,storeName:String,email:String):List<Category>
+    suspend fun fetchSeasonalDeals(storeLoc:String,storeName:String,email:String):List<Category>
 }

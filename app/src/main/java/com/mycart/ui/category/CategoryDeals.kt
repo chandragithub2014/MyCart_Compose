@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.utils.FetchImageFromUrl
@@ -30,18 +31,18 @@ import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DealsComposable(categoryViewModel: CategoryViewModel = get()) {
-    val dealList: List<Deal> = categoryViewModel.dealList.value
+fun DealsComposable(deals: List<Category>) {
+   /* val dealList: List<Deal> = categoryViewModel.dealList.value
 
     LaunchedEffect(Unit) {
         categoryViewModel.fetchDeals()
-    }
-    HorizontalPagerWithIndicators(dealList)
+    }*/
+    HorizontalPagerWithIndicators(deals)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HorizontalPagerWithIndicators(deals: List<Deal>) {
+fun HorizontalPagerWithIndicators(deals: List<Category>) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
       Column{
@@ -80,13 +81,13 @@ fun HorizontalPagerWithIndicators(deals: List<Deal>) {
 }
 
 @Composable
-fun DisplayDeal(deal: Deal) {
+fun DisplayDeal(deal: Category) {
     Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.Red),
             contentAlignment = Alignment.Center,
     ) {
-        FetchImageFromUrl(imageUrl = deal.category.categoryImage)
+        FetchImageFromUrl(imageUrl = deal.categoryImage)
         Text(
-            text = deal.dealValue,
+            text = deal.dealInfo,
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,

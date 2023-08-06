@@ -16,38 +16,37 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewModel() ,LifecycleObserver{
+class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewModel(),
+    LifecycleObserver {
     private val _categoryList = mutableStateOf<List<Category>>(emptyList())
     val categoryList: State<List<Category>> = _categoryList
 
     private val _dealList = mutableStateOf<List<Deal>>(emptyList())
-    val dealList:State<List<Deal>> = _dealList
+    val dealList: State<List<Deal>> = _dealList
 
-    fun fetchCategories(){
+    fun fetchCategories() {
         viewModelScope.launch {
-            try{
-              val categoryResponse = myCartRepository.fetchCategoryDetails()
+            try {
+                val categoryResponse = myCartRepository.fetchCategoryDetails()
                 _categoryList.value = categoryResponse
-            }
-            catch (e:Exception){
+            } catch (e: Exception) {
 
             }
         }
     }
 
-    fun fetchSeasonalCategories(){
+    fun fetchSeasonalCategories() {
         viewModelScope.launch {
-            try{
+            try {
                 val categoryResponse = myCartRepository.fetchSeasonalCategoryDetails()
                 _categoryList.value = categoryResponse
-            }
-            catch (e:Exception){
+            } catch (e: Exception) {
 
             }
         }
     }
 
-    fun fetchDeals(){
+    fun fetchDeals() {
         viewModelScope.launch {
             try {
                 val dealResponse = myCartRepository.fetchDeals()
@@ -62,58 +61,115 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
     val validationEvent = MutableSharedFlow<ValidationState<Any>>()
     private var _isAdminState = mutableStateOf(false)
     val isAdminState: State<Boolean> = _isAdminState
-    fun checkForAdmin(email:String){
+    fun checkForAdmin(email: String) {
         viewModelScope.launch {
-            try{
-                val  user =  myCartRepository.fetchUserInfoByEmail(email)
+            try {
+                val user = myCartRepository.fetchUserInfoByEmail(email)
                 user?.let { userInfo ->
-                   _isAdminState.value = userInfo.isAdmin
+                    _isAdminState.value = userInfo.isAdmin
                     validationEvent.emit(ValidationState.Success(userInfo))
-                }?: run{
+                } ?: run {
                     validationEvent.emit(ValidationState.Error("Not an Admin"))
                 }
 
-            }
-            catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
 
-    fun createCategory(category: Category){
+    fun createCategory(category: Category) {
         viewModelScope.launch {
-            try{
-                val  isCategoryExists =  myCartRepository.isCategoryAvailable(category.categoryName)
-                if(isCategoryExists){
+            try {
+                val isCategoryExists = myCartRepository.isCategoryAvailable(category.categoryName)
+                if (isCategoryExists) {
                     validationEvent.emit(ValidationState.Error("Category Already Exists"))
-                }else{
+                } else {
                     val insertedId = myCartRepository.createCategory(category)
-                    if(insertedId > 0){
+                    if (insertedId > 0) {
                         validationEvent.emit(ValidationState.SuccessConfirmation("Category Created"))
-                    }else{
+                    } else {
                         validationEvent.emit(ValidationState.Error("Category Creation failed"))
                     }
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun fetchCategoryForAdmin(user: User) {
+        viewModelScope.launch {
+            try {
+                val categoryList = myCartRepository.fetchAllCategories(
+                    user.userStoreLocation,
+                    user.userStore,
+                    user.userEmail
+                )
+                if (categoryList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            categoryList,
+                            DataType.CATEGORY
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No Categories found"))
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun fetchDealsForAdmin(user:User){
+        viewModelScope.launch {
+         try{
+             val dealList = myCartRepository.fetchAllDeals(
+                 user.userStoreLocation,
+                 user.userStore,
+                 user.userEmail
+             )
+             if (dealList.isNotEmpty()) {
+                 validationEvent.emit(
+                     ValidationState.SuccessList(
+                         dealList,
+                         DataType.DEALS
+                     )
+                 )
+             } else {
+                 validationEvent.emit(ValidationState.Error("No Deals found"))
+             }
+         }catch (e:Exception){
+             validationEvent.emit(ValidationState.Error("${e.message}"))
+         }
+        }
+    }
+
+    fun fetchSeasonalDealsForAdmin(user:User){
+        viewModelScope.launch {
+            try{
+                val dealList = myCartRepository.fetchSeasonalDeals(
+                    user.userStoreLocation,
+                    user.userStore,
+                    user.userEmail
+                )
+                if (dealList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            dealList,
+                            DataType.SEASONALDEALS
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No seasonal specials found"))
                 }
             }catch (e:Exception){
                 validationEvent.emit(ValidationState.Error("${e.message}"))
             }
         }
     }
+}
 
-    fun fetchCategoryForAdmin(user: User){
-      viewModelScope.launch {
-          try {
-              val categoryList = myCartRepository.fetchAllCategories(user.userStoreLocation,user.userStore,user.userEmail)
-              if(categoryList.isNotEmpty()) {
-                  validationEvent.emit(ValidationState.SuccessList(categoryList,DataType.CATEGORY))
-              }else {
-                  validationEvent.emit(ValidationState.Error("No Categories found"))
-              }
-          }catch (e:Exception){
-              validationEvent.emit(ValidationState.Error("${e.message}"))
-          }
-          }
-      }
-    }
 

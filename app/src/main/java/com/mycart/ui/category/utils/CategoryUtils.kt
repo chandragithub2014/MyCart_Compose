@@ -24,6 +24,7 @@ object CategoryUtils {
     )
 
 
+
     fun fetchCategoryImageUrlByCategory(selectedCategory: String) = categoryImageMap[selectedCategory]
 
     fun fetchCategoryList() = categoryList
