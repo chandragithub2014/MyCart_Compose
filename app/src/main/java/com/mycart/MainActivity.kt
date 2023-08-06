@@ -65,7 +65,7 @@ fun Navigator(navHostController: NavHostController) {
             "createCategory/{emailId}",
             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
         ) { backStackEntry ->
-            backStackEntry.arguments?.getString("emailId")?.let { email -> CreateCategory(email) }
+            backStackEntry.arguments?.getString("emailId")?.let { email -> CreateCategory(email,navController = navHostController) }
         }
     }
 

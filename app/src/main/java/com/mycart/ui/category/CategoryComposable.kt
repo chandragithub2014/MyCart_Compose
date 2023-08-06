@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +23,8 @@ import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
 import com.mycart.R
 import com.mycart.domain.model.SeasonalCategory
+import com.mycart.domain.model.User
+import com.mycart.ui.common.DataType
 import com.mycart.ui.common.FloatingActionComposable
 import com.mycart.ui.common.ValidationState
 import com.mycart.ui.login.viewmodel.LoginViewModel
@@ -34,6 +36,8 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 @Composable
 fun Category(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
     println("Received UserEmail is....... $userEmail")
+    var categoryList by rememberSaveable { mutableStateOf(listOf<Category>()) }
+
     userEmail?.let {email ->
         categoryViewModel.checkForAdmin(email)
     }
@@ -43,7 +47,32 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
         categoryViewModel.validationEvent.collect { event ->
             when (event) {
                 is ValidationState.Success -> {
-                    Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
+                   // Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
+                    when(val data : Any = event.data){
+                        is User -> {
+                            val user: User = data
+                            if(user.isAdmin){
+                                categoryViewModel.fetchCategoryForAdmin(user)
+                            }
+
+                        }
+
+                        else ->{
+                                 }
+                    }
+                }
+
+                is ValidationState.SuccessList -> {
+                    when (event.dataType) {
+                        DataType.CATEGORY -> {
+                            categoryList = event.dataList.filterIsInstance<Category>()
+                        }
+                        DataType.OTHER_TYPE -> {
+                            // Handle other types
+                        }
+                        // Add more cases as needed
+                    }
+
                 }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
@@ -53,6 +82,8 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
             }
         }
     }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,7 +118,8 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                          .padding(start = 16.dp, top = 10.dp))
                   }
                   item {
-                      CategoryScreen()
+                  //    CategoryScreen()
+                      CategoryScreen(categoryList)
                   }
                   item {
                       SeasonalCategoryComposable()
@@ -99,13 +131,10 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
 
 }
 
-@Composable
-fun CategoryScreen(categoryViewModel: CategoryViewModel = get()) {
-    val categoryList: List<Category> = categoryViewModel.categoryList.value
 
-    LaunchedEffect(Unit) {
-        categoryViewModel.fetchCategories()
-    }
+
+@Composable
+fun CategoryScreen(categoryList:List<Category>) {
     CategoryGrid(categoryList)
 
 }

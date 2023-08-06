@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.User
 import com.mycart.ui.category.viewmodel.CategoryViewModel
@@ -32,7 +33,7 @@ import com.mycart.ui.category.utils.CategoryUtils.fetchCategoryImageUrlByCategor
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 @Composable
-fun CreateCategory(userEmail:String?,categoryViewModel: CategoryViewModel = get()) {
+fun CreateCategory(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel = get()) {
     var storeLocation by rememberSaveable { mutableStateOf("") }
     var storeName by rememberSaveable { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
@@ -67,6 +68,13 @@ fun CreateCategory(userEmail:String?,categoryViewModel: CategoryViewModel = get(
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+                }
+
+                is ValidationState.SuccessConfirmation ->{
+                    val successMessage = event.successMessage
+                    Toast.makeText(context,successMessage, Toast.LENGTH_LONG).show()
+                    navController.navigate("category/${userEmail}")
+
                 }
                 else -> {}
             }
@@ -154,9 +162,18 @@ fun CreateCategory(userEmail:String?,categoryViewModel: CategoryViewModel = get(
                         negativeButtonTitle = "Cancel",
                         onPositiveButtonClick = {
                             // Action to perform when "OK" button is clicked
+                            userEmail?.let { email ->
+                                selectedCategoryUrl?.let {  imageUrl ->
+
+                                    val category = com.mycart.domain.model.Category(categoryName = selectedCategory,
+                                        categoryImage = imageUrl, userEmail = email, storeLoc = storeLocation, storeName = storeName)
+                                    categoryViewModel.createCategory(category)
+                                }
+                            }
                         },
                         onNegativeButtonClick = {
-                            // Action to perform when "Cancel" button is clicked
+                           showDialog = false
+
                         },
                         displayDialog = {
                             showDialog = it

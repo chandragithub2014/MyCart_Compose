@@ -26,7 +26,16 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
     }
 
     override suspend fun fetchUserInfoByEmail(email: String): User? {
-       return myCartDAO.getLoggedInUserInfoByEmail(email)
+        return myCartDAO.getLoggedInUserInfoByEmail(email)
     }
+
+    override suspend fun createCategory(category: Category) = myCartDAO.insertCategory(category)
+    override suspend fun isCategoryAvailable(name: String): Boolean {
+        val category = myCartDAO.isCategoryAvailable(name)
+        return category != null
+    }
+
+    override suspend fun fetchAllCategories(storeLoc: String, storeName: String, email: String) =
+        myCartDAO.fetchCategories(storeLoc, storeName, email)
 
 }

@@ -24,7 +24,7 @@ class LoginViewModel(private val myCartRepository: MyCartRepository): ViewModel(
 
              }catch (e:Exception){
                  e.printStackTrace()
-                 validationEvent.emit(ValidationState.Error("Login Failed"))
+                 validationEvent.emit(ValidationState.Error("${e.message}"))
              }
          }
      }

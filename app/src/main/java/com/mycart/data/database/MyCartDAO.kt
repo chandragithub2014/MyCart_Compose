@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.mycart.domain.model.Category
 import com.mycart.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -23,5 +24,14 @@ interface MyCartDAO {
 
     @Query("SELECT * FROM users WHERE userEmail = :email")
     suspend fun getLoggedInUserInfoByEmail(email: String): User?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategory(category: Category): Long
+
+    @Query("SELECT * from category where categoryName=:name")
+    suspend fun isCategoryAvailable(name:String):Category?
+
+    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email")
+    suspend fun fetchCategories(storeLocation:String, storeName:String,email:String):List<Category>
 
 }

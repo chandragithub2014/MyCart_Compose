@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
+import com.mycart.domain.model.User
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.ui.common.DataType
 import com.mycart.ui.common.ValidationState
 import com.mycart.ui.register.viewmodel.FormValidationResult
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -68,7 +70,7 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                    _isAdminState.value = userInfo.isAdmin
                     validationEvent.emit(ValidationState.Success(userInfo))
                 }?: run{
-                    validationEvent.emit(ValidationState.Error("Login Failed"))
+                    validationEvent.emit(ValidationState.Error("Not an Admin"))
                 }
 
             }
@@ -79,5 +81,39 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
     }
 
 
+    fun createCategory(category: Category){
+        viewModelScope.launch {
+            try{
+                val  isCategoryExists =  myCartRepository.isCategoryAvailable(category.categoryName)
+                if(isCategoryExists){
+                    validationEvent.emit(ValidationState.Error("Category Already Exists"))
+                }else{
+                    val insertedId = myCartRepository.createCategory(category)
+                    if(insertedId > 0){
+                        validationEvent.emit(ValidationState.SuccessConfirmation("Category Created"))
+                    }else{
+                        validationEvent.emit(ValidationState.Error("Category Creation failed"))
+                    }
+                }
+            }catch (e:Exception){
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
 
-}
+    fun fetchCategoryForAdmin(user: User){
+      viewModelScope.launch {
+          try {
+              val categoryList = myCartRepository.fetchAllCategories(user.userStoreLocation,user.userStore,user.userEmail)
+              if(categoryList.isNotEmpty()) {
+                  validationEvent.emit(ValidationState.SuccessList(categoryList,DataType.CATEGORY))
+              }else {
+                  validationEvent.emit(ValidationState.Error("No Categories found"))
+              }
+          }catch (e:Exception){
+              validationEvent.emit(ValidationState.Error("${e.message}"))
+          }
+          }
+      }
+    }
+
