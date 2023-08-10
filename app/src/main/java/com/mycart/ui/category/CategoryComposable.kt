@@ -78,6 +78,7 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                             seasonalDeals = event.dataList.filterIsInstance<Category>()
                         }
                         // Add more cases as needed
+                        else -> {}
                     }
 
                 }

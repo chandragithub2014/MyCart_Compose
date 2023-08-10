@@ -53,12 +53,15 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
                 is ValidationState.Success -> {
                     val user = event.data as? User
                     println("Registered User is $user")
-                    Toast.makeText(context, "Success", Toast.LENGTH_LONG).show()
                     navController.navigate("loginScreen")
                 }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage,Toast.LENGTH_LONG).show()
+                }
+                is ValidationState.SuccessConfirmation ->{
+                    val successMessage = event.successMessage
+                    Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                 }
                 else -> {}
             }

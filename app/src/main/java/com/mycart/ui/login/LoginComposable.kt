@@ -45,7 +45,7 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
                     val user = event.data as? User
                     println("Login User is $user")
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
-                    navController.navigate("category/${user?.userEmail}")
+                    navController.navigate("store/${user?.userEmail}")
                    // navController.navigate("category")
                 //    navController.navigate("category/{emailKey}", arguments = listOf(navArgument("emailKey") {  type = NavType.StringType }))
                              }

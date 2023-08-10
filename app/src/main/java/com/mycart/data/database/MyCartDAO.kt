@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.mycart.domain.model.Category
+import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -43,4 +44,16 @@ interface MyCartDAO {
 
     @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isSeasonal = true")
     suspend fun fetchSeasonalDeals(storeLocation: String, storeName: String, email: String): List<Category>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStore(store: Store): Long
+
+    @Query("SELECT * from store")
+    suspend fun fetchStores():List<Store>
+
+    @Query("SELECT * from store where ownerEmail = :email")
+    suspend fun fetchStoreByEmail(email:String):Store?
+
+    @Query("SELECT * from store where ownerEmail = :email AND storeName = :store")
+    suspend fun isStoreAvailable(email:String,store:String):Store?
 }

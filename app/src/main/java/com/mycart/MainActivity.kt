@@ -22,6 +22,7 @@ import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.register.Register
+import com.mycart.ui.store.StoreList
 import com.mycart.ui.theme.MyCartTheme
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +67,14 @@ fun Navigator(navHostController: NavHostController) {
             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
         ) { backStackEntry ->
             backStackEntry.arguments?.getString("emailId")?.let { email -> CreateCategory(email,navController = navHostController) }
+        }
+
+        composable(
+            "store/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getString("emailId")
+                ?.let { email -> StoreList(email, navController = navHostController) }
         }
     }
 

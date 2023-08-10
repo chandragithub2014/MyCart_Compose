@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.MyCartRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -99,7 +100,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
         _errorState.value = _errorState.value.copy(
             confirmationPasswordStatus = !isConfirmPassValid
         )
-        if(_userState.value.isAdmin) {
+        if (_userState.value.isAdmin) {
             _errorState.value = _errorState.value.copy(
                 storeNameStatus = !isStoreNameValid
             )
@@ -141,7 +142,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
             } else {
                 if (hasErrorWhenNotAdmin) {
                     insertUser(_userState.value)
-                 //   validationEvent.emit(ValidationState.Success(_userState.value))
+                    //   validationEvent.emit(ValidationState.Success(_userState.value))
 
                 }
             }
@@ -151,16 +152,21 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
     private fun insertUser(user: User) {
         viewModelScope.launch {
             try {
-               val  isUserAlreadyExists =  myCartRepository.isUserAvailable(user.userEmail)
-                if(isUserAlreadyExists){
+                val isUserAlreadyExists = myCartRepository.isUserAvailable(user.userEmail)
+                if (isUserAlreadyExists) {
                     validationEvent.emit(ValidationState.Error("User Already Exists"))
-                }else {
+                } else {
                     val insertedId = myCartRepository.insert(user)
                     println("Inserted ID $insertedId")
-                    if(insertedId > 0 )
-                    {
-                        validationEvent.emit(ValidationState.Success(_userState.value))
-                    }else{
+                    if (insertedId > 0) {
+                      //  validationEvent.emit(ValidationState.Success(_userState.value))
+                        if (_userState.value.isAdmin) {
+                            val userInfo = _userState.value
+                            createStore(userInfo)
+                        }else{
+                            validationEvent.emit(ValidationState.Success(_userState.value))
+                        }
+                    } else {
                         validationEvent.emit(ValidationState.Error("Insertion Failed"))
                     }
                 }
@@ -171,22 +177,50 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
         }
     }
 
-    private fun fetchUsers(){
+    private fun fetchUsers() {
         viewModelScope.launch {
-            try{
-               myCartRepository.getAllUsers().collect { users ->
-                   // Print the notes in the ViewModel
-                   users.forEach { user ->
-                       println("userInfo ::::$user")
-                   }
-               }
+            try {
+                myCartRepository.getAllUsers().collect { users ->
+                    // Print the notes in the ViewModel
+                    users.forEach { user ->
+                        println("userInfo ::::$user")
+                    }
+                }
 
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
+
+    private fun createStore(user: User) {
+        viewModelScope.launch {
+            try {
+                val store = Store(
+                    storeName = user.userStore,
+                    storeLoc = user.userStoreLocation,
+                    ownerEmail = user.userEmail,
+                    pinCode = user.userPinCode
+                )
+                val isStoreExists =
+                    myCartRepository.isStoreAvailable(store.ownerEmail, store.storeName)
+                if (isStoreExists) {
+                    validationEvent.emit(ValidationState.Error("Store Already Exists"))
+                } else {
+                    val insertedId = myCartRepository.createStore(store)
+                    if (insertedId > 0) {
+                        validationEvent.emit(ValidationState.SuccessConfirmation("Store Registration Successful"))
+                        validationEvent.emit(ValidationState.Success(user))
+                    } else {
+                        validationEvent.emit(ValidationState.Error("Store Creation failed"))
+                    }
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
 
 
 }

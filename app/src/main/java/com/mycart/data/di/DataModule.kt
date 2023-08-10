@@ -8,6 +8,7 @@ import com.mycart.domain.repository.MyCartRepository
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
+import com.mycart.ui.store.viewmodel.StoreViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -26,4 +27,5 @@ val appModule = module {
     viewModel { CategoryViewModel(get()) }
     viewModel { RegistrationViewModel(get()) }
     viewModel{LoginViewModel(get())}
+    viewModel{StoreViewModel(get())}
 }

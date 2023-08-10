@@ -2,6 +2,7 @@ package com.mycart.domain.repository
 
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
+import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -19,4 +20,8 @@ interface MyCartRepository {
     suspend fun fetchAllCategories(storeLoc:String,storeName:String,email:String):List<Category>
     suspend fun fetchAllDeals(storeLoc:String,storeName:String,email:String):List<Category>
     suspend fun fetchSeasonalDeals(storeLoc:String,storeName:String,email:String):List<Category>
+    suspend fun fetchStores():List<Store>
+    suspend fun createStore(store:Store) : Long
+    suspend fun fetchStoreByEmail(email:String):Store?
+    suspend fun isStoreAvailable(email:String,store:String):Boolean
 }

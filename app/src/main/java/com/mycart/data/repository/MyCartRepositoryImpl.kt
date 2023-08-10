@@ -4,6 +4,7 @@ import com.mycart.data.database.MyCartDAO
 import com.mycart.data.mock.MockAPI
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
+import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.MyCartRepository
 
@@ -49,4 +50,15 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
         storeName: String,
         email: String
     ) = myCartDAO.fetchSeasonalDeals(storeLoc,storeName,email)
+
+    override suspend fun fetchStores()  = myCartDAO.fetchStores()
+
+    override suspend fun createStore(store: Store)   = myCartDAO.insertStore(store)
+
+    override suspend fun fetchStoreByEmail(email: String) = myCartDAO.fetchStoreByEmail(email)
+
+    override suspend fun isStoreAvailable(email: String, store: String): Boolean {
+        val storeInfo = myCartDAO.isStoreAvailable(email,store)
+        return storeInfo != null
+    }
 }
