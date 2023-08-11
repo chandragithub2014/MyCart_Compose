@@ -82,7 +82,7 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
     fun createCategory(category: Category) {
         viewModelScope.launch {
             try {
-                val isCategoryExists = myCartRepository.isCategoryAvailable(category.categoryName)
+                val isCategoryExists = myCartRepository.isCategoryAvailable(category.categoryName,category.storeName)
                 if (isCategoryExists) {
                     validationEvent.emit(ValidationState.Error("Category Already Exists"))
                 } else {
@@ -123,33 +123,33 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
         }
     }
 
-    fun fetchDealsForAdmin(user:User){
+    fun fetchDealsForAdmin(user: User) {
         viewModelScope.launch {
-         try{
-             val dealList = myCartRepository.fetchAllDeals(
-                 user.userStoreLocation,
-                 user.userStore,
-                 user.userEmail
-             )
-             if (dealList.isNotEmpty()) {
-                 validationEvent.emit(
-                     ValidationState.SuccessList(
-                         dealList,
-                         DataType.DEALS
-                     )
-                 )
-             } else {
-                 validationEvent.emit(ValidationState.Error("No Deals found"))
-             }
-         }catch (e:Exception){
-             validationEvent.emit(ValidationState.Error("${e.message}"))
-         }
+            try {
+                val dealList = myCartRepository.fetchAllDeals(
+                    user.userStoreLocation,
+                    user.userStore,
+                    user.userEmail
+                )
+                if (dealList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            dealList,
+                            DataType.DEALS
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No Deals found"))
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
         }
     }
 
-    fun fetchSeasonalDealsForAdmin(user:User){
+    fun fetchSeasonalDealsForAdmin(user: User) {
         viewModelScope.launch {
-            try{
+            try {
                 val dealList = myCartRepository.fetchSeasonalDeals(
                     user.userStoreLocation,
                     user.userStore,
@@ -165,7 +165,74 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 } else {
                     validationEvent.emit(ValidationState.Error("No seasonal specials found"))
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+
+    fun fetchCategoryByStore(storeName: String) {
+        viewModelScope.launch {
+            try {
+                val categoryList = myCartRepository.fetchCategoriesByStore(
+                    storeName
+                )
+                if (categoryList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            categoryList,
+                            DataType.CATEGORY
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No Categories found"))
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun fetchDealsByStore(storeName: String) {
+        viewModelScope.launch {
+            try {
+                val dealList = myCartRepository.fetchDealsByStore(
+                    storeName
+                )
+                if (dealList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            dealList,
+                            DataType.DEALS
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No Deals found"))
+                }
+            } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun fetchSeasonalDealsByStore(storeName: String) {
+        viewModelScope.launch {
+            try {
+                val dealList = myCartRepository.fetchSeasonalDetalsByStore(
+                    storeName
+                )
+                if (dealList.isNotEmpty()) {
+                    validationEvent.emit(
+                        ValidationState.SuccessList(
+                            dealList,
+                            DataType.SEASONALDEALS
+                        )
+                    )
+                } else {
+                    validationEvent.emit(ValidationState.Error("No seasonal specials found"))
+                }
+            } catch (e: Exception) {
                 validationEvent.emit(ValidationState.Error("${e.message}"))
             }
         }

@@ -34,7 +34,7 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 
 @Composable
-fun Category(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
+fun Category(userEmail:String?,storeName:String, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
     println("Received UserEmail is....... $userEmail")
     var categoryList by rememberSaveable { mutableStateOf(listOf<Category>()) }
     var dealList by rememberSaveable { mutableStateOf(listOf<Category>()) }
@@ -57,6 +57,11 @@ fun Category(userEmail:String?, navController: NavHostController, categoryViewMo
                                 categoryViewModel.fetchCategoryForAdmin(user)
                                 categoryViewModel.fetchDealsForAdmin(user)
                                 categoryViewModel.fetchSeasonalDealsForAdmin(user)
+                            }else{
+
+                                categoryViewModel.fetchCategoryByStore(storeName)
+                                categoryViewModel.fetchDealsByStore(storeName)
+                                categoryViewModel.fetchSeasonalDealsByStore(storeName)
                             }
 
                         }

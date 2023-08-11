@@ -54,19 +54,34 @@ fun Navigator(navHostController: NavHostController) {
         composable("registrationScreen") { Register(navController = navHostController) }
         composable("forgotPasswordScreen") { ForgotPassword(navHostController) }
         //composable("category"){ Category() }
-        composable(
-            "category/{emailId}",
-            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            backStackEntry.arguments?.getString("emailId")
-                ?.let { email -> Category(email, navController = navHostController) }
-        }
+        /* composable(
+             "category/{emailId}",
+             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
+         ) { backStackEntry ->
+             backStackEntry.arguments?.getString("emailId")
+                 ?.let { email -> Category(email, navController = navHostController) }
+         }*/
 
         composable(
             "createCategory/{emailId}",
             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
         ) { backStackEntry ->
-            backStackEntry.arguments?.getString("emailId")?.let { email -> CreateCategory(email,navController = navHostController) }
+            backStackEntry.arguments?.getString("emailId")
+                ?.let { email -> CreateCategory(email, navController = navHostController) }
+        }
+
+        composable(
+            "category/{emailId}/{store}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType },
+                navArgument("store") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("emailId")
+            val storeName = backStackEntry.arguments?.getString("store")
+            email?.let { userEmail ->
+                storeName?.let { store ->
+                    Category(userEmail, store, navController = navHostController)
+                }
+            }
         }
 
         composable(

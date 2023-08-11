@@ -31,8 +31,8 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
     }
 
     override suspend fun createCategory(category: Category) = myCartDAO.insertCategory(category)
-    override suspend fun isCategoryAvailable(name: String): Boolean {
-        val category = myCartDAO.isCategoryAvailable(name)
+    override suspend fun isCategoryAvailable(categoryName:String,storeName:String): Boolean {
+        val category = myCartDAO.isCategoryAvailable(categoryName,storeName)
         return category != null
     }
 
@@ -61,4 +61,10 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
         val storeInfo = myCartDAO.isStoreAvailable(email,store)
         return storeInfo != null
     }
+
+    override suspend fun fetchCategoriesByStore(storeName: String) = myCartDAO.fetchCategoriesByStore(storeName)
+
+    override suspend fun fetchDealsByStore(storeName: String) = myCartDAO.fetchDealsByStore(storeName)
+
+    override suspend fun fetchSeasonalDetalsByStore(storeName: String) = myCartDAO.fetchSeasonalDealsByStore(storeName)
 }

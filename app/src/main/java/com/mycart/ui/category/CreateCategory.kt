@@ -81,7 +81,7 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                 is ValidationState.SuccessConfirmation ->{
                     val successMessage = event.successMessage
                     Toast.makeText(context,successMessage, Toast.LENGTH_LONG).show()
-                    navController.navigate("category/${userEmail}")
+                    navController.navigate("category/${userEmail}/${storeName}")
 
                 }
                 else -> {}

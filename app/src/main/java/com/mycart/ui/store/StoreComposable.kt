@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -101,14 +102,17 @@ fun StoreList(
         },
 
         ) {
-        Box(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
 
                 ) {
                 items(items = storeList) { store ->
-                    DisplayStore(store = store)
-
+                    userEmail?.let { email ->
+                        DisplayStore(store = store,email,navController)
+                    }
                 }
             }
         }
@@ -116,7 +120,7 @@ fun StoreList(
 }
 
 @Composable
-fun DisplayStore(store: Store) {
+fun DisplayStore(store: Store,email:String,navController: NavHostController) {
 
     Row(
         modifier = Modifier
@@ -125,7 +129,11 @@ fun DisplayStore(store: Store) {
             .border(
                 BorderStroke(1.dp, Color.LightGray),
                 shape = RoundedCornerShape(8.dp)
-            ).padding(8.dp),
+            )
+            .padding(8.dp)
+            .clickable {
+                navController.navigate("category/${email}/${store.storeName}")
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Display the image
@@ -136,8 +144,11 @@ fun DisplayStore(store: Store) {
         Text(
             text = store.storeName,
             modifier = Modifier
+                .weight(1f)
                 .padding(start = 16.dp)
         )
+
+        FetchImageFromDrawable(imageName = "ic_detail")
     }
 
 }

@@ -29,8 +29,8 @@ interface MyCartDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category): Long
 
-    @Query("SELECT * from category where categoryName=:name")
-    suspend fun isCategoryAvailable(name: String): Category?
+    @Query("SELECT * from category where categoryName=:categoryName AND storeName = :storeName")
+    suspend fun isCategoryAvailable(categoryName: String,storeName:String): Category?
 
     @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email")
     suspend fun fetchCategories(
@@ -43,17 +43,30 @@ interface MyCartDAO {
     suspend fun fetchDeals(storeLocation: String, storeName: String, email: String): List<Category>
 
     @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isSeasonal = true")
-    suspend fun fetchSeasonalDeals(storeLocation: String, storeName: String, email: String): List<Category>
+    suspend fun fetchSeasonalDeals(
+        storeLocation: String,
+        storeName: String,
+        email: String
+    ): List<Category>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStore(store: Store): Long
 
     @Query("SELECT * from store")
-    suspend fun fetchStores():List<Store>
+    suspend fun fetchStores(): List<Store>
 
     @Query("SELECT * from store where ownerEmail = :email")
-    suspend fun fetchStoreByEmail(email:String):Store?
+    suspend fun fetchStoreByEmail(email: String): Store?
 
     @Query("SELECT * from store where ownerEmail = :email AND storeName = :store")
-    suspend fun isStoreAvailable(email:String,store:String):Store?
+    suspend fun isStoreAvailable(email: String, store: String): Store?
+
+    @Query("SELECT * from category where  storeName = :storeName")
+    suspend fun fetchCategoriesByStore(storeName: String): List<Category>
+
+    @Query("SELECT * from category where storeName = :storeName AND isDeal = true")
+    suspend fun fetchDealsByStore(storeName: String): List<Category>
+
+    @Query("SELECT * from category where  storeName = :storeName  AND isSeasonal = true")
+    suspend fun fetchSeasonalDealsByStore(storeName: String): List<Category>
 }

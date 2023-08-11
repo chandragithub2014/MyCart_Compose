@@ -16,7 +16,7 @@ interface MyCartRepository {
     suspend fun isValidLoggedInUser(email: String,password:String):User?
     suspend fun fetchUserInfoByEmail(email: String):User?
     suspend fun createCategory(category: Category):Long
-    suspend fun isCategoryAvailable(name:String):Boolean
+    suspend fun isCategoryAvailable(categoryName:String,storeName:String):Boolean
     suspend fun fetchAllCategories(storeLoc:String,storeName:String,email:String):List<Category>
     suspend fun fetchAllDeals(storeLoc:String,storeName:String,email:String):List<Category>
     suspend fun fetchSeasonalDeals(storeLoc:String,storeName:String,email:String):List<Category>
@@ -24,4 +24,7 @@ interface MyCartRepository {
     suspend fun createStore(store:Store) : Long
     suspend fun fetchStoreByEmail(email:String):Store?
     suspend fun isStoreAvailable(email:String,store:String):Boolean
+    suspend fun fetchCategoriesByStore(storeName:String):List<Category>
+    suspend fun fetchDealsByStore(storeName:String):List<Category>
+    suspend fun fetchSeasonalDetalsByStore(storeName:String):List<Category>
 }
