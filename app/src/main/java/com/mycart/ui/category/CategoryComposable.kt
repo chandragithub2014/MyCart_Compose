@@ -2,6 +2,7 @@ package com.mycart.ui.category
 
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -105,7 +106,7 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
         },
                 floatingActionButton = {
                  FloatingActionComposable(categoryViewModel.isAdminState.value){
-
+                         navController.popBackStack()
                          navController.navigate("createCategory/${userEmail}")
 
                  }
@@ -261,6 +262,8 @@ fun CategoryName(categoryName: String) {
 fun CategoryImageFromURLWithPlaceHolder(imageUrl: String) {
     FetchImageFromURLWithPlaceHolder(imageUrl = imageUrl)
 }
+
+
 
 
 /*@Composable

@@ -121,7 +121,7 @@ fun StoreList(
 
 @Composable
 fun DisplayStore(store: Store,email:String,navController: NavHostController) {
-
+val name = store.storeName
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -132,7 +132,7 @@ fun DisplayStore(store: Store,email:String,navController: NavHostController) {
             )
             .padding(8.dp)
             .clickable {
-                navController.navigate("category/${email}/${store.storeName}")
+                navController.navigate("category/${email}/${name}")
             },
         verticalAlignment = Alignment.CenterVertically
     ) {

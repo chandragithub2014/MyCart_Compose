@@ -2,6 +2,7 @@ package com.mycart.ui.register
 
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,7 +54,7 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
                 is ValidationState.Success -> {
                     val user = event.data as? User
                     println("Registered User is $user")
-                    navController.navigate("loginScreen")
+                    navigateToLogin(navController)
                 }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
@@ -68,7 +69,9 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
         }
     }
 
-
+     BackHandler(enabled = true) {
+         navigateToLogin(navController)
+     }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
@@ -210,6 +213,10 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
     }
 }
 
+private fun navigateToLogin(navController: NavHostController){
+    navController.popBackStack()
+    navController.navigate("loginScreen")
+}
 
 @Composable
 @Preview

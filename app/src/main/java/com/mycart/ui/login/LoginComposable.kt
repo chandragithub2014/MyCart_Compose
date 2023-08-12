@@ -1,7 +1,9 @@
 package com.mycart.ui.login
 
 
+import android.app.Activity
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -34,10 +36,12 @@ import org.koin.androidx.compose.get
 
 
 @Composable
-fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel = get()) {
+fun LoginScreen(navController: NavHostController, loginViewModel: LoginViewModel = get()) {
     var userEmail by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+
+
     LaunchedEffect(key1 = context) {
         loginViewModel.validationEvent.collect { event ->
             when (event) {
@@ -45,18 +49,26 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
                     val user = event.data as? User
                     println("Login User is $user")
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
+                    userEmail = ""
+                    password = ""
                     navController.navigate("store/${user?.userEmail}")
-                   // navController.navigate("category")
-                //    navController.navigate("category/{emailKey}", arguments = listOf(navArgument("emailKey") {  type = NavType.StringType }))
-                             }
+
+                }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
-                    Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 }
                 else -> {}
             }
         }
     }
+// Getting your activity in a composable function
+    val activity = (LocalContext.current as? Activity)
+   BackHandler(enabled = true) {
+        userEmail = ""
+        password = ""
+       activity?.finish()
+   }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -90,9 +102,18 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
             }
 
             OutlinedButton(
-                onClick = { loginViewModel.fetchLoggedInUserInfo(email = userEmail,password=password)},
+                onClick = {
+                    loginViewModel.fetchLoggedInUserInfo(
+                        email = userEmail,
+                        password = password
+                    )
+
+                },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
-                modifier = Modifier.fillMaxWidth().height(50.dp).padding(start = 50.dp, end = 50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(start = 50.dp, end = 50.dp)
             ) {
                 Text(stringResource(R.string.login_btn_label), color = Color.White)
             }
@@ -100,7 +121,9 @@ fun LoginScreen(navController: NavHostController,loginViewModel: LoginViewModel 
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                TextButton(onClick = { navController.navigate("registrationScreen") }) {
+                TextButton(onClick = {
+                    navController.navigate("registrationScreen")
+                    }) {
                     Text(stringResource(R.string.register_label))
                 }
 

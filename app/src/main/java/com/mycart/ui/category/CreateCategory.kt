@@ -3,6 +3,7 @@ package com.mycart.ui.category
 import android.graphics.fonts.FontStyle
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,40 +34,46 @@ import com.mycart.ui.category.utils.CategoryUtils.fetchCategoryImageUrlByCategor
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 @Composable
-fun CreateCategory(userEmail:String?, navController: NavHostController, categoryViewModel: CategoryViewModel = get()) {
+fun CreateCategory(
+    userEmail: String?,
+    navController: NavHostController,
+    categoryViewModel: CategoryViewModel = get()
+) {
     var storeLocation by rememberSaveable { mutableStateOf("") }
     var storeName by rememberSaveable { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val defaultCategoryImageURL = fetchCategoryImageUrlByCategory(CategoryUtils.fetchCategoryList()[0])
+    val defaultCategoryImageURL =
+        fetchCategoryImageUrlByCategory(CategoryUtils.fetchCategoryList()[0])
     var selectedCategory by rememberSaveable {
         mutableStateOf(CategoryUtils.fetchCategoryList()[0])
     }
-    var selectedCategoryUrl by rememberSaveable{
+    var selectedCategoryUrl by rememberSaveable {
         mutableStateOf(defaultCategoryImageURL)
     }
     var isDeal by rememberSaveable { mutableStateOf(false) }
-    var dealInfo by rememberSaveable{
+    var dealInfo by rememberSaveable {
         mutableStateOf("")
     }
-    var isSeasonal by rememberSaveable{
+    var isSeasonal by rememberSaveable {
         mutableStateOf(false)
     }
 
     LaunchedEffect(key1 = context) {
-        userEmail?.let {  email ->
+        userEmail?.let { email ->
             categoryViewModel.checkForAdmin(email)
 
         }
         categoryViewModel.validationEvent.collect { event ->
             when (event) {
                 is ValidationState.Success -> {
-                    when(val data : Any = event.data){
+                    when (val data: Any = event.data) {
                         is User -> {
                             val user: User = data
                             storeLocation = user.userStoreLocation
                             storeName = user.userStore
-                        }else ->{
+                        }
+                        else -> {
 
 
                         }
@@ -75,17 +82,26 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                 }
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
-                    Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 }
 
-                is ValidationState.SuccessConfirmation ->{
+                is ValidationState.SuccessConfirmation -> {
                     val successMessage = event.successMessage
-                    Toast.makeText(context,successMessage, Toast.LENGTH_LONG).show()
-                    navController.navigate("category/${userEmail}/${storeName}")
+                    Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+                    userEmail?.let { email ->
+                        navigateToCategory(navController, email, storeName)
+                    }
+
 
                 }
                 else -> {}
             }
+        }
+    }
+
+    BackHandler(true) {
+        userEmail?.let { email ->
+            navigateToCategory(navController, email, storeName)
         }
     }
 
@@ -116,37 +132,42 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                         .fillMaxWidth()
                         .height(50.dp)
                         .padding(start = 50.dp, end = 50.dp, bottom = 20.dp),
-                    style = TextStyle(fontSize = 18.sp,
+                    style = TextStyle(
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Blue,
                     )
 
                 )
-                
-                ExposedDropDownMenu(options = CategoryUtils.fetchCategoryList()){
+
+                ExposedDropDownMenu(options = CategoryUtils.fetchCategoryList()) {
                     println("Selected Items is $it")
                     selectedCategory = it
                 }
 
-                    Text(text = "Category Image",
-                        color = Color.Blue,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(start = 50.dp, end = 50.dp, top = 20.dp),
-                    style = TextStyle(fontSize = 18.sp,
+                Text(
+                    text = "Category Image",
+                    color = Color.Blue,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(start = 50.dp, end = 50.dp, top = 20.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Blue,
-                       )
                     )
-                    selectedCategoryUrl =  fetchCategoryImageUrlByCategory(selectedCategory)
-                   Row(horizontalArrangement = Arrangement.Start,
-                       modifier = Modifier
-                           .fillMaxWidth()
-                           .height(50.dp)
-                           .padding(start = 50.dp, end = 50.dp)) {
-                       selectedCategoryUrl?.let { it1 -> FetchImageFromURLWithPlaceHolder(imageUrl = it1) }
-                   }
+                )
+                selectedCategoryUrl = fetchCategoryImageUrlByCategory(selectedCategory)
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(start = 50.dp, end = 50.dp)
+                ) {
+                    selectedCategoryUrl?.let { it1 -> FetchImageFromURLWithPlaceHolder(imageUrl = it1) }
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -184,14 +205,14 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                 if (isDeal) {
                     InputTextField(
                         onValueChanged = {
-                            dealInfo =  it
+                            dealInfo = it
                         },
                         label = stringResource(R.string.deal_info_title)
                     )
                 }
                 OutlinedButton(
                     onClick = {
-                       showDialog = true
+                        showDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                     modifier = Modifier
@@ -201,7 +222,7 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                     Text(stringResource(R.string.create_title), color = Color.White)
                 }
 
-                if(showDialog){
+                if (showDialog) {
                     DisplaySimpleAlertDialog(
                         showDialog = showDialog,
                         title = "Create Category",
@@ -211,16 +232,24 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
                         onPositiveButtonClick = {
                             // Action to perform when "OK" button is clicked
                             userEmail?.let { email ->
-                                selectedCategoryUrl?.let {  imageUrl ->
+                                selectedCategoryUrl?.let { imageUrl ->
 
-                                    val category = com.mycart.domain.model.Category(categoryName = selectedCategory,
-                                        categoryImage = imageUrl, userEmail = email, storeLoc = storeLocation, storeName = storeName, isDeal = isDeal, dealInfo = dealInfo, isSeasonal = isSeasonal)
+                                    val category = com.mycart.domain.model.Category(
+                                        categoryName = selectedCategory,
+                                        categoryImage = imageUrl,
+                                        userEmail = email,
+                                        storeLoc = storeLocation,
+                                        storeName = storeName,
+                                        isDeal = isDeal,
+                                        dealInfo = dealInfo,
+                                        isSeasonal = isSeasonal
+                                    )
                                     categoryViewModel.createCategory(category)
                                 }
                             }
                         },
                         onNegativeButtonClick = {
-                           showDialog = false
+                            showDialog = false
 
                         },
                         displayDialog = {
@@ -231,4 +260,10 @@ fun CreateCategory(userEmail:String?, navController: NavHostController, category
             }
         }
     }
+}
+
+
+fun navigateToCategory(navController: NavHostController, userEmail: String, storeName: String) {
+    navController.popBackStack()
+    navController.navigate("category/${userEmail}/${storeName}")
 }
