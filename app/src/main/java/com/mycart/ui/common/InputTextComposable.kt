@@ -24,10 +24,12 @@ fun InputTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    textValue : String  = ""
 ) {
     var text by remember {
         mutableStateOf("")
     }
+    text = textValue
     Column() {
         OutlinedTextField(
             value = text,

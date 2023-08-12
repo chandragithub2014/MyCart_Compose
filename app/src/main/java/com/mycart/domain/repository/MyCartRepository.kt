@@ -27,4 +27,7 @@ interface MyCartRepository {
     suspend fun fetchCategoriesByStore(storeName:String):List<Category>
     suspend fun fetchDealsByStore(storeName:String):List<Category>
     suspend fun fetchSeasonalDetalsByStore(storeName:String):List<Category>
+    suspend fun deleteCategoryByStore(categoryName: String,store: String):Int
+    suspend fun fetchCategoryInfo(categoryName: String,store: String): Category?
+    suspend fun editCategoryInfo(categoryName: String,store: String,isDeal:Boolean,isSeasonal:Boolean,dealInfo:String):Int
 }

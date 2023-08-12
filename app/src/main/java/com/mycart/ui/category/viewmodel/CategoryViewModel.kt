@@ -178,16 +178,13 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 val categoryList = myCartRepository.fetchCategoriesByStore(
                     storeName
                 )
-                if (categoryList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
-                            categoryList,
-                            DataType.CATEGORY
-                        )
+
+                validationEvent.emit(
+                    ValidationState.SuccessList(
+                        categoryList,
+                        DataType.CATEGORY
                     )
-                } else {
-                    validationEvent.emit(ValidationState.Error("No Categories found"))
-                }
+                )
             } catch (e: Exception) {
                 validationEvent.emit(ValidationState.Error("${e.message}"))
             }
@@ -200,16 +197,13 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 val dealList = myCartRepository.fetchDealsByStore(
                     storeName
                 )
-                if (dealList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
-                            dealList,
-                            DataType.DEALS
-                        )
+                validationEvent.emit(
+                    ValidationState.SuccessList(
+                        dealList,
+                        DataType.DEALS
                     )
-                } else {
-                    validationEvent.emit(ValidationState.Error("No Deals found"))
-                }
+                )
+
             } catch (e: Exception) {
                 validationEvent.emit(ValidationState.Error("${e.message}"))
             }
@@ -222,17 +216,62 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 val dealList = myCartRepository.fetchSeasonalDetalsByStore(
                     storeName
                 )
-                if (dealList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
-                            dealList,
-                            DataType.SEASONALDEALS
-                        )
+                validationEvent.emit(
+                    ValidationState.SuccessList(
+                        dealList,
+                        DataType.SEASONALDEALS
                     )
-                } else {
-                    validationEvent.emit(ValidationState.Error("No seasonal specials found"))
-                }
+                )
+
             } catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun deleteSelectedCategory(category: Category){
+        viewModelScope.launch {
+            try{
+               val deletedRows = myCartRepository.deleteCategoryByStore(category.categoryName,category.storeName)
+                if(deletedRows > 0){
+                    fetchCategoryByStore(category.storeName)
+                    fetchDealsByStore(category.storeName)
+                    fetchSeasonalDealsByStore(category.storeName)
+                }else{
+                    validationEvent.emit(ValidationState.Error("No Rows Deleted"))
+                }
+            }catch (e: Exception) {
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun fetchCategoryInfoByCategoryNameAndStoreNumber(categoryName:String,storeName:String){
+        viewModelScope.launch {
+            try{
+                val receivedCategory = myCartRepository.fetchCategoryInfo(categoryName,storeName)
+                receivedCategory?.let {
+                    validationEvent.emit(ValidationState.Success(it))
+                }?:run{
+                    validationEvent.emit(ValidationState.Error("Failed to Fetch Category Info"))
+                }
+
+            }catch (e:Exception){
+                validationEvent.emit(ValidationState.Error("${e.message}"))
+            }
+        }
+    }
+
+    fun updateCategory(categoryName:String,storeName:String,isDeal:Boolean,isSeasonal:Boolean,dealInfo:String){
+        viewModelScope.launch {
+            try{
+                val updatedRows = myCartRepository.editCategoryInfo(categoryName,storeName,isDeal,isSeasonal,dealInfo)
+                if(updatedRows > 0) {
+                    validationEvent.emit(ValidationState.SuccessConfirmation("Edited category"))
+                }else{
+                    validationEvent.emit(ValidationState.Error("No Rows Updated"))
+                }
+            }catch (e:Exception){
                 validationEvent.emit(ValidationState.Error("${e.message}"))
             }
         }

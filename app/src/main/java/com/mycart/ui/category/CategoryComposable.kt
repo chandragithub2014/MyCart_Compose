@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -25,7 +28,9 @@ import org.koin.androidx.compose.get
 import com.mycart.R
 import com.mycart.domain.model.SeasonalCategory
 import com.mycart.domain.model.User
+import com.mycart.ui.category.utils.CategoryUtils
 import com.mycart.ui.common.DataType
+import com.mycart.ui.common.DisplaySimpleAlertDialog
 import com.mycart.ui.common.FloatingActionComposable
 import com.mycart.ui.common.ValidationState
 import com.mycart.ui.login.viewmodel.LoginViewModel
@@ -40,6 +45,11 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
     var categoryList by rememberSaveable { mutableStateOf(listOf<Category>()) }
     var dealList by rememberSaveable { mutableStateOf(listOf<Category>()) }
     var seasonalDeals by rememberSaveable { mutableStateOf(listOf<Category>()) }
+    var isAdmin by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedCategory by remember{ mutableStateOf(Category())}
 
     userEmail?.let {email ->
         categoryViewModel.checkForAdmin(email)
@@ -91,6 +101,8 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
                 is ValidationState.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+
+
                 }
                 else -> {}
             }
@@ -105,6 +117,7 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
             )
         },
                 floatingActionButton = {
+                    isAdmin  = categoryViewModel.isAdminState.value
                  FloatingActionComposable(categoryViewModel.isAdminState.value){
                          navController.popBackStack()
                          navController.navigate("createCategory/${userEmail}")
@@ -132,16 +145,46 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
                          .padding(start = 16.dp, top = 10.dp))
                   }
                   item {
-                  //    CategoryScreen()
-                      CategoryScreen(categoryList)
+                      CategoryScreen(categoryList,isAdmin,onEdit = { categoryName: String, storeName: String ->
+                          navigateToEditCategory(navController,categoryName,storeName)
+                      },){ receivedCategory ->
+                          showDialog = true
+                          selectedCategory = receivedCategory
+                         // categoryViewModel.deleteSelectedCategory(category = selectedCategory)
+                      }
                   }
                   item {
                     //  SeasonalCategoryComposable()
                       SeasonalCategoryRow(seasonalDeals)
                   }
 
+
             }
         }
+    }
+
+    if (showDialog) {
+        DeleteCategory(selectedCategory,categoryViewModel){
+            showDialog = it
+        }
+        /*DisplaySimpleAlertDialog(
+            showDialog = showDialog,
+            title = "Delete Category",
+            description = "Do you want to Delete selected Category ?",
+            positiveButtonTitle = "OK",
+            negativeButtonTitle = "Cancel",
+            onPositiveButtonClick = {
+                // Action to perform when "OK" button is clicked
+                categoryViewModel.deleteSelectedCategory(selectedCategory)
+            },
+            onNegativeButtonClick = {
+                showDialog = false
+
+            },
+            displayDialog = {
+                showDialog = it
+            }
+        )*/
     }
 
 }
@@ -149,8 +192,8 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
 
 
 @Composable
-fun CategoryScreen(categoryList:List<Category>) {
-    CategoryGrid(categoryList)
+fun CategoryScreen(categoryList:List<Category>,isAdmin:Boolean,onEdit:(String,String) -> Unit,onDelete:(Category) -> Unit) {
+    CategoryGrid(categoryList,isAdmin,onEdit,onDelete)
 
 }
 
@@ -188,7 +231,7 @@ fun SeasonalCategoryRow(categories: List<Category>) {
 
 
 @Composable
-fun CategoryGrid(categories: List<Category>) {
+fun CategoryGrid(categories: List<Category>,isAdmin: Boolean,onEdit:(String,String) -> Unit,onDelete:(Category) -> Unit) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -196,7 +239,7 @@ fun CategoryGrid(categories: List<Category>) {
         contentPadding = PaddingValues(16.dp)
     ) {
         items(categories.size) { index ->
-            CategoryItem(category = categories[index])
+            CategoryItem(category = categories[index],isAdmin,onEdit,onDelete)
         }
     }
 
@@ -228,7 +271,7 @@ fun SeasonalCategoryItem(category: Category) {
 }
 
 @Composable
-fun CategoryItem(category: Category) {
+fun CategoryItem(category: Category,isAdmin: Boolean,onEdit:(String,String) -> Unit,onDelete: (Category) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,6 +291,24 @@ fun CategoryItem(category: Category) {
             CategoryName(category.categoryName)
 
         }
+        // Placing an icon at the top-right corner
+        if(isAdmin) {
+            Icon(
+                imageVector = Icons.Default.Edit, // Replace with your desired icon
+                contentDescription = null, // Provide content description if needed
+                modifier = Modifier.align(Alignment.TopEnd).clickable {
+                    onEdit(category.categoryName,category.storeName)
+                }
+            )
+
+            Icon(
+                imageVector = Icons.Default.Delete, // Replace with your desired icon
+                contentDescription = null, // Provide content description if needed
+                modifier = Modifier.align(Alignment.BottomEnd).clickable {
+                    onDelete(category)
+                }
+            )
+        }
     }
 
 }
@@ -263,7 +324,31 @@ fun CategoryImageFromURLWithPlaceHolder(imageUrl: String) {
     FetchImageFromURLWithPlaceHolder(imageUrl = imageUrl)
 }
 
+@Composable
+fun DeleteCategory(selectedCategory: Category,categoryViewModel: CategoryViewModel, canShowDialog:(Boolean) -> Unit){
+    DisplaySimpleAlertDialog(
+        title = "Delete Category",
+        description = "Do you want to Delete selected Category ?",
+        positiveButtonTitle = "OK",
+        negativeButtonTitle = "Cancel",
+        onPositiveButtonClick = {
+            // Action to perform when "OK" button is clicked
+            categoryViewModel.deleteSelectedCategory(selectedCategory)
+            canShowDialog(false)
+        },
+        onNegativeButtonClick = {
+            canShowDialog(false)
 
+        },
+        displayDialog = {
+            canShowDialog(it)
+        }
+    )
+}
+fun navigateToEditCategory(navController: NavHostController, categoryName: String, storeName: String) {
+    navController.popBackStack()
+    navController.navigate("edit/${categoryName}/${storeName}")
+}
 
 
 /*@Composable

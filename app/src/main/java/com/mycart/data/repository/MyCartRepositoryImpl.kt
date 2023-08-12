@@ -31,8 +31,8 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
     }
 
     override suspend fun createCategory(category: Category) = myCartDAO.insertCategory(category)
-    override suspend fun isCategoryAvailable(categoryName:String,storeName:String): Boolean {
-        val category = myCartDAO.isCategoryAvailable(categoryName,storeName)
+    override suspend fun isCategoryAvailable(categoryName: String, storeName: String): Boolean {
+        val category = myCartDAO.isCategoryAvailable(categoryName, storeName)
         return category != null
     }
 
@@ -43,28 +43,45 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
         storeLoc: String,
         storeName: String,
         email: String
-    ) = myCartDAO.fetchDeals(storeLoc,storeName,email)
+    ) = myCartDAO.fetchDeals(storeLoc, storeName, email)
 
     override suspend fun fetchSeasonalDeals(
         storeLoc: String,
         storeName: String,
         email: String
-    ) = myCartDAO.fetchSeasonalDeals(storeLoc,storeName,email)
+    ) = myCartDAO.fetchSeasonalDeals(storeLoc, storeName, email)
 
-    override suspend fun fetchStores()  = myCartDAO.fetchStores()
+    override suspend fun fetchStores() = myCartDAO.fetchStores()
 
-    override suspend fun createStore(store: Store)   = myCartDAO.insertStore(store)
+    override suspend fun createStore(store: Store) = myCartDAO.insertStore(store)
 
     override suspend fun fetchStoreByEmail(email: String) = myCartDAO.fetchStoreByEmail(email)
 
     override suspend fun isStoreAvailable(email: String, store: String): Boolean {
-        val storeInfo = myCartDAO.isStoreAvailable(email,store)
+        val storeInfo = myCartDAO.isStoreAvailable(email, store)
         return storeInfo != null
     }
 
-    override suspend fun fetchCategoriesByStore(storeName: String) = myCartDAO.fetchCategoriesByStore(storeName)
+    override suspend fun fetchCategoriesByStore(storeName: String) =
+        myCartDAO.fetchCategoriesByStore(storeName)
 
-    override suspend fun fetchDealsByStore(storeName: String) = myCartDAO.fetchDealsByStore(storeName)
+    override suspend fun fetchDealsByStore(storeName: String) =
+        myCartDAO.fetchDealsByStore(storeName)
 
-    override suspend fun fetchSeasonalDetalsByStore(storeName: String) = myCartDAO.fetchSeasonalDealsByStore(storeName)
+    override suspend fun fetchSeasonalDetalsByStore(storeName: String) =
+        myCartDAO.fetchSeasonalDealsByStore(storeName)
+
+    override suspend fun deleteCategoryByStore(categoryName: String, store: String) =
+        myCartDAO.deleteCategoryByStore(categoryName, store)
+
+    override suspend fun fetchCategoryInfo(categoryName: String, store: String) =
+        myCartDAO.fetchCategoryInfoByCategoryNameAndStoreName(categoryName, store)
+
+    override suspend fun editCategoryInfo(
+        categoryName: String,
+        store: String,
+        isDeal: Boolean,
+        isSeasonal: Boolean,
+        dealInfo: String
+    ) = myCartDAO.upDateCategory(categoryName, store, isDeal, isSeasonal, dealInfo)
 }

@@ -19,6 +19,7 @@ import androidx.navigation.navArgument
 import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.category.CreateCategory
+import com.mycart.ui.category.EditCategory
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.register.Register
@@ -90,6 +91,20 @@ fun Navigator(navHostController: NavHostController) {
         ) { backStackEntry ->
             backStackEntry.arguments?.getString("emailId")
                 ?.let { email -> StoreList(email, navController = navHostController) }
+        }
+
+        composable(
+            "edit/{categoryName}/{storeName}",
+            arguments = listOf(navArgument("categoryName") { type = NavType.StringType },
+                navArgument("storeName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("categoryName")
+            val store = backStackEntry.arguments?.getString("storeName")
+            category?.let { categoryName ->
+                store?.let { storeName ->
+                    EditCategory(categoryName, storeName, navController = navHostController)
+                }
+            }
         }
     }
 

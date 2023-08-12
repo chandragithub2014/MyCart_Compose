@@ -30,7 +30,7 @@ interface MyCartDAO {
     suspend fun insertCategory(category: Category): Long
 
     @Query("SELECT * from category where categoryName=:categoryName AND storeName = :storeName")
-    suspend fun isCategoryAvailable(categoryName: String,storeName:String): Category?
+    suspend fun isCategoryAvailable(categoryName: String, storeName: String): Category?
 
     @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email")
     suspend fun fetchCategories(
@@ -69,4 +69,23 @@ interface MyCartDAO {
 
     @Query("SELECT * from category where  storeName = :storeName  AND isSeasonal = true")
     suspend fun fetchSeasonalDealsByStore(storeName: String): List<Category>
+
+    @Query("DELETE  from category where categoryName = :categoryName AND storeName = :store")
+    suspend fun deleteCategoryByStore(categoryName: String, store: String): Int
+
+    @Query("SELECT * from category where categoryName = :categoryName AND storeName = :store")
+    suspend fun fetchCategoryInfoByCategoryNameAndStoreName(
+        categoryName: String,
+        store: String
+    ): Category?
+
+    @Query("UPDATE category SET isDeal = :isDeal, isSeasonal = :isSeasonal, dealInfo = :dealInfo WHERE categoryName = :categoryName AND storeName = :storeName")
+    suspend fun upDateCategory(
+        categoryName: String,
+        storeName: String,
+        isDeal: Boolean,
+        isSeasonal: Boolean,
+        dealInfo: String
+    ) :Int
+
 }

@@ -32,11 +32,7 @@ import org.koin.androidx.compose.get
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DealsComposable(deals: List<Category>) {
-   /* val dealList: List<Deal> = categoryViewModel.dealList.value
 
-    LaunchedEffect(Unit) {
-        categoryViewModel.fetchDeals()
-    }*/
     HorizontalPagerWithIndicators(deals)
 }
 
@@ -59,12 +55,15 @@ fun HorizontalPagerWithIndicators(deals: List<Category>) {
                      HorizontalPagerIndicator(
                          pageCount = deals.size,
                          pagerState = pagerState,
-                         modifier = Modifier.align(Alignment.Center).clickable {
-                             val currentPage = pagerState.currentPage
-                             val totalPages = deals.size
-                             val nextPage = if (currentPage < totalPages - 1) currentPage + 1 else 0
-                             coroutineScope.launch { pagerState.animateScrollToPage(nextPage) }
-                         }
+                         modifier = Modifier
+                             .align(Alignment.Center)
+                             .clickable {
+                                 val currentPage = pagerState.currentPage
+                                 val totalPages = deals.size
+                                 val nextPage =
+                                     if (currentPage < totalPages - 1) currentPage + 1 else 0
+                                 coroutineScope.launch { pagerState.animateScrollToPage(nextPage) }
+                             }
 
                      )
                  }
@@ -82,10 +81,26 @@ fun HorizontalPagerWithIndicators(deals: List<Category>) {
 
 @Composable
 fun DisplayDeal(deal: Category) {
-    Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.Red),
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+        .background(Color.Magenta),
             contentAlignment = Alignment.Center,
     ) {
-        FetchImageFromUrl(imageUrl = deal.categoryImage)
+
+            FetchImageFromUrl(imageUrl = deal.categoryImage)
+
+        Text(
+            text = deal.categoryName,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(8.dp)
+                .background(Color.Black)
+                .padding(horizontal = 4.dp, vertical = 2.dp)
+        )
         Text(
             text = deal.dealInfo,
             color = Color.White,
