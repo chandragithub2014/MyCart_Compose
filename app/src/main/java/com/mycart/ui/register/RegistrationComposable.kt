@@ -1,6 +1,5 @@
 package com.mycart.ui.register
 
-import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -8,22 +7,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,10 +21,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.mycart.R
-import com.mycart.domain.model.User
-import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.InputTextField
-import com.mycart.ui.common.ValidationState
+import com.mycart.ui.common.ProgressBar
+import com.mycart.ui.common.Response
 import com.mycart.ui.login.ImageItem
 import com.mycart.ui.register.viewmodel.RegistrationEvent
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
@@ -48,23 +37,34 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
     var isAdmin by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val localFocus = LocalFocusManager.current
+    var showProgress by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(key1 = context) {
-        registrationViewModel.validationEvent.collect { event ->
+        registrationViewModel.receivedResponse.collect { event ->
             when (event) {
-                is ValidationState.Success -> {
-                    val user = event.data as? User
-                    println("Registered User is $user")
-                    navigateToLogin(navController)
+                is Response.Loading -> {
+                  showProgress = true
                 }
-                is ValidationState.Error -> {
+                is Response.Success -> {
+                    showProgress = false
+                    val successResult = event.data as? Boolean
+                    if(successResult == true) {
+                        Toast.makeText(context, "User Registration Successful", Toast.LENGTH_LONG).show()
+                        navigateToLogin(navController)
+                    }
+                }
+                is Response.Error -> {
+                    showProgress = false
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage,Toast.LENGTH_LONG).show()
                 }
-                is ValidationState.SuccessConfirmation ->{
+                is Response.SuccessConfirmation ->{
+                    showProgress = false
                     val successMessage = event.successMessage
                     Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                 }
-                else -> {}
+                else -> {
+                    showProgress = false
+                }
             }
         }
     }
@@ -72,6 +72,10 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
      BackHandler(enabled = true) {
          navigateToLogin(navController)
      }
+    if(showProgress){
+
+        ProgressBar()
+    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter

@@ -1,22 +1,23 @@
 package com.mycart.ui.register.viewmodel
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
-import com.mycart.domain.repository.MyCartRepository
+import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
+import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import com.mycart.ui.common.ValidationState
+import com.mycart.ui.common.Response
 
-class RegistrationViewModel(private val myCartRepository: MyCartRepository) : ViewModel(),
+class RegistrationViewModel(
+    private val myCartAuthenticationRepository: MyCartAuthenticationRepository,
+    private val myCartFireStoreRepository: MyCartFireStoreRepository
+) : ViewModel(),
     LifecycleObserver {
 
     private var _userState = mutableStateOf(User())
@@ -24,7 +25,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
 
     private var _errorState = mutableStateOf(FormValidationResult())
     val errorState: State<FormValidationResult> = _errorState
-    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
+    val receivedResponse = MutableSharedFlow<Response<Any>>()
     fun onAction(registrationEvent: RegistrationEvent) {
         when (registrationEvent) {
             is RegistrationEvent.EmailChanged -> {
@@ -67,7 +68,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
             }
             is RegistrationEvent.AdminChanged -> {
                 _userState.value = _userState.value.copy(
-                    isAdmin = registrationEvent.isAdmin
+                    admin = registrationEvent.isAdmin
                 )
             }
             else -> {
@@ -100,7 +101,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
         _errorState.value = _errorState.value.copy(
             confirmationPasswordStatus = !isConfirmPassValid
         )
-        if (_userState.value.isAdmin) {
+        if (_userState.value.admin) {
             _errorState.value = _errorState.value.copy(
                 storeNameStatus = !isStoreNameValid
             )
@@ -121,7 +122,7 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
                 !(_errorState.value.confirmationPasswordStatus)
 
 
-        if (_userState.value.isAdmin) {
+        if (_userState.value.admin) {
             hasErrorWhenAdmin = (
                     !_errorState.value.emailStatus &&
                             !_errorState.value.passwordStatus &&
@@ -134,67 +135,60 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
         }
 
         viewModelScope.launch {
-            if (_userState.value.isAdmin) {
+            receivedResponse.emit(Response.Loading)
+            if (_userState.value.admin) {
                 if (hasErrorWhenAdmin) {
-                    validationEvent.emit(ValidationState.Success(_userState.value))
-                    insertUser(_userState.value)
+                    val result = myCartAuthenticationRepository.signUp(
+                        _userState.value.userEmail,
+                        _userState.value.userPassword
+                    )
+                    result?.let {
+                        insertUserToFireBase(_userState.value)
+                    } ?: run {
+                        receivedResponse.emit(Response.Error("Registration Failed"))
+                    }
                 }
             } else {
                 if (hasErrorWhenNotAdmin) {
-                    insertUser(_userState.value)
-                    //   validationEvent.emit(ValidationState.Success(_userState.value))
-
+                    val result = myCartAuthenticationRepository.signUp(
+                        _userState.value.userEmail,
+                        _userState.value.userPassword
+                    )
+                    result?.let {
+                        insertUserToFireBase(_userState.value)
+                    } ?: run {
+                        receivedResponse.emit(Response.Error("Registration Failed"))
+                    }
                 }
             }
         }
     }
 
-    private fun insertUser(user: User) {
+    private fun insertUserToFireBase(user: User) {
         viewModelScope.launch {
-            try {
-                val isUserAlreadyExists = myCartRepository.isUserAvailable(user.userEmail)
-                if (isUserAlreadyExists) {
-                    validationEvent.emit(ValidationState.Error("User Already Exists"))
-                } else {
-                    val insertedId = myCartRepository.insert(user)
-                    println("Inserted ID $insertedId")
-                    if (insertedId > 0) {
-                      //  validationEvent.emit(ValidationState.Success(_userState.value))
-                        if (_userState.value.isAdmin) {
-                            val userInfo = _userState.value
-                            createStore(userInfo)
-                        }else{
-                            validationEvent.emit(ValidationState.Success(_userState.value))
+            when (val result = myCartFireStoreRepository.addUserToFireStore(user)) {
+                is Response.Success -> {
+                    val successResult = result.data as? Boolean
+                    if (successResult == true) {
+                        if (user.admin) {
+                            createStoreInFireStore(user)
+                        } else {
+                            receivedResponse.emit(result)
                         }
                     } else {
-                        validationEvent.emit(ValidationState.Error("Insertion Failed"))
+                        receivedResponse.emit(result)
                     }
                 }
-            } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("Insertion Failed"))
-                println("Insert failed:: ${e.printStackTrace()}")
+                else -> {
+                    receivedResponse.emit(result)
+                }
             }
+
+
         }
     }
 
-    private fun fetchUsers() {
-        viewModelScope.launch {
-            try {
-                myCartRepository.getAllUsers().collect { users ->
-                    // Print the notes in the ViewModel
-                    users.forEach { user ->
-                        println("userInfo ::::$user")
-                    }
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-
-    private fun createStore(user: User) {
+    private fun createStoreInFireStore(user: User) {
         viewModelScope.launch {
             try {
                 val store = Store(
@@ -203,24 +197,12 @@ class RegistrationViewModel(private val myCartRepository: MyCartRepository) : Vi
                     ownerEmail = user.userEmail,
                     pinCode = user.userPinCode
                 )
-                val isStoreExists =
-                    myCartRepository.isStoreAvailable(store.ownerEmail, store.storeName)
-                if (isStoreExists) {
-                    validationEvent.emit(ValidationState.Error("Store Already Exists"))
-                } else {
-                    val insertedId = myCartRepository.createStore(store)
-                    if (insertedId > 0) {
-                        validationEvent.emit(ValidationState.SuccessConfirmation("Store Registration Successful"))
-                        validationEvent.emit(ValidationState.Success(user))
-                    } else {
-                        validationEvent.emit(ValidationState.Error("Store Creation failed"))
-                    }
-                }
+                val result = myCartFireStoreRepository.createStore(store)
+                receivedResponse.emit(result)
+
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                receivedResponse.emit(Response.Error("Registration Failed"))
             }
         }
     }
-
-
 }

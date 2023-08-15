@@ -23,15 +23,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.mycart.R
 import com.mycart.domain.model.User
-import com.mycart.ui.common.ValidationState
+import com.mycart.ui.common.ProgressBar
+import com.mycart.ui.common.Response
 import com.mycart.ui.login.viewmodel.LoginViewModel
-import com.mycart.ui.register.viewmodel.RegistrationViewModel
 import org.koin.androidx.compose.get
 
 
@@ -40,25 +37,32 @@ fun LoginScreen(navController: NavHostController, loginViewModel: LoginViewModel
     var userEmail by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
-
+    var showProgress by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = context) {
-        loginViewModel.validationEvent.collect { event ->
+        loginViewModel.responseEvent.collect { event ->
             when (event) {
-                is ValidationState.Success -> {
+                is Response.Success -> {
                     val user = event.data as? User
                     println("Login User is $user")
                     Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
                     userEmail = ""
                     password = ""
                     navController.navigate("store/${user?.userEmail}")
+                    showProgress = false
 
                 }
-                is ValidationState.Error -> {
+                is Response.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    showProgress = false
                 }
-                else -> {}
+                is  Response.Loading ->{
+                    showProgress = true
+                }
+                else -> {
+                    showProgress = false
+                }
             }
         }
     }
@@ -69,6 +73,9 @@ fun LoginScreen(navController: NavHostController, loginViewModel: LoginViewModel
         password = ""
        activity?.finish()
    }
+    if(showProgress){
+        ProgressBar()
+    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

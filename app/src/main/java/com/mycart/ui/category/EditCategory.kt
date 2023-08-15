@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Category
-import com.mycart.domain.model.User
 import com.mycart.ui.category.utils.CategoryUtils
 import com.mycart.ui.category.viewmodel.CategoryViewModel
+import com.mycart.ui.common.AppScaffold
 import com.mycart.ui.common.InputTextField
-import com.mycart.ui.common.ValidationState
+import com.mycart.ui.common.Response
 import com.mycart.ui.login.ImageItem
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 import org.koin.androidx.compose.get
@@ -51,13 +51,13 @@ fun EditCategory(
     categoryViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(selectedCategory, store)
 
     BackHandler(true) {
-        navigateToCategory(navController,category.userEmail,category.storeName)
+        navigateToCategory(navController, category.userEmail, category.storeName)
     }
     val context = LocalContext.current
     LaunchedEffect(key1 = context) {
-        categoryViewModel.validationEvent.collect { event ->
+        categoryViewModel.responseEvent.collect { event ->
             when (event) {
-                is ValidationState.Success -> {
+                is Response.Success -> {
                     when (val data: Any = event.data) {
                         is Category -> {
                             category = data
@@ -72,12 +72,12 @@ fun EditCategory(
                         }
                     }
                 }
-                is ValidationState.SuccessConfirmation -> {
+                is Response.SuccessConfirmation -> {
                     val successMessage = event.successMessage
                     Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
-                    navigateToCategory(navController,category.userEmail,category.storeName)
+                    navigateToCategory(navController, category.userEmail, category.storeName)
                 }
-                is ValidationState.Error -> {
+                is Response.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
 
@@ -87,13 +87,15 @@ fun EditCategory(
             }
         }
     }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Edit Category") }
-            )
-        }
-    ) {
+    AppScaffold(
+        title = "Edit Category",
+        onLogoutClick = {
+            // Handle logout action
+        },
+
+        )
+
+    {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
@@ -225,7 +227,11 @@ fun EditCategory(
 
                     OutlinedButton(
                         onClick = {
-                            navigateToCategory(navController,category.userEmail,category.storeName)
+                            navigateToCategory(
+                                navController,
+                                category.userEmail,
+                                category.storeName
+                            )
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                         modifier = Modifier

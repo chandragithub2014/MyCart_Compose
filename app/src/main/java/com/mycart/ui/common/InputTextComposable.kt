@@ -29,7 +29,9 @@ fun InputTextField(
     var text by remember {
         mutableStateOf("")
     }
-    text = textValue
+    if(!TextUtils.isEmpty(textValue)) {
+        text = textValue
+    }
     Column() {
         OutlinedTextField(
             value = text,

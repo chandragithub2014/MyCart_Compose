@@ -1,10 +1,15 @@
 package com.mycart.data.di
 
 import androidx.room.Room
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mycart.data.database.MyCartDataBase
 import com.mycart.data.mock.MockAPI
 import com.mycart.data.repository.MyCartRepositoryImpl
+import com.mycart.data.repository.firebase.MyCartAuthenticationRepositoryImpl
+import com.mycart.data.repository.firebase.MyCartFireStoreRepositoryImpl
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
+import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
@@ -23,9 +28,12 @@ val appModule = module {
     }
     single { get<MyCartDataBase>().myCartDao() }
     single { MockAPI() }
+    single { FirebaseFirestore.getInstance() }
     single<MyCartRepository> { MyCartRepositoryImpl(get(), get()) }
-    viewModel { CategoryViewModel(get()) }
-    viewModel { RegistrationViewModel(get()) }
+    single<MyCartAuthenticationRepository> { MyCartAuthenticationRepositoryImpl() }
+    single<MyCartFireStoreRepository>{ MyCartFireStoreRepositoryImpl(get()) }
+    viewModel { CategoryViewModel(get(),get()) }
+    viewModel { RegistrationViewModel(get(),get()) }
     viewModel{LoginViewModel(get())}
-    viewModel{StoreViewModel(get())}
+    viewModel{StoreViewModel(get(),get())}
 }

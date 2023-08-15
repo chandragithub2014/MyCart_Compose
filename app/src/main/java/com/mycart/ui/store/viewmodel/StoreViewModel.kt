@@ -7,14 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Store
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.common.DataType
-import com.mycart.ui.common.ValidationState
+import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
 
-class StoreViewModel(private val myCartRepository: MyCartRepository) : ViewModel(),
+class StoreViewModel(private val myCartRepository: MyCartRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository) : ViewModel(),
     LifecycleObserver {
 
     private val _storeList = mutableStateOf<List<Store>>(emptyList())
@@ -23,24 +24,73 @@ class StoreViewModel(private val myCartRepository: MyCartRepository) : ViewModel
     private val _store = mutableStateOf(Store())
     val store:State<Store> = _store
 
-    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
+    val responseEvent = MutableSharedFlow<Response<Any>>()
+
+   fun fetchStoresFromFireStore(){
+       viewModelScope.launch {
+           try{
+               responseEvent.emit((Response.Loading))
+             val storeList = myCartFireStoreRepository.fetchAllStores()
+               println("StoreList is $storeList")
+               if(storeList.isNotEmpty()){
+                   responseEvent.emit(Response.SuccessList( storeList,
+                       DataType.STORE))
+               }else{
+                   responseEvent.emit(Response.SuccessConfirmation("Store List Empty"))
+               }
+           }catch (e: Exception){
+               responseEvent.emit(Response.Error("${e.message}"))
+           }
+       }
+   }
+
+    fun fetchStoreByEmailFromFireStore(email:String){
+        viewModelScope.launch {
+            try{
+                responseEvent.emit((Response.Loading))
+                val storeInfo = myCartFireStoreRepository.fetchStoreByEmail(email)
+                if (storeInfo != null) {
+                    _store.value = storeInfo
+                    responseEvent.emit(Response.Success(storeInfo))
+                }
+            }catch (e:Exception){
+                responseEvent.emit(Response.Error("${e.message}"))
+            }
+        }
+    }
+    fun checkForAdminFromFireStore(email: String) {
+        viewModelScope.launch {
+            try {
+                responseEvent.emit((Response.Loading))
+                val user = myCartFireStoreRepository.checkForAdmin(email)
+                user?.let { userInfo ->
+                    responseEvent.emit(Response.Success(userInfo))
+                } ?: run {
+                    responseEvent.emit(Response.Error("Not an Admin"))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     fun fetchStores() {
         viewModelScope.launch {
             try {
                 val storeList = myCartRepository.fetchStores()
                 if (storeList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
+                    responseEvent.emit(
+                        Response.SuccessList(
                             storeList,
                             DataType.STORE
                         )
                     )
                 } else {
-                    validationEvent.emit(ValidationState.Error("No Stores found"))
+                    responseEvent.emit(Response.Error("No Stores found"))
                 }
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -51,10 +101,10 @@ class StoreViewModel(private val myCartRepository: MyCartRepository) : ViewModel
                val storeInfo = myCartRepository.fetchStoreByEmail(email)
                 if (storeInfo != null) {
                     _store.value = storeInfo
-                    validationEvent.emit(ValidationState.Success(storeInfo))
+                    responseEvent.emit(Response.Success(storeInfo))
                 }
             }catch (e:Exception){
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -65,9 +115,9 @@ class StoreViewModel(private val myCartRepository: MyCartRepository) : ViewModel
             try {
                 val user = myCartRepository.fetchUserInfoByEmail(email)
                 user?.let { userInfo ->
-                    validationEvent.emit(ValidationState.Success(userInfo))
+                    responseEvent.emit(Response.Success(userInfo))
                 } ?: run {
-                    validationEvent.emit(ValidationState.Error("Not an Admin"))
+                    responseEvent.emit(Response.Error("Not an Admin"))
                 }
 
             } catch (e: Exception) {

@@ -2,7 +2,6 @@ package com.mycart.ui.category
 
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -25,15 +23,8 @@ import androidx.navigation.NavHostController
 import com.mycart.domain.model.Category
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
-import com.mycart.R
-import com.mycart.domain.model.SeasonalCategory
 import com.mycart.domain.model.User
-import com.mycart.ui.category.utils.CategoryUtils
-import com.mycart.ui.common.DataType
-import com.mycart.ui.common.DisplaySimpleAlertDialog
-import com.mycart.ui.common.FloatingActionComposable
-import com.mycart.ui.common.ValidationState
-import com.mycart.ui.login.viewmodel.LoginViewModel
+import com.mycart.ui.common.*
 import com.mycart.ui.utils.DisplayLabel
 import com.mycart.ui.utils.DisplayOutLinedLabel
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
@@ -52,19 +43,19 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
     var selectedCategory by remember{ mutableStateOf(Category())}
 
     userEmail?.let {email ->
-        categoryViewModel.checkForAdmin(email)
+        categoryViewModel.checkForAdminFromFireStore(email)
     }
 
     val context = LocalContext.current
     LaunchedEffect(key1 = context) {
-        categoryViewModel.validationEvent.collect { event ->
+        categoryViewModel.responseEvent.collect { event ->
             when (event) {
-                is ValidationState.Success -> {
+                is Response.Success -> {
                    // Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
                     when(val data : Any = event.data){
                         is User -> {
                             val user: User = data
-                            if(user.isAdmin){
+                            if(user.admin){
                                 categoryViewModel.fetchCategoryForAdmin(user)
                                 categoryViewModel.fetchDealsForAdmin(user)
                                 categoryViewModel.fetchSeasonalDealsForAdmin(user)
@@ -82,7 +73,7 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
                     }
                 }
 
-                is ValidationState.SuccessList -> {
+                is Response.SuccessList -> {
                     when (event.dataType) {
                         DataType.CATEGORY -> {
                             categoryList = event.dataList.filterIsInstance<Category>()
@@ -98,7 +89,7 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
                     }
 
                 }
-                is ValidationState.Error -> {
+                is Response.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
 
@@ -109,23 +100,22 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
         }
     }
 
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "My Cart") }
-            )
+    AppScaffold(
+        title = "Category",
+        onLogoutClick = {
+            // Handle logout action
         },
-                floatingActionButton = {
-                    isAdmin  = categoryViewModel.isAdminState.value
-                 FloatingActionComposable(categoryViewModel.isAdminState.value){
-                         navController.popBackStack()
-                         navController.navigate("createCategory/${userEmail}")
-
-                 }
+        floatingActionButton = {
+            isAdmin = categoryViewModel.isAdminState.value
+            FloatingActionComposable(categoryViewModel.isAdminState.value) {
+                navController.popBackStack()
+                navController.navigate("createCategory/${userEmail}")
+            }
         },
         floatingActionButtonPosition = FabPosition.End
-    ) {
+    )
+
+   {
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

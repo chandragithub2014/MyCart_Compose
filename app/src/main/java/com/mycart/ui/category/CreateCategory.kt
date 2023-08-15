@@ -1,12 +1,9 @@
 package com.mycart.ui.category
 
-import android.graphics.fonts.FontStyle
-import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -18,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -27,7 +23,6 @@ import com.mycart.domain.model.User
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.*
 import com.mycart.ui.login.ImageItem
-import com.mycart.ui.register.viewmodel.RegistrationEvent
 import org.koin.androidx.compose.get
 import com.mycart.ui.category.utils.*
 import com.mycart.ui.category.utils.CategoryUtils.fetchCategoryImageUrlByCategory
@@ -61,12 +56,12 @@ fun CreateCategory(
 
     LaunchedEffect(key1 = context) {
         userEmail?.let { email ->
-            categoryViewModel.checkForAdmin(email)
+            categoryViewModel.checkForAdminFromFireStore(email)
 
         }
-        categoryViewModel.validationEvent.collect { event ->
+        categoryViewModel.responseEvent.collect { event ->
             when (event) {
-                is ValidationState.Success -> {
+                is Response.Success -> {
                     when (val data: Any = event.data) {
                         is User -> {
                             val user: User = data
@@ -80,12 +75,12 @@ fun CreateCategory(
                     }
 
                 }
-                is ValidationState.Error -> {
+                is Response.Error -> {
                     val errorMessage = event.errorMessage
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 }
 
-                is ValidationState.SuccessConfirmation -> {
+                is Response.SuccessConfirmation -> {
                     val successMessage = event.successMessage
                     Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                     userEmail?.let { email ->
@@ -104,14 +99,15 @@ fun CreateCategory(
             navigateToCategory(navController, email, storeName)
         }
     }
+    AppScaffold(
+        title = "Create Category",
+        onLogoutClick = {
+            // Handle logout action
+        },
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Create Category") }
-            )
-        }
-    ) {
+        )
+
+    {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
@@ -266,7 +262,7 @@ fun CreateCategory(
 fun navigateToCategory(navController: NavHostController, userEmail: String, storeName: String) {
     navController.popBackStack()
     userEmail.let { email ->
-        storeName.let {store ->
+        storeName.let { store ->
             navController.navigate("category/${email}/${store}")
         }
     }

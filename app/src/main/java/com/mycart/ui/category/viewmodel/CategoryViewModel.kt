@@ -9,14 +9,14 @@ import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.common.DataType
-import com.mycart.ui.common.ValidationState
-import com.mycart.ui.register.viewmodel.FormValidationResult
+import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewModel(),
+class CategoryViewModel(private val myCartRepository: MyCartRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository) : ViewModel(),
     LifecycleObserver {
     private val _categoryList = mutableStateOf<List<Category>>(emptyList())
     val categoryList: State<List<Category>> = _categoryList
@@ -58,18 +58,36 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
         }
     }
 
-    val validationEvent = MutableSharedFlow<ValidationState<Any>>()
+    val responseEvent = MutableSharedFlow<Response<Any>>()
     private var _isAdminState = mutableStateOf(false)
     val isAdminState: State<Boolean> = _isAdminState
+
+    fun checkForAdminFromFireStore(email: String) {
+        viewModelScope.launch {
+            try {
+                responseEvent.emit((Response.Loading))
+                val user = myCartFireStoreRepository.checkForAdmin(email)
+                user?.let { userInfo ->
+                    _isAdminState.value = userInfo.admin
+                    responseEvent.emit(Response.Success(userInfo))
+                } ?: run {
+                    responseEvent.emit(Response.Error("Not an Admin"))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     fun checkForAdmin(email: String) {
         viewModelScope.launch {
             try {
                 val user = myCartRepository.fetchUserInfoByEmail(email)
                 user?.let { userInfo ->
-                    _isAdminState.value = userInfo.isAdmin
-                    validationEvent.emit(ValidationState.Success(userInfo))
+                    _isAdminState.value = userInfo.admin
+                    responseEvent.emit(Response.Success(userInfo))
                 } ?: run {
-                    validationEvent.emit(ValidationState.Error("Not an Admin"))
+                    responseEvent.emit(Response.Error("Not an Admin"))
                 }
 
             } catch (e: Exception) {
@@ -84,17 +102,17 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
             try {
                 val isCategoryExists = myCartRepository.isCategoryAvailable(category.categoryName,category.storeName)
                 if (isCategoryExists) {
-                    validationEvent.emit(ValidationState.Error("Category Already Exists"))
+                    responseEvent.emit(Response.Error("Category Already Exists"))
                 } else {
                     val insertedId = myCartRepository.createCategory(category)
                     if (insertedId > 0) {
-                        validationEvent.emit(ValidationState.SuccessConfirmation("Category Created"))
+                        responseEvent.emit(Response.SuccessConfirmation("Category Created"))
                     } else {
-                        validationEvent.emit(ValidationState.Error("Category Creation failed"))
+                        responseEvent.emit(Response.Error("Category Creation failed"))
                     }
                 }
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -108,17 +126,17 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                     user.userEmail
                 )
                 if (categoryList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
+                    responseEvent.emit(
+                        Response.SuccessList(
                             categoryList,
                             DataType.CATEGORY
                         )
                     )
                 } else {
-                    validationEvent.emit(ValidationState.Error("No Categories found"))
+                    responseEvent.emit(Response.Error("No Categories found"))
                 }
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -132,17 +150,17 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                     user.userEmail
                 )
                 if (dealList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
+                    responseEvent.emit(
+                        Response.SuccessList(
                             dealList,
                             DataType.DEALS
                         )
                     )
                 } else {
-                    validationEvent.emit(ValidationState.Error("No Deals found"))
+                    responseEvent.emit(Response.Error("No Deals found"))
                 }
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -156,17 +174,17 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                     user.userEmail
                 )
                 if (dealList.isNotEmpty()) {
-                    validationEvent.emit(
-                        ValidationState.SuccessList(
+                    responseEvent.emit(
+                        Response.SuccessList(
                             dealList,
                             DataType.SEASONALDEALS
                         )
                     )
                 } else {
-                    validationEvent.emit(ValidationState.Error("No seasonal specials found"))
+                    responseEvent.emit(Response.Error("No seasonal specials found"))
                 }
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -179,14 +197,14 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                     storeName
                 )
 
-                validationEvent.emit(
-                    ValidationState.SuccessList(
+                responseEvent.emit(
+                    Response.SuccessList(
                         categoryList,
                         DataType.CATEGORY
                     )
                 )
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -197,15 +215,15 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 val dealList = myCartRepository.fetchDealsByStore(
                     storeName
                 )
-                validationEvent.emit(
-                    ValidationState.SuccessList(
+                responseEvent.emit(
+                    Response.SuccessList(
                         dealList,
                         DataType.DEALS
                     )
                 )
 
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -216,15 +234,15 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                 val dealList = myCartRepository.fetchSeasonalDetalsByStore(
                     storeName
                 )
-                validationEvent.emit(
-                    ValidationState.SuccessList(
+                responseEvent.emit(
+                    Response.SuccessList(
                         dealList,
                         DataType.SEASONALDEALS
                     )
                 )
 
             } catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -238,10 +256,10 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
                     fetchDealsByStore(category.storeName)
                     fetchSeasonalDealsByStore(category.storeName)
                 }else{
-                    validationEvent.emit(ValidationState.Error("No Rows Deleted"))
+                    responseEvent.emit(Response.Error("No Rows Deleted"))
                 }
             }catch (e: Exception) {
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -251,13 +269,13 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
             try{
                 val receivedCategory = myCartRepository.fetchCategoryInfo(categoryName,storeName)
                 receivedCategory?.let {
-                    validationEvent.emit(ValidationState.Success(it))
+                    responseEvent.emit(Response.Success(it))
                 }?:run{
-                    validationEvent.emit(ValidationState.Error("Failed to Fetch Category Info"))
+                    responseEvent.emit(Response.Error("Failed to Fetch Category Info"))
                 }
 
             }catch (e:Exception){
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }
@@ -267,12 +285,12 @@ class CategoryViewModel(private val myCartRepository: MyCartRepository) : ViewMo
             try{
                 val updatedRows = myCartRepository.editCategoryInfo(categoryName,storeName,isDeal,isSeasonal,dealInfo)
                 if(updatedRows > 0) {
-                    validationEvent.emit(ValidationState.SuccessConfirmation("Edited category"))
+                    responseEvent.emit(Response.SuccessConfirmation("Edited category"))
                 }else{
-                    validationEvent.emit(ValidationState.Error("No Rows Updated"))
+                    responseEvent.emit(Response.Error("No Rows Updated"))
                 }
             }catch (e:Exception){
-                validationEvent.emit(ValidationState.Error("${e.message}"))
+                responseEvent.emit(Response.Error("${e.message}"))
             }
         }
     }

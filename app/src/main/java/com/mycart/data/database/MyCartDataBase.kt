@@ -6,7 +6,7 @@ import com.mycart.domain.model.Category
 import com.mycart.domain.model.User
 import com.mycart.domain.model.Store
 
-@Database(entities = [User::class,Category::class,Store::class], version = 6)
+@Database(entities = [User::class,Category::class,Store::class], version = 7)
 abstract class MyCartDataBase : RoomDatabase() {
     abstract fun myCartDao(): MyCartDAO
 }
