@@ -32,10 +32,23 @@ class MyCartAuthenticationRepositoryImpl() : MyCartAuthenticationRepository{
            null
     }
 
+    override suspend fun isUserLoggedIn(): FirebaseUser?  = auth.currentUser
 
 
-   override fun signOut() {
-        TODO("Not yet implemented")
+    /* suspend fun override fun isUserLoggedIn(): FirebaseUser?  = try{
+          auth.currentUser
+      }catch (e: Exception) {
+          null
+      }
+  */
+
+    override fun signOut() : Boolean {
+        auth.signOut()
+        auth.currentUser?.let {
+            return false
+        }?:run{
+            return true
+        }
     }
 
     private fun FirebaseUser?.toUser(): User? {

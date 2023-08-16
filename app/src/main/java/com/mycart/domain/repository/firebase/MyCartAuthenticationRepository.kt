@@ -8,5 +8,6 @@ interface MyCartAuthenticationRepository {
     fun getCurrentUser(): Flow<User?>
     suspend fun signIn(email: String, password: String): FirebaseUser?
     suspend fun signUp(email: String, password: String): FirebaseUser?
-    fun signOut()
+    suspend fun isUserLoggedIn():FirebaseUser?
+    fun signOut() : Boolean
 }

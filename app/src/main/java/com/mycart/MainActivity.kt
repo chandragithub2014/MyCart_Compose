@@ -20,6 +20,7 @@ import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.category.EditCategory
+import com.mycart.ui.launcher.LaunchApp
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.register.Register
@@ -50,18 +51,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Navigator(navHostController: NavHostController) {
-    NavHost(navController = navHostController, startDestination = "loginScreen") {
+    NavHost(navController = navHostController, startDestination = "appLauncherScreen") {
+        composable("appLauncherScreen") { LaunchApp(navController = navHostController) }
         composable("loginScreen") { LoginScreen(navController = navHostController) }
         composable("registrationScreen") { Register(navController = navHostController) }
         composable("forgotPasswordScreen") { ForgotPassword(navHostController) }
-        //composable("category"){ Category() }
-        /* composable(
-             "category/{emailId}",
-             arguments = listOf(navArgument("emailId") { type = NavType.StringType })
-         ) { backStackEntry ->
-             backStackEntry.arguments?.getString("emailId")
-                 ?.let { email -> Category(email, navController = navHostController) }
-         }*/
+        composable(
+            "store/{emailId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getString("emailId")
+                ?.let { email -> StoreList(email, navController = navHostController) }
+        }
 
         composable(
             "createCategory/{emailId}",
@@ -85,13 +86,7 @@ fun Navigator(navHostController: NavHostController) {
             }
         }
 
-        composable(
-            "store/{emailId}",
-            arguments = listOf(navArgument("emailId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            backStackEntry.arguments?.getString("emailId")
-                ?.let { email -> StoreList(email, navController = navHostController) }
-        }
+
 
         composable(
             "edit/{categoryName}/{storeName}",

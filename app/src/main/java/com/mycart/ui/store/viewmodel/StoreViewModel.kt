@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Store
 import com.mycart.domain.repository.MyCartRepository
+import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 import java.lang.Exception
 
 
-class StoreViewModel(private val myCartRepository: MyCartRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository) : ViewModel(),
+class StoreViewModel(private val myCartRepository: MyCartRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository,private val myCartAuthenticationRepository: MyCartAuthenticationRepository) : ViewModel(),
     LifecycleObserver {
 
     private val _storeList = mutableStateOf<List<Store>>(emptyList())
@@ -71,6 +72,25 @@ class StoreViewModel(private val myCartRepository: MyCartRepository,private val 
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                responseEvent.emit(Response.Error(e.message.toString()))
+            }
+        }
+    }
+
+    fun signOut(){
+        viewModelScope.launch {
+            try {
+                responseEvent.emit((Response.Loading))
+                val isSignOut = myCartAuthenticationRepository.signOut()
+                if(isSignOut){
+                    responseEvent.emit(Response.SignOut)
+                }else{
+                    responseEvent.emit(Response.SuccessConfirmation("Logout Failed"))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                responseEvent.emit(Response.SuccessConfirmation(e.message.toString()))
             }
         }
     }

@@ -19,12 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.mycart.domain.model.Category
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
-import com.mycart.ui.common.AppScaffold
-import com.mycart.ui.common.DataType
-import com.mycart.ui.common.ProgressBar
-import com.mycart.ui.common.Response
+import com.mycart.ui.common.*
 import com.mycart.ui.store.viewmodel.StoreViewModel
 import com.mycart.ui.utils.FetchImageFromDrawable
 import org.koin.androidx.compose.get
@@ -39,6 +37,7 @@ fun StoreList(
 
     var storeList by rememberSaveable { mutableStateOf(listOf<Store>()) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
     userEmail?.let { email ->
         storeViewModel.checkForAdminFromFireStore(email)
@@ -49,7 +48,6 @@ fun StoreList(
         storeViewModel.responseEvent.collect { event ->
             when (event) {
                 is Response.Success -> {
-                    // Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
                     when (val data: Any = event.data) {
                         is User -> {
                             val user: User = data
@@ -67,6 +65,8 @@ fun StoreList(
                             storeList = listOf(store)
                             showProgress = false
                         }
+
+
 
                         else -> {
                             showProgress = false
@@ -92,6 +92,17 @@ fun StoreList(
                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                     showProgress = false
                 }
+                is Response.SignOut -> {
+                    navController.navigate("loginScreen"){
+                        popUpTo("loginScreen") {
+                            inclusive = true
+                        }
+                    }
+
+                }
+                is Response.Loading -> {
+                    showProgress = true
+                }
                 else -> {}
             }
         }
@@ -100,7 +111,7 @@ fun StoreList(
     AppScaffold(
         title = "Stores",
         onLogoutClick = {
-            // Handle logout action
+            showDialog = true
         }
     ) {
         if (showProgress) {
@@ -120,6 +131,27 @@ fun StoreList(
                         DisplayStore(store = store, email, navController)
                     }
                 }
+            }
+
+            if (showDialog) {
+                DisplaySimpleAlertDialog(
+                    showDialog = showDialog,
+                    title = "My Cart",
+                    description = "Do you want to Logout ?",
+                    positiveButtonTitle = "OK",
+                    negativeButtonTitle = "Cancel",
+                    onPositiveButtonClick = {
+                       storeViewModel.signOut()
+
+                    },
+                    onNegativeButtonClick = {
+                        showDialog = false
+
+                    },
+                    displayDialog = {
+                        showDialog = it
+                    }
+                )
             }
         }
     }

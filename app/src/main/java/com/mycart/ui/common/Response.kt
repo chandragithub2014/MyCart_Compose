@@ -8,6 +8,8 @@ sealed class Response<out T> {
     data class SuccessList<out T>(val dataList: List<T>,val dataType: DataType) : Response<T>()
     data class Error(val errorMessage:String):Response<Nothing>()
     data class SuccessConfirmation(val successMessage:String):Response<Nothing>()
+    object SignOut : Response<Nothing>()
+    object Login: Response<Nothing>()
 
 }
 
