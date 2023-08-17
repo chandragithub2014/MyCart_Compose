@@ -12,138 +12,99 @@ import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
 
-class StoreViewModel(private val myCartRepository: MyCartRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository,private val myCartAuthenticationRepository: MyCartAuthenticationRepository) : ViewModel(),
+class StoreViewModel(
+    private val myCartFireStoreRepository: MyCartFireStoreRepository,
+    private val myCartAuthenticationRepository: MyCartAuthenticationRepository
+) : ViewModel(),
     LifecycleObserver {
+
+    private val _state = MutableStateFlow<Response<Any>>(Response.Loading)
+
+    val state = _state.asStateFlow()
 
     private val _storeList = mutableStateOf<List<Store>>(emptyList())
     val storeList: State<List<Store>> = _storeList
 
     private val _store = mutableStateOf(Store())
-    val store:State<Store> = _store
+    val store: State<Store> = _store
 
-    val responseEvent = MutableSharedFlow<Response<Any>>()
 
-   fun fetchStoresFromFireStore(){
-       viewModelScope.launch {
-           try{
-               responseEvent.emit((Response.Loading))
-             val storeList = myCartFireStoreRepository.fetchAllStores()
-               println("StoreList is $storeList")
-               if(storeList.isNotEmpty()){
-                   responseEvent.emit(Response.SuccessList( storeList,
-                       DataType.STORE))
-               }else{
-                   responseEvent.emit(Response.SuccessConfirmation("Store List Empty"))
-               }
-           }catch (e: Exception){
-               responseEvent.emit(Response.Error("${e.message}"))
-           }
-       }
-   }
-
-    fun fetchStoreByEmailFromFireStore(email:String){
+    fun fetchStoresFromFireStore() {
         viewModelScope.launch {
-            try{
-                responseEvent.emit((Response.Loading))
-                val storeInfo = myCartFireStoreRepository.fetchStoreByEmail(email)
-                if (storeInfo != null) {
-                    _store.value = storeInfo
-                    responseEvent.emit(Response.Success(storeInfo))
+            try {
+                val storeList = myCartFireStoreRepository.fetchAllStores()
+                println("StoreList is $storeList")
+                if (storeList.isNotEmpty()) {
+
+                    _state.value = Response.SuccessList(
+                        storeList,
+                        DataType.STORE
+                    )
+                } else {
+                    _state.value = Response.SuccessConfirmation("Store List Empty")
                 }
-            }catch (e:Exception){
-                responseEvent.emit(Response.Error("${e.message}"))
+            } catch (e: Exception) {
+                _state.value = Response.Error("${e.message}")
             }
         }
     }
+
+    fun fetchStoreByEmailFromFireStore(email: String) {
+        viewModelScope.launch {
+            try {
+                _state.value = Response.Loading
+                val storeInfo = myCartFireStoreRepository.fetchStoreByEmail(email)
+                if (storeInfo != null) {
+                    _state.value = Response.Success(storeInfo)
+                }
+            } catch (e: Exception) {
+                _state.value = Response.Error("${e.message}")
+            }
+        }
+    }
+
     fun checkForAdminFromFireStore(email: String) {
         viewModelScope.launch {
             try {
-                responseEvent.emit((Response.Loading))
+
+                _state.value = Response.Loading
                 val user = myCartFireStoreRepository.checkForAdmin(email)
                 user?.let { userInfo ->
-                    responseEvent.emit(Response.Success(userInfo))
+                    _state.value = Response.Success(userInfo)
                 } ?: run {
-                    responseEvent.emit(Response.Error("Not an Admin"))
+                    _state.value = Response.Error("Not an Admin")
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                responseEvent.emit(Response.Error(e.message.toString()))
+                _state.value = Response.Error("${e.message}")
             }
         }
     }
 
-    fun signOut(){
+    fun signOut() {
         viewModelScope.launch {
             try {
-                responseEvent.emit((Response.Loading))
+                _state.value = Response.Loading
                 val isSignOut = myCartAuthenticationRepository.signOut()
-                if(isSignOut){
-                    responseEvent.emit(Response.SignOut)
-                }else{
-                    responseEvent.emit(Response.SuccessConfirmation("Logout Failed"))
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                responseEvent.emit(Response.SuccessConfirmation(e.message.toString()))
-            }
-        }
-    }
-
-    fun fetchStores() {
-        viewModelScope.launch {
-            try {
-                val storeList = myCartRepository.fetchStores()
-                if (storeList.isNotEmpty()) {
-                    responseEvent.emit(
-                        Response.SuccessList(
-                            storeList,
-                            DataType.STORE
-                        )
-                    )
+                if (isSignOut) {
+                    _state.value = Response.SignOut
                 } else {
-                    responseEvent.emit(Response.Error("No Stores found"))
-                }
-            } catch (e: Exception) {
-                responseEvent.emit(Response.Error("${e.message}"))
-            }
-        }
-    }
-
-    fun fetchStoreByEmail(email:String){
-        viewModelScope.launch {
-            try{
-               val storeInfo = myCartRepository.fetchStoreByEmail(email)
-                if (storeInfo != null) {
-                    _store.value = storeInfo
-                    responseEvent.emit(Response.Success(storeInfo))
-                }
-            }catch (e:Exception){
-                responseEvent.emit(Response.Error("${e.message}"))
-            }
-        }
-    }
-
-
-    fun checkForAdmin(email: String) {
-        viewModelScope.launch {
-            try {
-                val user = myCartRepository.fetchUserInfoByEmail(email)
-                user?.let { userInfo ->
-                    responseEvent.emit(Response.Success(userInfo))
-                } ?: run {
-                    responseEvent.emit(Response.Error("Not an Admin"))
+                    _state.value = Response.SuccessConfirmation("Logout Failed")
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                _state.value = Response.SuccessConfirmation(e.message.toString())
             }
         }
     }
+
 
 }

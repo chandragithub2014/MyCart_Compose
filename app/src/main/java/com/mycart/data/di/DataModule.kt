@@ -36,6 +36,6 @@ val appModule = module {
     viewModel { CategoryViewModel(get(),get()) }
     viewModel { RegistrationViewModel(get(),get()) }
     viewModel{LoginViewModel(get())}
-    viewModel{StoreViewModel(get(),get(),get())}
+    viewModel{StoreViewModel(get(),get())}
     viewModel{AppLauncherViewModel(get())}
 }

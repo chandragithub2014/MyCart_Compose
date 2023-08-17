@@ -39,13 +39,74 @@ fun StoreList(
     var showProgress by rememberSaveable { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
 
-    userEmail?.let { email ->
-        storeViewModel.checkForAdminFromFireStore(email)
+    val context = LocalContext.current
+    LaunchedEffect(key1 = Unit) {
+        userEmail?.let { email ->
+            storeViewModel.checkForAdminFromFireStore(email)
+        }
     }
 
-    val context = LocalContext.current
-    LaunchedEffect(key1 = context) {
-        storeViewModel.responseEvent.collect { event ->
+    val currentState by storeViewModel.state.collectAsState()
+    LaunchedEffect(key1 = currentState) {
+        when(currentState){
+            is Response.Loading -> {
+                showProgress = true
+            }
+            is Response.Error -> {
+                val errorMessage = (currentState as Response.Error).errorMessage
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                showProgress = false
+            }
+            is Response.SignOut -> {
+                navController.navigate("loginScreen"){
+                    popUpTo("loginScreen") {
+                        inclusive = true
+                    }
+                }
+
+            }
+
+            is Response.Success -> {
+
+                when((currentState as Response.Success).data){
+                    is User -> {
+                        val user = (currentState as Response.Success).data as User
+                        if (user.admin) {
+                            storeViewModel.fetchStoreByEmailFromFireStore(user.userEmail)
+                        } else {
+                            storeViewModel.fetchStoresFromFireStore()
+                        }
+                    }
+
+                    is Store -> {
+                        val store  =  (currentState as Response.Success).data as Store
+                        storeList = listOf(store)
+                        showProgress = false
+                    }
+                    else -> {
+                        showProgress = false
+                    }
+                }
+            }
+
+            is Response.SuccessList -> {
+                when((currentState as Response.SuccessList).dataType){
+                    DataType.STORE -> {
+                        storeList =   (currentState as Response.SuccessList).dataList.filterIsInstance<Store>()
+                        showProgress = false
+                    }
+                    else -> {
+                        showProgress = false
+                    }
+                }
+            }
+
+            else -> {
+
+            }
+        }
+
+     /*   storeViewModel.responseEvent.collect { event ->
             when (event) {
                 is Response.Success -> {
                     when (val data: Any = event.data) {
@@ -105,7 +166,7 @@ fun StoreList(
                 }
                 else -> {}
             }
-        }
+        }*/
     }
 
     AppScaffold(
