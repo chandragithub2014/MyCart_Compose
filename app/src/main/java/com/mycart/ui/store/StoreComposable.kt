@@ -105,68 +105,6 @@ fun StoreList(
 
             }
         }
-
-     /*   storeViewModel.responseEvent.collect { event ->
-            when (event) {
-                is Response.Success -> {
-                    when (val data: Any = event.data) {
-                        is User -> {
-                            val user: User = data
-                            if (user.admin) {
-                                storeViewModel.fetchStoreByEmailFromFireStore(user.userEmail)
-                            } else {
-                                //  storeViewModel.fetchStores()
-                                storeViewModel.fetchStoresFromFireStore()
-                            }
-
-
-                        }
-                        is Store -> {
-                            val store: Store = data
-                            storeList = listOf(store)
-                            showProgress = false
-                        }
-
-
-
-                        else -> {
-                            showProgress = false
-                        }
-                    }
-                }
-
-                is Response.SuccessList -> {
-                    when (event.dataType) {
-                        DataType.STORE -> {
-                            storeList = event.dataList.filterIsInstance<Store>()
-                            showProgress = false
-                        }
-                        else -> {
-                            showProgress = false
-                        }
-                        // Add more cases as needed
-                    }
-
-                }
-                is Response.Error -> {
-                    val errorMessage = event.errorMessage
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                    showProgress = false
-                }
-                is Response.SignOut -> {
-                    navController.navigate("loginScreen"){
-                        popUpTo("loginScreen") {
-                            inclusive = true
-                        }
-                    }
-
-                }
-                is Response.Loading -> {
-                    showProgress = true
-                }
-                else -> {}
-            }
-        }*/
     }
 
     AppScaffold(

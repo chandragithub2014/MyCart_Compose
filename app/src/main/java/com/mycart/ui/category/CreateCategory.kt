@@ -27,6 +27,7 @@ import org.koin.androidx.compose.get
 import com.mycart.ui.category.utils.*
 import com.mycart.ui.category.utils.CategoryUtils.fetchCategoryImageUrlByCategory
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
+import java.util.*
 
 @Composable
 fun CreateCategory(
@@ -54,45 +55,55 @@ fun CreateCategory(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = context) {
+    var showProgress by rememberSaveable { mutableStateOf(false) }
+    val currentState by categoryViewModel.state.collectAsState()
+    LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
             categoryViewModel.checkForAdminFromFireStore(email)
-
         }
-        categoryViewModel.responseEvent.collect { event ->
-            when (event) {
-                is Response.Success -> {
-                    when (val data: Any = event.data) {
-                        is User -> {
-                            val user: User = data
-                            storeLocation = user.userStoreLocation
-                            storeName = user.userStore
-                        }
-                        else -> {
+    }
+    LaunchedEffect(key1 = currentState) {
+        when (currentState) {
+            is Response.Loading -> {
+                showProgress = true
+            }
+            is Response.Error -> {
+                val errorMessage = (currentState as Response.Error).errorMessage
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                showProgress = false
+            }
+
+            is Response.SuccessConfirmation -> {
+                val successMessage = (currentState as Response.SuccessConfirmation).successMessage
+                Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+                userEmail?.let { email ->
+                    navigateToCategory(navController, email, storeName)
+                }
 
 
-                        }
+            }
+            is Response.Success -> {
+                when ((currentState as Response.Success).data) {
+                    is User -> {
+                        val user = (currentState as Response.Success).data as User
+                        storeLocation = user.userStoreLocation
+                        storeName = user.userStore
                     }
 
-                }
-                is Response.Error -> {
-                    val errorMessage = event.errorMessage
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                }
+                    else -> {
 
-                is Response.SuccessConfirmation -> {
-                    val successMessage = event.successMessage
-                    Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
-                    userEmail?.let { email ->
-                        navigateToCategory(navController, email, storeName)
                     }
-
-
                 }
-                else -> {}
+                showProgress = false
+            }
+
+            else -> {
+                showProgress = false
             }
         }
     }
+
+
 
     BackHandler(true) {
         userEmail?.let { email ->
@@ -101,6 +112,7 @@ fun CreateCategory(
     }
     AppScaffold(
         title = "Create Category",
+        canShowLogout = false,
         onLogoutClick = {
             // Handle logout action
         },
@@ -108,6 +120,10 @@ fun CreateCategory(
         )
 
     {
+        if (showProgress) {
+            ProgressBar()
+        }
+
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
@@ -236,9 +252,9 @@ fun CreateCategory(
                                         userEmail = email,
                                         storeLoc = storeLocation,
                                         storeName = storeName,
-                                        isDeal = isDeal,
+                                        deal = isDeal,
                                         dealInfo = dealInfo,
-                                        isSeasonal = isSeasonal
+                                        seasonal = isSeasonal
                                     )
                                     categoryViewModel.createCategory(category)
                                 }
@@ -260,9 +276,10 @@ fun CreateCategory(
 
 
 fun navigateToCategory(navController: NavHostController, userEmail: String, storeName: String) {
+    println("Store Name........$storeName")
     navController.popBackStack()
     userEmail.let { email ->
-        storeName.let { store ->
+        storeName?.let { store ->
             navController.navigate("category/${email}/${store}")
         }
     }

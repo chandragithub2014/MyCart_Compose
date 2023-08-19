@@ -31,8 +31,13 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 
 @Composable
-fun Category(userEmail:String?,storeName:String, navController: NavHostController, categoryViewModel: CategoryViewModel= get()) {
-    println("Received UserEmail is....... $userEmail")
+fun Category(
+    userEmail: String?,
+    storeName: String,
+    navController: NavHostController,
+    categoryViewModel: CategoryViewModel = get()
+) {
+
     var categoryList by rememberSaveable { mutableStateOf(listOf<Category>()) }
     var dealList by rememberSaveable { mutableStateOf(listOf<Category>()) }
     var seasonalDeals by rememberSaveable { mutableStateOf(listOf<Category>()) }
@@ -40,70 +45,96 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
         mutableStateOf(false)
     }
     var showDialog by remember { mutableStateOf(false) }
-    var selectedCategory by remember{ mutableStateOf(Category())}
-
-    userEmail?.let {email ->
-        categoryViewModel.checkForAdminFromFireStore(email)
-    }
+    var selectedCategory by remember { mutableStateOf(Category()) }
+    var showProgress by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-    LaunchedEffect(key1 = context) {
-        categoryViewModel.responseEvent.collect { event ->
-            when (event) {
-                is Response.Success -> {
-                   // Toast.makeText(context, "User Detail successful", Toast.LENGTH_LONG).show()
-                    when(val data : Any = event.data){
-                        is User -> {
-                            val user: User = data
-                            if(user.admin){
-                                categoryViewModel.fetchCategoryForAdmin(user)
-                                categoryViewModel.fetchDealsForAdmin(user)
-                                categoryViewModel.fetchSeasonalDealsForAdmin(user)
-                            }else{
+    val currentState by categoryViewModel.state.collectAsState()
+    var isLogOut  by remember { mutableStateOf(false) }
 
-                                categoryViewModel.fetchCategoryByStore(storeName)
-                                categoryViewModel.fetchDealsByStore(storeName)
-                                categoryViewModel.fetchSeasonalDealsByStore(storeName)
-                            }
 
-                        }
+    LaunchedEffect(key1 = Unit) {
+        userEmail?.let { email ->
+            categoryViewModel.checkForAdminFromFireStore(email)
+        }
+    }
 
-                        else ->{
-                                 }
+    LaunchedEffect(key1 = currentState) {
+        when (currentState) {
+            is Response.Loading -> {
+                showProgress = true
+            }
+            is Response.Error -> {
+                val errorMessage = (currentState as Response.Error).errorMessage
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                showProgress = false
+            }
+            is Response.SignOut -> {
+                navController.navigate("loginScreen"){
+                    popUpTo("loginScreen") {
+                        inclusive = true
                     }
                 }
 
-                is Response.SuccessList -> {
-                    when (event.dataType) {
-                        DataType.CATEGORY -> {
-                            categoryList = event.dataList.filterIsInstance<Category>()
+            }
+            is Response.Success -> {
+                when ((currentState as Response.Success).data) {
+                    is User -> {
+                        val user = (currentState as Response.Success).data as User
+                        if (user.admin) {
+                            categoryViewModel.fetchCategoryByStoreFromFireStore(user.userStore)
+                        } else {
+                            categoryViewModel.fetchCategoryByStoreFromFireStore(storeName)
                         }
-                        DataType.DEALS -> {
-                            dealList = event.dataList.filterIsInstance<Category>()
-                        }
-                        DataType.SEASONALDEALS -> {
-                            seasonalDeals = event.dataList.filterIsInstance<Category>()
-                        }
-                        // Add more cases as needed
-                        else -> {}
                     }
 
                 }
-                is Response.Error -> {
-                    val errorMessage = event.errorMessage
-                    Toast.makeText(context,errorMessage, Toast.LENGTH_LONG).show()
+            }
 
+            is Response.SuccessList -> {
+                when ((currentState as Response.SuccessList).dataType) {
+                    DataType.CATEGORY -> {
+                        categoryList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Category>()
+                        showProgress = false
+                        println("CategoryList in Composable :::: $categoryList")
+                        dealList = categoryList.filter { it.deal }
+                        seasonalDeals = categoryList.filter { it.seasonal }
+                    }
 
+                    DataType.DEALS -> {
+                        dealList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Category>()
+                        showProgress = false
+                        println("DealList in Composable :::: $dealList")
+                    }
+
+                    DataType.SEASONALDEALS -> {
+                        seasonalDeals =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Category>()
+                        showProgress = false
+                        println("SeasonalDealList in Composable :::: $seasonalDeals")
+                    }
+
+                    else -> {
+                        showProgress = false
+                    }
                 }
-                else -> {}
+            }
+
+
+            else -> {
+
             }
         }
     }
+
 
     AppScaffold(
         title = "Category",
         onLogoutClick = {
             // Handle logout action
+            isLogOut = true
         },
         floatingActionButton = {
             isAdmin = categoryViewModel.isAdminState.value
@@ -115,38 +146,47 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
         floatingActionButtonPosition = FabPosition.End
     )
 
-   {
+    {
+        if (showProgress) {
+            ProgressBar()
+        }
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
 
-            ) {
+                ) {
                 item {
-                    DisplayLabel("Hot Deals", modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 10.dp))
+                    DisplayLabel(
+                        "Hot Deals", modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 10.dp)
+                    )
                 }
-                item{
+                item {
                     DealsComposable(dealList)
                 }
-                 item {
-                     DisplayLabel("Shop By Category", modifier = Modifier
-                         .fillMaxWidth()
-                         .padding(start = 16.dp, top = 10.dp))
-                  }
-                  item {
-                      CategoryScreen(categoryList,isAdmin,onEdit = { categoryName: String, storeName: String ->
-                          navigateToEditCategory(navController,categoryName,storeName)
-                      },){ receivedCategory ->
-                          showDialog = true
-                          selectedCategory = receivedCategory
-                         // categoryViewModel.deleteSelectedCategory(category = selectedCategory)
-                      }
-                  }
-                  item {
-                    //  SeasonalCategoryComposable()
-                      SeasonalCategoryRow(seasonalDeals)
-                  }
+                item {
+                    DisplayLabel(
+                        "Shop By Category", modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 10.dp)
+                    )
+                }
+                item {
+                    CategoryScreen(
+                        categoryList, isAdmin,
+                        onEdit = { categoryName: String, storeName: String ->
+                            navigateToEditCategory(navController, categoryName, storeName)
+                        },
+                    ) { receivedCategory ->
+                        showDialog = true
+                        selectedCategory = receivedCategory
+                        // categoryViewModel.deleteSelectedCategory(category = selectedCategory)
+                    }
+                }
+                item {
+                    SeasonalCategoryRow(seasonalDeals)
+                }
 
 
             }
@@ -154,36 +194,28 @@ fun Category(userEmail:String?,storeName:String, navController: NavHostControlle
     }
 
     if (showDialog) {
-        DeleteCategory(selectedCategory,categoryViewModel){
+        DeleteCategory(selectedCategory, categoryViewModel) {
             showDialog = it
         }
-        /*DisplaySimpleAlertDialog(
-            showDialog = showDialog,
-            title = "Delete Category",
-            description = "Do you want to Delete selected Category ?",
-            positiveButtonTitle = "OK",
-            negativeButtonTitle = "Cancel",
-            onPositiveButtonClick = {
-                // Action to perform when "OK" button is clicked
-                categoryViewModel.deleteSelectedCategory(selectedCategory)
-            },
-            onNegativeButtonClick = {
-                showDialog = false
+    }
 
-            },
-            displayDialog = {
-                showDialog = it
-            }
-        )*/
+    if(isLogOut) {
+        ShowLogOutDialog(categoryViewModel) {
+            isLogOut = it
+        }
     }
 
 }
 
 
-
 @Composable
-fun CategoryScreen(categoryList:List<Category>,isAdmin:Boolean,onEdit:(String,String) -> Unit,onDelete:(Category) -> Unit) {
-    CategoryGrid(categoryList,isAdmin,onEdit,onDelete)
+fun CategoryScreen(
+    categoryList: List<Category>,
+    isAdmin: Boolean,
+    onEdit: (String, String) -> Unit,
+    onDelete: (Category) -> Unit
+) {
+    CategoryGrid(categoryList, isAdmin, onEdit, onDelete)
 
 }
 
@@ -192,20 +224,10 @@ fun SeasonalCategoryTitle(title: String) {
     DisplayOutLinedLabel(label = title)
 }
 
-@Composable
-fun SeasonalCategoryComposable(categoryViewModel: CategoryViewModel = get()) {
-    val categoryList: List<Category> = categoryViewModel.categoryList.value
-
-    LaunchedEffect(Unit) {
-        categoryViewModel.fetchSeasonalCategories()
-    }
-    SeasonalCategoryRow(categoryList)
-
-}
 
 @Composable
 fun SeasonalCategoryRow(categories: List<Category>) {
-    Column(){
+    Column {
         SeasonalCategoryTitle("Seasonal Specials")
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
@@ -221,7 +243,12 @@ fun SeasonalCategoryRow(categories: List<Category>) {
 
 
 @Composable
-fun CategoryGrid(categories: List<Category>,isAdmin: Boolean,onEdit:(String,String) -> Unit,onDelete:(Category) -> Unit) {
+fun CategoryGrid(
+    categories: List<Category>,
+    isAdmin: Boolean,
+    onEdit: (String, String) -> Unit,
+    onDelete: (Category) -> Unit
+) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -229,7 +256,7 @@ fun CategoryGrid(categories: List<Category>,isAdmin: Boolean,onEdit:(String,Stri
         contentPadding = PaddingValues(16.dp)
     ) {
         items(categories.size) { index ->
-            CategoryItem(category = categories[index],isAdmin,onEdit,onDelete)
+            CategoryItem(category = categories[index], isAdmin, onEdit, onDelete)
         }
     }
 
@@ -261,7 +288,12 @@ fun SeasonalCategoryItem(category: Category) {
 }
 
 @Composable
-fun CategoryItem(category: Category,isAdmin: Boolean,onEdit:(String,String) -> Unit,onDelete: (Category) -> Unit) {
+fun CategoryItem(
+    category: Category,
+    isAdmin: Boolean,
+    onEdit: (String, String) -> Unit,
+    onDelete: (Category) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -282,21 +314,25 @@ fun CategoryItem(category: Category,isAdmin: Boolean,onEdit:(String,String) -> U
 
         }
         // Placing an icon at the top-right corner
-        if(isAdmin) {
+        if (isAdmin) {
             Icon(
                 imageVector = Icons.Default.Edit, // Replace with your desired icon
                 contentDescription = null, // Provide content description if needed
-                modifier = Modifier.align(Alignment.TopEnd).clickable {
-                    onEdit(category.categoryName,category.storeName)
-                }
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        onEdit(category.categoryName, category.storeName)
+                    }
             )
 
             Icon(
                 imageVector = Icons.Default.Delete, // Replace with your desired icon
                 contentDescription = null, // Provide content description if needed
-                modifier = Modifier.align(Alignment.BottomEnd).clickable {
-                    onDelete(category)
-                }
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .clickable {
+                        onDelete(category)
+                    }
             )
         }
     }
@@ -315,15 +351,18 @@ fun CategoryImageFromURLWithPlaceHolder(imageUrl: String) {
 }
 
 @Composable
-fun DeleteCategory(selectedCategory: Category,categoryViewModel: CategoryViewModel, canShowDialog:(Boolean) -> Unit){
+fun DeleteCategory(
+    selectedCategory: Category,
+    categoryViewModel: CategoryViewModel,
+    canShowDialog: (Boolean) -> Unit
+) {
     DisplaySimpleAlertDialog(
         title = "Delete Category",
         description = "Do you want to Delete selected Category ?",
         positiveButtonTitle = "OK",
         negativeButtonTitle = "Cancel",
         onPositiveButtonClick = {
-            // Action to perform when "OK" button is clicked
-            categoryViewModel.deleteSelectedCategory(selectedCategory)
+            categoryViewModel.deleteCategory(selectedCategory)
             canShowDialog(false)
         },
         onNegativeButtonClick = {
@@ -335,27 +374,35 @@ fun DeleteCategory(selectedCategory: Category,categoryViewModel: CategoryViewMod
         }
     )
 }
-fun navigateToEditCategory(navController: NavHostController, categoryName: String, storeName: String) {
+
+@Composable
+fun ShowLogOutDialog( categoryViewModel: CategoryViewModel,canShowDialog: (Boolean) -> Unit){
+    DisplaySimpleAlertDialog(
+        title = "My Cart",
+        description = "Do you want to Logout ?",
+        positiveButtonTitle = "OK",
+        negativeButtonTitle = "Cancel",
+        onPositiveButtonClick = {
+            categoryViewModel.signOut()
+
+        },
+        onNegativeButtonClick = {
+            canShowDialog(false)
+
+        },
+        displayDialog = {
+            canShowDialog(it)
+        }
+    )
+}
+
+fun navigateToEditCategory(
+    navController: NavHostController,
+    categoryName: String,
+    storeName: String
+) {
     navController.popBackStack()
     navController.navigate("edit/${categoryName}/${storeName}")
 }
 
 
-/*@Composable
-fun Category() {
-    val scrollState = rememberScrollState()
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "My Cart") }
-            )
-        }
-    ) {
-      Column()
-            {
-            CategoryScreen()
-            SeasonalCategoryTitle("Seasonal Specials")
-            SeasonalCategoryComposable()
-        }
-    }
-}*/

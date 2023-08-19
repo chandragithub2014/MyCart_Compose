@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun AppScaffold(
     title: String,
+    canShowLogout:Boolean = true,
     onLogoutClick: () -> Unit,
     floatingActionButton: @Composable (() -> Unit)? = null,
     floatingActionButtonPosition: FabPosition = FabPosition.End,
@@ -18,8 +19,10 @@ fun AppScaffold(
             TopAppBar(
                 title = { Text(text = title) },
                 actions = {
-                    IconButton(onClick = onLogoutClick) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = null)
+                    if(canShowLogout) {
+                        IconButton(onClick = onLogoutClick) {
+                            Icon(Icons.Default.ExitToApp, contentDescription = null)
+                        }
                     }
                 }
             )

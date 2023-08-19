@@ -20,10 +20,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Category
+import com.mycart.domain.model.User
 import com.mycart.ui.category.utils.CategoryUtils
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.AppScaffold
 import com.mycart.ui.common.InputTextField
+import com.mycart.ui.common.ProgressBar
 import com.mycart.ui.common.Response
 import com.mycart.ui.login.ImageItem
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
@@ -37,7 +39,7 @@ fun EditCategory(
     categoryViewModel: CategoryViewModel = get()
 ) {
 
-
+    var showProgress by rememberSaveable { mutableStateOf(false) }
     var isDeal by rememberSaveable { mutableStateOf(false) }
     var dealInfo by rememberSaveable {
         mutableStateOf("")
@@ -47,48 +49,59 @@ fun EditCategory(
         mutableStateOf(false)
     }
     var category by remember { mutableStateOf(Category()) }
+    val context = LocalContext.current
 
-    categoryViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(selectedCategory, store)
 
     BackHandler(true) {
         navigateToCategory(navController, category.userEmail, category.storeName)
     }
-    val context = LocalContext.current
-    LaunchedEffect(key1 = context) {
-        categoryViewModel.responseEvent.collect { event ->
-            when (event) {
-                is Response.Success -> {
-                    when (val data: Any = event.data) {
-                        is Category -> {
-                            category = data
 
-                            isSeasonal = category.isSeasonal
-                            isDeal = category.isDeal
-                            dealInfo = category.dealInfo
+    LaunchedEffect(key1 = Unit){
+        categoryViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(selectedCategory, store)
+    }
 
-                        }
-                        else -> {
+    val currentState by categoryViewModel.state.collectAsState()
+    LaunchedEffect(key1 = currentState ){
+        when (currentState) {
+            is Response.Loading -> {
+                showProgress = true
+            }
+            is Response.SuccessConfirmation -> {
+                val successMessage = (currentState as Response.SuccessConfirmation).successMessage
+                Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+                navigateToCategory(navController, category.userEmail, category.storeName)
+                showProgress = false
+            }
 
-                        }
+            is Response.Success -> {
+                showProgress = false
+                when ((currentState as Response.Success).data) {
+                    is Category -> {
+                        category = (currentState as Response.Success).data as Category
+                        isSeasonal = category.seasonal
+                        isDeal = category.deal
+                        dealInfo = category.dealInfo
                     }
                 }
-                is Response.SuccessConfirmation -> {
-                    val successMessage = event.successMessage
-                    Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
-                    navigateToCategory(navController, category.userEmail, category.storeName)
-                }
-                is Response.Error -> {
-                    val errorMessage = event.errorMessage
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            }
+
+            is Response.Error -> {
+                val errorMessage = (currentState as Response.Error).errorMessage
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                showProgress = false
+            }
 
 
-                }
-                else -> {}
+            else -> {
+                showProgress = false
             }
         }
     }
+
+
     AppScaffold(
         title = "Edit Category",
+        canShowLogout = false,
         onLogoutClick = {
             // Handle logout action
         },
@@ -96,12 +109,14 @@ fun EditCategory(
         )
 
     {
+        if (showProgress) {
+            ProgressBar()
+        }
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(
-
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -209,13 +224,17 @@ fun EditCategory(
                 ) {
                     Button(
                         onClick = {
-                            categoryViewModel.updateCategory(
+                            /*categoryViewModel.updateCategory(
                                 category.categoryName,
                                 category.storeName,
                                 isDeal,
                                 isSeasonal,
                                 dealInfo
-                            )
+                            )*/
+                            categoryViewModel.updateCategoryInFireStore(category.categoryId,
+                                isDeal,
+                                isSeasonal,
+                                dealInfo)
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                         modifier = Modifier

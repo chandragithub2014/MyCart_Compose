@@ -39,10 +39,10 @@ interface MyCartDAO {
         email: String
     ): List<Category>
 
-    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isDeal = true")
+    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND deal = true")
     suspend fun fetchDeals(storeLocation: String, storeName: String, email: String): List<Category>
 
-    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND isSeasonal = true")
+    @Query("SELECT * from category where storeLoc = :storeLocation AND storeName = :storeName AND userEmail = :email AND seasonal = true")
     suspend fun fetchSeasonalDeals(
         storeLocation: String,
         storeName: String,
@@ -64,10 +64,10 @@ interface MyCartDAO {
     @Query("SELECT * from category where  storeName = :storeName")
     suspend fun fetchCategoriesByStore(storeName: String): List<Category>
 
-    @Query("SELECT * from category where storeName = :storeName AND isDeal = true")
+    @Query("SELECT * from category where storeName = :storeName AND deal = true")
     suspend fun fetchDealsByStore(storeName: String): List<Category>
 
-    @Query("SELECT * from category where  storeName = :storeName  AND isSeasonal = true")
+    @Query("SELECT * from category where  storeName = :storeName  AND seasonal = true")
     suspend fun fetchSeasonalDealsByStore(storeName: String): List<Category>
 
     @Query("DELETE  from category where categoryName = :categoryName AND storeName = :store")
@@ -79,12 +79,12 @@ interface MyCartDAO {
         store: String
     ): Category?
 
-    @Query("UPDATE category SET isDeal = :isDeal, isSeasonal = :isSeasonal, dealInfo = :dealInfo WHERE categoryName = :categoryName AND storeName = :storeName")
+    @Query("UPDATE category SET deal = :deal, seasonal = :seasonal, dealInfo = :dealInfo WHERE categoryName = :categoryName AND storeName = :storeName")
     suspend fun upDateCategory(
         categoryName: String,
         storeName: String,
-        isDeal: Boolean,
-        isSeasonal: Boolean,
+        deal: Boolean,
+        seasonal: Boolean,
         dealInfo: String
     ) :Int
 
