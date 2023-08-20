@@ -50,7 +50,7 @@ fun Category(
 
     val context = LocalContext.current
     val currentState by categoryViewModel.state.collectAsState()
-    var isLogOut  by remember { mutableStateOf(false) }
+    var isLogOut by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(key1 = Unit) {
@@ -70,7 +70,7 @@ fun Category(
                 showProgress = false
             }
             is Response.SignOut -> {
-                navController.navigate("loginScreen"){
+                navController.navigate("loginScreen") {
                     popUpTo("loginScreen") {
                         inclusive = true
                     }
@@ -178,6 +178,9 @@ fun Category(
                         onEdit = { categoryName: String, storeName: String ->
                             navigateToEditCategory(navController, categoryName, storeName)
                         },
+                        onClick = { categoryName: String, storeName: String ->
+                            navigateToProductList(navController, categoryName, storeName, userEmail)
+                        }
                     ) { receivedCategory ->
                         showDialog = true
                         selectedCategory = receivedCategory
@@ -199,7 +202,7 @@ fun Category(
         }
     }
 
-    if(isLogOut) {
+    if (isLogOut) {
         ShowLogOutDialog(categoryViewModel) {
             isLogOut = it
         }
@@ -213,9 +216,11 @@ fun CategoryScreen(
     categoryList: List<Category>,
     isAdmin: Boolean,
     onEdit: (String, String) -> Unit,
-    onDelete: (Category) -> Unit
-) {
-    CategoryGrid(categoryList, isAdmin, onEdit, onDelete)
+    onClick: (String, String) -> Unit,
+    onDelete: (Category) -> Unit,
+
+    ) {
+    CategoryGrid(categoryList, isAdmin, onEdit, onClick, onDelete)
 
 }
 
@@ -247,7 +252,9 @@ fun CategoryGrid(
     categories: List<Category>,
     isAdmin: Boolean,
     onEdit: (String, String) -> Unit,
+    onClick: (String, String) -> Unit,
     onDelete: (Category) -> Unit
+
 ) {
 
     LazyVerticalGrid(
@@ -256,7 +263,7 @@ fun CategoryGrid(
         contentPadding = PaddingValues(16.dp)
     ) {
         items(categories.size) { index ->
-            CategoryItem(category = categories[index], isAdmin, onEdit, onDelete)
+            CategoryItem(category = categories[index], isAdmin, onEdit, onClick, onDelete)
         }
     }
 
@@ -292,7 +299,9 @@ fun CategoryItem(
     category: Category,
     isAdmin: Boolean,
     onEdit: (String, String) -> Unit,
+    onClick: (String, String) -> Unit,
     onDelete: (Category) -> Unit
+
 ) {
     Box(
         modifier = Modifier
@@ -305,6 +314,9 @@ fun CategoryItem(
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier.clickable {
+                onClick(category.categoryName, category.storeName)
+            },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             //  CategoryImage(category.categoryImage)
@@ -376,7 +388,7 @@ fun DeleteCategory(
 }
 
 @Composable
-fun ShowLogOutDialog( categoryViewModel: CategoryViewModel,canShowDialog: (Boolean) -> Unit){
+fun ShowLogOutDialog(categoryViewModel: CategoryViewModel, canShowDialog: (Boolean) -> Unit) {
     DisplaySimpleAlertDialog(
         title = "My Cart",
         description = "Do you want to Logout ?",
@@ -403,6 +415,19 @@ fun navigateToEditCategory(
 ) {
     navController.popBackStack()
     navController.navigate("edit/${categoryName}/${storeName}")
+}
+
+fun navigateToProductList(
+    navController: NavHostController,
+    categoryName: String,
+    storeName: String,
+    userEmail: String?
+) {
+    userEmail?.let { email ->
+        navController.popBackStack()
+        navController.navigate("productList/${email}/${storeName}/${categoryName}")
+    }
+
 }
 
 

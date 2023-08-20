@@ -2,11 +2,13 @@ package com.mycart.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity(tableName = "product")
 data class Product(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val productId:String = UUID.randomUUID().toString(),
     val categoryName: String="",
     val storeName:String = "",
     val userEmail: String = "",

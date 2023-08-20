@@ -23,6 +23,7 @@ import com.mycart.ui.category.EditCategory
 import com.mycart.ui.launcher.LaunchApp
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
+import com.mycart.ui.product.DisplayProductList
 import com.mycart.ui.register.Register
 import com.mycart.ui.store.StoreList
 import com.mycart.ui.theme.MyCartTheme
@@ -101,7 +102,29 @@ fun Navigator(navHostController: NavHostController) {
                 }
             }
         }
+
+
+        composable(
+            "productList/{emailId}/{store}/{category}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType },
+                navArgument("store") { type = NavType.StringType },
+                navArgument("category") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("emailId")
+            val storeName = backStackEntry.arguments?.getString("store")
+            val categoryName = backStackEntry.arguments?.getString("category")
+            email?.let { userEmail ->
+                storeName?.let { store ->
+                    categoryName?.let { category->
+                        DisplayProductList(userEmail, store, category,navController = navHostController)
+                    }
+
+                }
+            }
+        }
     }
+
+
 
 }
 
