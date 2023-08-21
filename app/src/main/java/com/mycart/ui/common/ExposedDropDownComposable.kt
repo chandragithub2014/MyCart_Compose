@@ -2,10 +2,11 @@ package com.mycart.ui.common
 
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ExposedDropDownMenu(options: List<String>, onItemSelected: (String) -> Unit) {
+fun ExposedDropDownMenu(options: List<String>, modifier:Modifier = Modifier,label:String = "Category",onItemSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember {
         mutableStateOf(options[0])
@@ -15,13 +16,14 @@ fun ExposedDropDownMenu(options: List<String>, onItemSelected: (String) -> Unit)
         expanded = expanded,
         onExpandedChange = {
             expanded = !expanded
-        }
+        },
+        modifier = modifier
     ) {
         OutlinedTextField(
             readOnly = true,
             value = selectedOption,
             onValueChange = { },
-            label = { Text("Category") },
+            label = { Text(label) },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
                     expanded = expanded

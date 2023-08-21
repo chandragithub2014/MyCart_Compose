@@ -17,4 +17,7 @@
     <string name="category_title">Category Name</string>
     <string name = "create_title">Create</string>
     <string name="deal_info_title">Provide Deal Info</string>
+    <string name="product_name_hint_text">Product Name</string>
+    <string name="product_cost_hint_text">Product Cost</string>
+    <string name="discounted_cost_hint">Discounted Cost</string>
 </resources>

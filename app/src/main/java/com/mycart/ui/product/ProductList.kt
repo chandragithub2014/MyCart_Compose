@@ -86,7 +86,7 @@ fun DisplayProductList(
             isAdmin = productViewModel.isAdminState.value
             FloatingActionComposable(productViewModel.isAdminState.value) {
                 navController.popBackStack()
-           //     navController.navigate("createCategory/${userEmail}")
+                navController.navigate("createProduct/${userEmail}/${storeName}/${category}")
             }
         },
         floatingActionButtonPosition = FabPosition.End
