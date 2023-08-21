@@ -89,6 +89,8 @@ dependencies {
     debugImplementation 'com.facebook.stetho:stetho:1.6.0'
     debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.6.0'
 
+    //Constraint Layout
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
 
 
