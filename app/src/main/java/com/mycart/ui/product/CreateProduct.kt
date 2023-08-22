@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.mycart.R
@@ -61,8 +62,8 @@ fun CreateProduct(
                 OutlinedTextField(value = productName, onValueChange = { productName = it },
                     modifier = Modifier.layoutId("productNameTextField"),
                     label = { Text(stringResource(R.string.product_name_hint_text)) })
-                
-                Text(text = "Select Product Quantity", modifier = Modifier.layoutId("productQuantityText").fillMaxWidth(),
+
+                Text(text = "Select Product Quantity", modifier = Modifier.layoutId("productQuantityText"),
                     fontSize = 16.sp, color = Color.Blue)
 
                 ExposedDropDownMenu(options = ProductUtils.fetchProductQty(), modifier = Modifier.layoutId("productQtyDropDown"),label ="Qty" ) {
@@ -92,7 +93,7 @@ fun CreateProduct(
                     modifier = Modifier
                         .layoutId("createProductButton")
                         .fillMaxWidth()
-                        .padding(horizontal = 55.dp, vertical = 10.dp)
+                        .padding(horizontal = 55.dp, vertical = 0.dp)
 
 
                 ) {
@@ -105,7 +106,7 @@ fun CreateProduct(
      //   }
     }
 }
-
+//Please check : "https://www.youtube.com/watch?v=FBpiOAiseD0"
 
 private fun decoupledConstraints(): ConstraintSet {
     return ConstraintSet {
@@ -121,41 +122,48 @@ private fun decoupledConstraints(): ConstraintSet {
             top.linkTo(parent.top, 20.dp)
             start.linkTo(parent.start)
             end.linkTo(parent.end)
+            width = Dimension.wrapContent
         }
         
         constrain(productQuantityLabelRef){
             top.linkTo(productNameRef.bottom,10.dp)
             start.linkTo(productNameRef.start)
+            end.linkTo(parent.end)
+            width = Dimension.fillToConstraints
+
 
         }
         constrain(qtyDropDownRef){
             top.linkTo(productQuantityLabelRef.bottom,10.dp)
-            start.linkTo(productQuantityLabelRef.start)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
 
         }
 
         constrain(qtyUnitDropDownRef){
             top.linkTo(qtyDropDownRef.bottom,10.dp)
-            start.linkTo(qtyDropDownRef.start)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
 
         }
         constrain(productCostRef){
             top.linkTo(qtyUnitDropDownRef.bottom,10.dp)
-            start.linkTo(qtyUnitDropDownRef.start)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
 
         }
 
         constrain(productDiscountCostRef){
             top.linkTo(productCostRef.bottom,10.dp)
-            start.linkTo(productCostRef.start)
-
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
 
         }
 
         constrain(createProductRef){
             top.linkTo(productDiscountCostRef.bottom,10.dp)
-            start.linkTo(parent.start, 16.dp)
-            end.linkTo(parent.end, 16.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
 
         }
 
