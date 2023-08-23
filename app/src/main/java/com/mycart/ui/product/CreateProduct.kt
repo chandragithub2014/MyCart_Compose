@@ -1,15 +1,16 @@
 package com.mycart.ui.product
 
+import android.text.TextUtils
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,8 +21,11 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.mycart.R
-import com.mycart.ui.common.AppScaffold
-import com.mycart.ui.common.ExposedDropDownMenu
+import com.mycart.domain.model.Category
+import com.mycart.domain.model.Product
+import com.mycart.navigator.navigateToProductList
+import com.mycart.ui.category.navigateToCategory
+import com.mycart.ui.common.*
 import com.mycart.ui.product.utils.ProductUtils
 import com.mycart.ui.product.viewModel.ProductViewModel
 import org.koin.androidx.compose.get
@@ -45,6 +49,43 @@ fun CreateProduct(
     var selectedQtyUnits by rememberSaveable {
         mutableStateOf(ProductUtils.fetchProductQtyInUnits()[0])
     }
+    var showDialog by remember { mutableStateOf(false) }
+
+    var showProgress by rememberSaveable { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val currentState by productViewModel.state.collectAsState()
+
+    LaunchedEffect(key1 = currentState) {
+        when (currentState) {
+            is Response.Loading -> {
+                showProgress = true
+            }
+            is Response.Error -> {
+                val errorMessage = (currentState as Response.Error).errorMessage
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                showProgress = false
+            }
+            is Response.SuccessConfirmation -> {
+                val successMessage = (currentState as Response.SuccessConfirmation).successMessage
+                Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+                userEmail?.let { email ->
+                    navigateToProductList(navController, category, storeName, email)
+                }
+
+
+            }
+            else -> {
+                showProgress = false
+            }
+        }
+    }
+    BackHandler(true) {
+        userEmail?.let { email ->
+            navController.popBackStack()
+            navigateToProductList(navController, category, storeName, email)
+        }
+    }
     AppScaffold(
         title = category,
         onLogoutClick = {
@@ -53,6 +94,9 @@ fun CreateProduct(
         }
 
     ) {
+        if (showProgress) {
+            ProgressBar()
+        }
        // BoxWithConstraints {
             val constraints = decoupledConstraints()
             ConstraintLayout(
@@ -87,7 +131,7 @@ fun CreateProduct(
 
                 OutlinedButton(
                     onClick = {
-
+                       showDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                     modifier = Modifier
@@ -98,6 +142,45 @@ fun CreateProduct(
 
                 ) {
                     Text(stringResource(R.string.create_title), color = Color.White)
+                }
+
+                if (showDialog) {
+                    DisplaySimpleAlertDialog(
+                        showDialog = showDialog,
+                        title = "Create Product",
+                        description = "Do you want to add this Product ?",
+                        positiveButtonTitle = "OK",
+                        negativeButtonTitle = "Cancel",
+                        onPositiveButtonClick = {
+                            // Action to perform when "OK" button is clicked
+                            userEmail?.let { email ->
+
+                                if(!TextUtils.isEmpty(productName) && !TextUtils.isEmpty(productCost)) {
+
+                                    val product = Product(
+                                        categoryName = category,
+                                        storeName = storeName,
+                                        userEmail = email,
+                                        productName = productName,
+                                        productQty = selectedQty.toInt(),
+                                        productQtyUnits = selectedQtyUnits,
+                                        productOriginalPrice = productCost,
+                                        productDiscountedPrice = productDiscountedCost
+                                    )
+                                    productViewModel.createProduct(product)
+                                }else{
+                                    Toast.makeText(context,"Please fill required Fields",Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        },
+                        onNegativeButtonClick = {
+                            showDialog = false
+
+                        },
+                        displayDialog = {
+                            showDialog = it
+                        }
+                    )
                 }
 
 
@@ -166,11 +249,8 @@ private fun decoupledConstraints(): ConstraintSet {
             end.linkTo(parent.end)
 
         }
-
-
-       /* constrain(startGuideline) {
-            linkTo(start = parent.start)
-        }*/
     }
 }
+
+
 

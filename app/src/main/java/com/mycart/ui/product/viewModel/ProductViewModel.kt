@@ -23,7 +23,7 @@ class ProductViewModel(
     ViewModel(),
     LifecycleObserver {
 
-    private val _state = MutableStateFlow<Response<Any>>(Response.Loading)
+    private val _state = MutableStateFlow<Response<Any>>(Response.Empty)
     val state = _state.asStateFlow()
 
     private val _productList = mutableStateOf<List<Product>>(emptyList())
@@ -46,6 +46,50 @@ class ProductViewModel(
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                _state.value = Response.Error("${e.message}")
+            }
+        }
+    }
+
+
+    fun createProduct(product: Product) {
+        viewModelScope.launch {
+            try {
+                _state.value = Response.Loading
+                val response = myCartFireStoreRepository.isProductAvailable(
+                    product.productName,
+                    product.categoryName,
+                    product.storeName
+                )
+                when (response) {
+                    is Response.Success -> {
+                        if (response.data) {
+                            _state.value = Response.Error("Product Already Exists")
+                        } else {
+                            when (myCartFireStoreRepository.createProduct(product)) {
+                                is Response.Success -> {
+                                    _state.value = Response.SuccessConfirmation("Product Created")
+                                }
+                                is Response.Error -> {
+                                    _state.value = Response.Error("Error in Product Creation")
+                                }
+                                else -> {
+
+                                }
+                            }
+                        }
+                    }
+                    is Response.Error -> {
+                        _state.value = Response.Error("Error in Product Creation")
+                    }
+
+                    else -> {
+
+                    }
+                }
+
+
+            } catch (e: Exception) {
                 _state.value = Response.Error("${e.message}")
             }
         }

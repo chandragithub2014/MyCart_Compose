@@ -1,12 +1,15 @@
 package com.mycart.ui.product
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.FabPosition
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.mycart.domain.model.User
+import com.mycart.navigator.navigateToCategoryList
+import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.AppScaffold
 import com.mycart.ui.common.FloatingActionComposable
@@ -75,7 +78,12 @@ fun DisplayProductList(
             }
         }
     }
-
+    BackHandler(true) {
+        userEmail?.let { email ->
+            navController.popBackStack()
+            navigateToCategoryList(navController,storeName,email)
+        }
+    }
     AppScaffold(
         title = category,
         onLogoutClick = {

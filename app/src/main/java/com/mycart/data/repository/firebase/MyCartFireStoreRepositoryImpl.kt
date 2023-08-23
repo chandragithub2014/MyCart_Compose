@@ -2,6 +2,7 @@ package com.mycart.data.repository.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mycart.domain.model.Category
+import com.mycart.domain.model.Product
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.firebase.*
@@ -236,6 +237,43 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         println("CategoryList is $categoryDataList")
 
         Response.Success(categoryDataList)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun createProduct(product: Product) = try {
+        fireStore.collection("products")
+            .document(product.productId)
+            .set(product)
+            .await()
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun isProductAvailable(
+        productName: String,
+        categoryName: String,
+        store: String
+    )= try {
+
+        val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereEqualTo("categoryName",categoryName)
+            .get()
+            .await()
+
+        val productExists = querySnapshot.documents.any { documentSnapshot ->
+            val product = documentSnapshot.toObject(Product::class.java)
+            product?.productName == productName
+
+        }
+
+        if (productExists) {
+            Response.Success(true)
+        } else {
+            Response.Success(false)
+        }
     } catch (e: Exception) {
         Response.Error(e.message.toString())
     }

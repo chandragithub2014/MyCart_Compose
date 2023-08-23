@@ -10,6 +10,7 @@ sealed class Response<out T> {
     data class SuccessConfirmation(val successMessage:String):Response<Nothing>()
     object SignOut : Response<Nothing>()
     object Login: Response<Nothing>()
+    object Empty:Response<Nothing>()
 
 }
 

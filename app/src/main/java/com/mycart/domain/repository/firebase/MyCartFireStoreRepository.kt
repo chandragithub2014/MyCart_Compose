@@ -1,6 +1,7 @@
 package com.mycart.domain.repository.firebase
 
 import com.mycart.domain.model.Category
+import com.mycart.domain.model.Product
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.ui.common.Response
@@ -11,6 +12,9 @@ typealias AddCategoryResponse = Response<Boolean>
 typealias DeleteCategoryResponse = Response<Boolean>
 typealias CategoryAvailableResponse = Response<Boolean>
 typealias EditCategoryResponse = Response<Boolean>
+
+typealias AddProductResponse = Response<Boolean>
+typealias ProductAvailableResponse = Response<Boolean>
 
 interface MyCartFireStoreRepository {
 
@@ -28,5 +32,9 @@ interface MyCartFireStoreRepository {
     suspend fun isCategoryAvailable(categoryName: String,store:String) : CategoryAvailableResponse
     suspend fun fetchCategoryInfo(categoryName: String,store: String):Category?
     suspend fun editCategoryInfo(categoryId:String,isDeal:Boolean,isSeasonal:Boolean,dealInfo:String):EditCategoryResponse
+
+
+    suspend fun createProduct(product: Product) : AddProductResponse
+    suspend fun isProductAvailable(productName:String,categoryName: String,store:String) : ProductAvailableResponse
 }
 

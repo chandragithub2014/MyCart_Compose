@@ -24,6 +24,7 @@ import com.mycart.domain.model.Category
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
 import com.mycart.domain.model.User
+import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
 import com.mycart.ui.utils.DisplayLabel
 import com.mycart.ui.utils.DisplayOutLinedLabel
@@ -417,17 +418,6 @@ fun navigateToEditCategory(
     navController.navigate("edit/${categoryName}/${storeName}")
 }
 
-fun navigateToProductList(
-    navController: NavHostController,
-    categoryName: String,
-    storeName: String,
-    userEmail: String?
-) {
-    userEmail?.let { email ->
-        navController.popBackStack()
-        navController.navigate("productList/${email}/${storeName}/${categoryName}")
-    }
 
-}
 
 
