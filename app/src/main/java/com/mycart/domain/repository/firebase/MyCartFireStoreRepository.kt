@@ -1,5 +1,6 @@
 package com.mycart.domain.repository.firebase
 
+import androidx.room.PrimaryKey
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.domain.model.Store
@@ -15,6 +16,8 @@ typealias EditCategoryResponse = Response<Boolean>
 
 typealias AddProductResponse = Response<Boolean>
 typealias ProductAvailableResponse = Response<Boolean>
+typealias DeleteProductResponse = Response<Boolean>
+typealias EditProductResponse = Response<Boolean>
 
 interface MyCartFireStoreRepository {
 
@@ -36,5 +39,10 @@ interface MyCartFireStoreRepository {
 
     suspend fun createProduct(product: Product) : AddProductResponse
     suspend fun isProductAvailable(productName:String,categoryName: String,store:String) : ProductAvailableResponse
+    suspend fun fetchProductsByCategoryAndStore(categoryName: String,store: String) : List<Product>
+    suspend fun deleteProduct(categoryName: String,store: String,productName:String):DeleteProductResponse
+    suspend fun fetchProductInfo(categoryName: String,store: String,productName:String):Product?
+    suspend fun editProductInfo(product:Product):EditProductResponse
+
 }
 

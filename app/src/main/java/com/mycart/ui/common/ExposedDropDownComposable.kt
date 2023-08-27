@@ -6,12 +6,13 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ExposedDropDownMenu(options: List<String>, modifier:Modifier = Modifier,label:String = "Category",onItemSelected: (String) -> Unit) {
+fun ExposedDropDownMenu(options: List<String>, modifier:Modifier = Modifier,label:String = "Category",selectedItemPosition:Int =0,onItemSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember {
-        mutableStateOf(options[0])
+        mutableStateOf(options[selectedItemPosition])
     }
-
+    println("Result is ::: ${options[selectedItemPosition]} and.... $selectedItemPosition")
+    println("Selected option is $selectedOption")
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = {

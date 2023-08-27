@@ -278,4 +278,80 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Error(e.message.toString())
     }
 
+    override suspend fun fetchProductsByCategoryAndStore(
+        categoryName: String,
+        store: String
+    ): List<Product> {
+        val productList: MutableList<Product>
+        val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereEqualTo("categoryName",categoryName)
+            .get()
+            .await()
+
+        val category: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Product::class.java)
+        }
+
+        productList = category.toMutableList()
+
+        return productList
+    }
+
+    override suspend fun deleteProduct(
+        categoryName: String,
+        store: String,
+        productName: String
+    ): DeleteCategoryResponse = try {
+        val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereEqualTo("categoryName", categoryName)
+            .whereEqualTo("productName", productName)
+            .get()
+            .await()
+        for (documentSnapshot in querySnapshot.documents) {
+            val productDocumentRef = documentSnapshot.reference
+            productDocumentRef.delete().await()
+        }
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun fetchProductInfo(
+        categoryName: String,
+        store: String,
+        productName: String
+    ): Product? {
+        val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereEqualTo("categoryName", categoryName)
+            .whereEqualTo("productName",productName)
+
+            .get()
+            .await()
+
+        val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Product::class.java)
+        }
+        return products.firstOrNull()
+    }
+
+    override suspend fun editProductInfo(product: Product): EditProductResponse = try{
+
+        val productDocRef = fireStore.collection("products").document(product.productId)
+        productDocRef.update(
+            mapOf(
+                "productName" to product.productName,
+                "productQty" to product.productQty,
+                "productQtyUnits" to product.productQtyUnits,
+                "productDiscountedPrice" to product.productDiscountedPrice,
+                "productOriginalPrice" to product.productOriginalPrice
+            )
+        ).await()
+        Response.Success(true)
+    }catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
 }

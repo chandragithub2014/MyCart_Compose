@@ -25,6 +25,7 @@ import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.product.CreateProduct
 import com.mycart.ui.product.DisplayProductList
+import com.mycart.ui.product.EditProduct
 import com.mycart.ui.register.Register
 import com.mycart.ui.store.StoreList
 import com.mycart.ui.theme.MyCartTheme
@@ -109,7 +110,8 @@ fun Navigator(navHostController: NavHostController) {
             "productList/{emailId}/{store}/{category}",
             arguments = listOf(navArgument("emailId") { type = NavType.StringType },
                 navArgument("store") { type = NavType.StringType },
-                navArgument("category") { type = NavType.StringType })
+                navArgument("category") { type = NavType.StringType }
+                )
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("emailId")
             val storeName = backStackEntry.arguments?.getString("store")
@@ -117,7 +119,12 @@ fun Navigator(navHostController: NavHostController) {
             email?.let { userEmail ->
                 storeName?.let { store ->
                     categoryName?.let { category->
-                        DisplayProductList(userEmail, store, category,navController = navHostController)
+                            DisplayProductList(
+                                userEmail,
+                                store,
+                                category,
+                                navController = navHostController
+                            )
                     }
 
                 }
@@ -129,6 +136,7 @@ fun Navigator(navHostController: NavHostController) {
             arguments = listOf(navArgument("emailId") { type = NavType.StringType },
                 navArgument("store") { type = NavType.StringType },
                 navArgument("category") { type = NavType.StringType })
+
         ) {
                 backStackEntry ->
             val email = backStackEntry.arguments?.getString("emailId")
@@ -137,9 +145,43 @@ fun Navigator(navHostController: NavHostController) {
             email?.let { userEmail ->
                 storeName?.let { store ->
                     categoryName?.let { category->
-                        CreateProduct(userEmail, store, category,navController = navHostController)
+                            CreateProduct(
+                                userEmail,
+                                store,
+                                category,
+                                navController = navHostController
+                            )
                     }
 
+                }
+            }
+        }
+
+        composable(
+            "editProduct/{categoryName}/{storeName}/{productName}/{email}",
+            arguments = listOf(navArgument("categoryName") { type = NavType.StringType },
+                navArgument("storeName") { type = NavType.StringType },
+                navArgument("productName") { type = NavType.StringType },
+                navArgument("email") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("categoryName")
+            val store = backStackEntry.arguments?.getString("storeName")
+            val product =  backStackEntry.arguments?.getString("productName")
+            val userEmail = backStackEntry.arguments?.getString("email")
+            category?.let { categoryName ->
+                store?.let { storeName ->
+                    product?.let { productName ->
+                        userEmail?.let { email ->
+                            EditProduct(
+                                categoryName,
+                                storeName,
+                                productName,
+                                email,
+                                navController = navHostController
+                            )
+                        }
+                    }
                 }
             }
         }

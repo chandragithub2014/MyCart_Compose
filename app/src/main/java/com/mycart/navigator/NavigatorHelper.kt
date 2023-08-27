@@ -23,3 +23,14 @@ fun navigateToCategoryList(navController: NavHostController,storeName: String,us
     }
 
 }
+
+fun navigateToEditProduct(
+    navController: NavHostController,
+    categoryName: String,
+    storeName: String,
+    productName:String,
+    userEmail: String?
+) {
+    navController.popBackStack()
+    navController.navigate("editProduct/${categoryName}/${storeName}/${productName}/$userEmail")
+}

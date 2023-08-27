@@ -70,7 +70,7 @@ fun CreateProduct(
                 val successMessage = (currentState as Response.SuccessConfirmation).successMessage
                 Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                 userEmail?.let { email ->
-                    navigateToProductList(navController, category, storeName, email)
+                    navigateToProductList(navController, category, storeName,email)
                 }
 
 
@@ -83,7 +83,7 @@ fun CreateProduct(
     BackHandler(true) {
         userEmail?.let { email ->
             navController.popBackStack()
-            navigateToProductList(navController, category, storeName, email)
+            navigateToProductList(navController, category, storeName,email)
         }
     }
     AppScaffold(
