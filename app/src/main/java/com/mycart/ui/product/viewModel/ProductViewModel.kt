@@ -193,8 +193,6 @@ class ProductViewModel(
                     _selectedQtyIndex.value = ProductUtils.fetchProductQty().indexOf(selectedProduct.productQty.toString()).takeIf { it != -1 } ?: 0
                     _selectedQtyUnitIndex.value = ProductUtils.fetchProductQtyInUnits().indexOf(selectedProduct.productQtyUnits).takeIf { it != -1 } ?:0
                     _state.value = Response.Success(selectedProduct)
-
-
                 } ?: run {
                     _state.value = Response.Error("Failed to Fetch Product Info")
                 }
@@ -237,5 +235,60 @@ class ProductViewModel(
             }
         }
     }
+
+    fun updateProductQuantity(product: Product,isIncrement : Boolean = false){
+        viewModelScope.launch {
+            try {
+                _state.value = Response.Loading
+                var existingQuantity = myCartFireStoreRepository.fetchProductQuantity(product.categoryName,product.storeName,product.productName)
+                if(existingQuantity>0) {
+                    var existingUserQuantity =
+                        myCartFireStoreRepository.fetchUserSelectedProductQuantity(
+                            product.categoryName,
+                            product.storeName,
+                            product.productName
+                        )
+                    if (existingUserQuantity >= 0) {
+                        if (isIncrement) {
+                            existingQuantity -= 1
+                            existingUserQuantity += 1
+                        } else {
+                            existingQuantity += 1
+                            existingUserQuantity -= 1
+                        }
+                        val response = myCartFireStoreRepository.updateProductQuantity(
+                            product.productId,
+                            existingQuantity,
+                            existingUserQuantity
+                        )
+                        when (response) {
+                            is Response.Success -> {
+                                if (response.data) {
+                                    _state.value =
+                                        Response.SuccessConfirmation("Edited Product", false)
+                                } else {
+                                    _state.value = Response.Error("No Rows Updated")
+                                }
+                            }
+                            is Response.Error -> {
+                                _state.value = Response.Error("Failed Qty update")
+                            }
+                            else -> {
+                                _state.value = Response.Error("Failed Qty update")
+                            }
+                        }
+                    }else{
+                        _state.value = Response.Error("Failed Qty update")
+                    }
+                }
+                else{
+                    _state.value = Response.Error("Failed Qty update")
+                }
+            }catch (e: Exception) {
+                _state.value = Response.Error("${e.message}")
+            }
+        }
+    }
+
 }
 

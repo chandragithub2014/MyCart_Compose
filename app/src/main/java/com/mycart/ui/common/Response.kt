@@ -7,7 +7,7 @@ sealed class Response<out T> {
     data class Success<out T>(val data: T) : Response<T>()
     data class SuccessList<out T>(val dataList: List<T>,val dataType: DataType) : Response<T>()
     data class Error(val errorMessage:String):Response<Nothing>()
-    data class SuccessConfirmation(val successMessage:String):Response<Nothing>()
+    data class SuccessConfirmation(val successMessage:String,val showToast:Boolean = true):Response<Nothing>()
     object SignOut : Response<Nothing>()
     object Login: Response<Nothing>()
     object Empty:Response<Nothing>()

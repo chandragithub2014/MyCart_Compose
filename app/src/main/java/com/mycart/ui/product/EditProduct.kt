@@ -2,9 +2,12 @@ package com.mycart.ui.product
 
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
@@ -61,7 +64,7 @@ fun EditProduct(
     LaunchedEffect(key1 = Unit){
         productViewModel.fetchProductInfoByCategoryStore(selectedCategory, store, productName)
     }
-
+    val scrollState = rememberScrollState()
     val currentState by productViewModel.state.collectAsState()
     LaunchedEffect(key1 = currentState ){
         when (currentState) {
@@ -123,21 +126,33 @@ fun EditProduct(
         }
 
         val constraints = decoupledConstraints()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
 
         ConstraintLayout(
             constraints, modifier = Modifier
                 .fillMaxSize()
         ) {
-            OutlinedTextField(value = selectedProductName, onValueChange = { newValue -> selectedProductName = newValue },
+            OutlinedTextField(value = selectedProductName,
+                onValueChange = { newValue -> selectedProductName = newValue },
                 modifier = Modifier.layoutId("productNameTextField"),
                 label = { Text(stringResource(R.string.product_name_hint_text)) })
 
-            Text(text = "Select Product Quantity", modifier = Modifier.layoutId("productQuantityText"),
-                fontSize = 16.sp, color = Color.Blue)
+            Text(
+                text = "Select Product Quantity",
+                modifier = Modifier.layoutId("productQuantityText"),
+                fontSize = 16.sp,
+                color = Color.Blue
+            )
 
-            val selectedIndex = ProductUtils.fetchProductQty().indexOf(product.productQty.toString()).takeIf { it != -1 } ?: 0
+            val selectedIndex =
+                ProductUtils.fetchProductQty().indexOf(product.productQty.toString())
+                    .takeIf { it != -1 } ?: 0
             println("productViewModel.selectedQtyIndex.value is ${productViewModel.selectedQtyIndex.value}")
-            if(productViewModel.selectedQtyIndex.value != -1) {
+            if (productViewModel.selectedQtyIndex.value != -1) {
                 ExposedDropDownMenu(
                     options = ProductUtils.fetchProductQty(),
                     modifier = Modifier.layoutId("productQtyDropDown"),
@@ -148,7 +163,7 @@ fun EditProduct(
                     selectedQty = it
                 }
             }
-            if(productViewModel.selectedQtyUnitIndex.value != -1) {
+            if (productViewModel.selectedQtyUnitIndex.value != -1) {
                 val selectedProductQtyUnits =
                     ProductUtils.fetchProductQtyInUnits().indexOf(product.productQtyUnits)
                         .takeIf { it != -1 } ?: 0
@@ -163,11 +178,13 @@ fun EditProduct(
                 }
             }
 
-            OutlinedTextField(value = productCost, onValueChange = {newValue ->  productCost = newValue },
+            OutlinedTextField(value = productCost,
+                onValueChange = { newValue -> productCost = newValue },
                 modifier = Modifier.layoutId("productCostTextField"),
                 label = { Text(stringResource(R.string.product_cost_hint_text)) })
 
-            OutlinedTextField(value =productDiscountedCost, onValueChange = { newValue -> productDiscountedCost = newValue },
+            OutlinedTextField(value = productDiscountedCost,
+                onValueChange = { newValue -> productDiscountedCost = newValue },
                 modifier = Modifier.layoutId("productDiscountCostTextField"),
                 label = { Text(stringResource(R.string.discounted_cost_hint)) })
 
@@ -187,17 +204,23 @@ fun EditProduct(
 
             OutlinedButton(
                 onClick = {
-                    navigateToProductList(navController, categoryName = selectedCategory,store,userEmail)
+                    navigateToProductList(
+                        navController,
+                        categoryName = selectedCategory,
+                        store,
+                        userEmail
+                    )
                 },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
                 modifier = Modifier
                     .layoutId("cancelProductButton")
-                   // .padding(horizontal = 55.dp, vertical = 0.dp)
+                // .padding(horizontal = 55.dp, vertical = 0.dp)
 
 
             ) {
                 Text(stringResource(R.string.cancel_product), color = Color.White)
             }
+
 
             if (showDialog) {
                 DisplaySimpleAlertDialog(
@@ -238,7 +261,7 @@ fun EditProduct(
                 )
             }
 
-
+        }
         }
     }
 }

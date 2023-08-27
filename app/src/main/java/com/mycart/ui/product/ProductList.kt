@@ -123,6 +123,7 @@ fun DisplayProductList(
                     }
 
                 }
+                showProgress = false
             }
 
             is Response.SuccessList -> {
@@ -138,9 +139,11 @@ fun DisplayProductList(
                     }
                 }
             }
-
+            is Response.SuccessConfirmation -> {
+                showProgress = false
+            }
             else -> {
-
+                showProgress = false
             }
         }
     }
@@ -171,12 +174,26 @@ fun DisplayProductList(
         }
         if (!TextUtils.isEmpty(categoryInfo.categoryImage) && productList.isNotEmpty()) {
             //ProductListItem(categoryInfo)
-            ProductList(category = categoryInfo, productList = productList, isAdmin, onEdit = { selectedProductToEdit:Product ->
+            ProductList(category = categoryInfo,
+                productList = productList,
+                isAdmin,
+                onPlusClick = {productIncrement:Product,canIncrement:Boolean ->
+                    productViewModel.updateProductQuantity(productIncrement,true)
+                },
+                onMinusClick = {productDecrement:Product,canIncrement:Boolean ->
+                    productViewModel.updateProductQuantity(productDecrement,false)
+                },
+                onAddClick = { productToAdd: Product ->
+                   productViewModel.updateProductQuantity(productToAdd,true)
+                },
+
+                onEdit = { selectedProductToEdit:Product ->
                 userEmail?.let { email ->
                     navigateToEditProduct(navController, selectedProductToEdit.categoryName, selectedProductToEdit.storeName,selectedProductToEdit.productName,email)
                 }
 
-            }){ toDeletedProduct ->
+            }
+            ){ toDeletedProduct ->
                 selectedProduct = toDeletedProduct
                 showDialog = true
             }
@@ -196,7 +213,7 @@ fun DisplayProductList(
 }
 
 @Composable
-fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
+fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -207,14 +224,14 @@ fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean
 
             ) {
             items(items = productList) { product ->
-                ProductListItem(category, product, isAdmin,onEdit,onDelete)
+                ProductListItem(category, product, isAdmin,onPlusClick,onMinusClick,onAddClick,onEdit,onDelete)
             }
         }
     }
 }
 
 @Composable
-fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
+fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
     var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
     val constraintSet = productListItemConstraints()
     BoxWithConstraints(
@@ -265,14 +282,24 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onEdi
 
             if (!isAdmin) {
                 if (showNumberPlusMinusLayout) {
-                    MinusNumberPlusLayout(Modifier.layoutId("minusPlusLayout")) { showAdd ->
+                    MinusNumberPlusLayout(Modifier.layoutId("minusPlusLayout"),
+                        onIncrement = {
+                            onPlusClick(product,it)
+                        } ,
+
+                        onDecrement = {
+                             onMinusClick(product,it)
+                        }
+                         ) { showAdd ->
                         if (showAdd) {
                             showNumberPlusMinusLayout = false
                         }
                     }
                 } else {
                     Button(
-                        onClick = { showNumberPlusMinusLayout = true },
+                        onClick = {
+                            onAddClick(product)
+                            showNumberPlusMinusLayout = true },
                         Modifier.layoutId("productAddButton")
                     ) {
                         Text(text = "ADD")
@@ -308,7 +335,7 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onEdi
 }
 
 @Composable
-fun MinusNumberPlusLayout(modifier: Modifier = Modifier, showAdd: (Boolean) -> Unit) {
+fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -> Unit,onDecrement:(Boolean)->Unit,showAdd: (Boolean) -> Unit) {
     var quantity by remember { mutableStateOf(1) }
     ConstraintLayout(
         modifier = modifier,
@@ -328,6 +355,8 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, showAdd: (Boolean) -> U
                 quantity = 0
                 showAdd(true)
             }
+            onDecrement(true)
+
         }
 
         DisplayBorderedLabel(label = quantity.toString(), modifier = Modifier
@@ -351,6 +380,8 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, showAdd: (Boolean) -> U
             quantity += 1
             if (quantity > 3) {
                 quantity = 3
+            }else{
+                onIncrement(true)
             }
         }
     }

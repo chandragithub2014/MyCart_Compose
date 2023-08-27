@@ -354,4 +354,83 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Error(e.message.toString())
     }
 
+    override suspend fun fetchProductQuantity(
+        categoryName: String,
+        store: String,
+        productName: String
+    ): Int {
+        var quantity = -1
+        try {
+            val querySnapshot = fireStore.collection("products")
+                .whereEqualTo("storeName", store)
+                .whereEqualTo("categoryName", categoryName)
+                .whereEqualTo("productName", productName)
+
+                .get()
+                .await()
+
+            val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                documentSnapshot.toObject(Product::class.java)
+            }
+           products.firstOrNull()?.productQty?.let {  productQuantity ->
+               quantity = productQuantity
+           }
+
+
+
+        }catch (e:Exception){
+            return  quantity
+        }
+
+        return quantity
+    }
+
+    override suspend fun fetchUserSelectedProductQuantity(
+        categoryName: String,
+        store: String,
+        productName: String
+    ): Int {
+        var quantity = -1
+        try {
+            val querySnapshot = fireStore.collection("products")
+                .whereEqualTo("storeName", store)
+                .whereEqualTo("categoryName", categoryName)
+                .whereEqualTo("productName", productName)
+                .get()
+                .await()
+
+            val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+                documentSnapshot.toObject(Product::class.java)
+            }
+            products.firstOrNull()?.userSelectedProductQty?.let {  productQuantity ->
+                quantity = productQuantity
+            }
+
+
+
+        }catch (e:Exception){
+            return  quantity
+        }
+
+        return quantity
+    }
+
+    override suspend fun updateProductQuantity(
+        productID: String,
+        productQty: Int,
+        userSelectedQty:Int
+
+    ) = try {
+        val productDocRef = fireStore.collection("products").document(productID)
+        productDocRef.update(
+            mapOf(
+                "productQty" to productQty,
+                "userSelectedProductQty" to userSelectedQty
+            )
+        ).await()
+        Response.Success(true)
+    }catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
 }

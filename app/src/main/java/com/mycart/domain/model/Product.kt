@@ -18,5 +18,5 @@ data class Product(
     val productImage: String = "",
     val productOriginalPrice: String = "",
     val productQtyUnits: String = "",//Kgs,gms,units
-    val userSelectedProductQty: String = ""
+    val userSelectedProductQty: Int = 0
 )
