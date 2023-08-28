@@ -112,6 +112,9 @@ fun CreateCategory(
     }
     AppScaffold(
         title = "Create Category",
+        onCartClick = {
+
+        },
         canShowLogout = false,
         onLogoutClick = {
             // Handle logout action

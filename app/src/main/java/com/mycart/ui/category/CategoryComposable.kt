@@ -133,6 +133,9 @@ fun Category(
 
     AppScaffold(
         title = "Category",
+        onCartClick = {
+
+        },
         onLogoutClick = {
             // Handle logout action
             isLogOut = true

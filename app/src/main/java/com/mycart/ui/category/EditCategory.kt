@@ -102,6 +102,9 @@ fun EditCategory(
     AppScaffold(
         title = "Edit Category",
         canShowLogout = false,
+        onCartClick = {
+
+        },
         onLogoutClick = {
             // Handle logout action
         },

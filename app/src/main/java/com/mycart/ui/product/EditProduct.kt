@@ -113,6 +113,9 @@ fun EditProduct(
 
     AppScaffold(
         title = "Edit Product",
+        onCartClick = {
+
+        },
         canShowLogout = false,
         onLogoutClick = {
             // Handle logout action

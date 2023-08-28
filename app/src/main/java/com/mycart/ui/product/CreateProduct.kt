@@ -88,6 +88,9 @@ fun CreateProduct(
     }
     AppScaffold(
         title = category,
+        onCartClick = {
+
+        },
         onLogoutClick = {
             // Handle logout action
 

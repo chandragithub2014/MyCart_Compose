@@ -61,6 +61,9 @@ fun LaunchApp(
 
     AppScaffold(
         title = "Home",
+        onCartClick = {
+
+        },
         onLogoutClick = {
 
         }

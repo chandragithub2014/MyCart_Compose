@@ -109,6 +109,9 @@ fun StoreList(
 
     AppScaffold(
         title = "Stores",
+        onCartClick = {
+
+        },
         onLogoutClick = {
             showDialog = true
         }

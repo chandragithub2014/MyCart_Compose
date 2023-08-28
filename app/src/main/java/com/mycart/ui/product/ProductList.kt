@@ -70,6 +70,9 @@ fun DisplayProductList(
     var isLogOut by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf(Product())}
     var showDialog by remember { mutableStateOf(false) }
+    var cartCount by remember {
+        mutableStateOf(0)
+    }
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -155,6 +158,11 @@ fun DisplayProductList(
     }
     AppScaffold(
         title = category,
+        canShowCart = true,
+        cartItemCount = cartCount,
+        onCartClick = {
+
+        },
         onLogoutClick = {
             // Handle logout action
             isLogOut = true
@@ -185,8 +193,16 @@ fun DisplayProductList(
                 },
                 onAddClick = { productToAdd: Product ->
                    productViewModel.updateProductQuantity(productToAdd,true)
-                },
 
+                },
+                onAddToCart = { canAdd ->
+                     if(canAdd){
+                         cartCount += 1
+                     }else{
+                         cartCount -= 1
+                     }
+
+                },
                 onEdit = { selectedProductToEdit:Product ->
                 userEmail?.let { email ->
                     navigateToEditProduct(navController, selectedProductToEdit.categoryName, selectedProductToEdit.storeName,selectedProductToEdit.productName,email)
@@ -213,7 +229,7 @@ fun DisplayProductList(
 }
 
 @Composable
-fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
+fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onAddToCart:(Boolean) -> Unit,onDelete: (Product) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -224,14 +240,14 @@ fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean
 
             ) {
             items(items = productList) { product ->
-                ProductListItem(category, product, isAdmin,onPlusClick,onMinusClick,onAddClick,onEdit,onDelete)
+                ProductListItem(category, product, isAdmin,onPlusClick,onMinusClick,onAddClick,onEdit,onAddToCart,onDelete)
             }
         }
     }
 }
 
 @Composable
-fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onDelete: (Product) -> Unit) {
+fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onAddToCart:(Boolean) -> Unit,onDelete: (Product) -> Unit) {
     var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
     val constraintSet = productListItemConstraints()
     BoxWithConstraints(
@@ -293,12 +309,14 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlu
                          ) { showAdd ->
                         if (showAdd) {
                             showNumberPlusMinusLayout = false
+                            onAddToCart(false)
                         }
                     }
                 } else {
                     Button(
                         onClick = {
                             onAddClick(product)
+                            onAddToCart(true)
                             showNumberPlusMinusLayout = true },
                         Modifier.layoutId("productAddButton")
                     ) {
@@ -316,7 +334,7 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlu
                     modifier = Modifier
                         .layoutId("editProductIcon")
                         .clickable {
-                              onEdit(product)
+                            onEdit(product)
                         }
                 )
 
