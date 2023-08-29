@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import kotlin.math.log
 
 
 class ProductViewModel(
@@ -236,49 +238,101 @@ class ProductViewModel(
         }
     }
 
-    fun updateProductQuantity(product: Product,isIncrement : Boolean = false){
+    fun updateProductQuantity(loggedInUserEmail:String,product: Product,isIncrement : Boolean = false){
         viewModelScope.launch {
             try {
                 _state.value = Response.Loading
                 var existingQuantity = myCartFireStoreRepository.fetchProductQuantity(product.categoryName,product.storeName,product.productName)
                 if(existingQuantity>0) {
-                    var existingUserQuantity =
-                        myCartFireStoreRepository.fetchUserSelectedProductQuantity(
-                            product.categoryName,
-                            product.storeName,
-                            product.productName
-                        )
-                    if (existingUserQuantity >= 0) {
-                        if (isIncrement) {
-                            existingQuantity -= 1
-                            existingUserQuantity += 1
-                        } else {
-                            existingQuantity += 1
-                            existingUserQuantity -= 1
-                        }
-                        val response = myCartFireStoreRepository.updateProductQuantity(
-                            product.productId,
-                            existingQuantity,
-                            existingUserQuantity
-                        )
-                        when (response) {
-                            is Response.Success -> {
-                                if (response.data) {
-                                    _state.value =
-                                        Response.SuccessConfirmation("Edited Product", false)
-                                } else {
-                                    _state.value = Response.Error("No Rows Updated")
+                    val response = myCartFireStoreRepository.isProductAvailableInCart(
+                        product.productName,
+                        product.categoryName,
+                        product.storeName,
+                        loggedInUserEmail
+                    )
+                    when (response) {
+                        is Response.Success -> {
+                            if (response.data) {
+                                val cartInfo = myCartFireStoreRepository.fetchCartInfo(product.productName,product.categoryName,product.storeName,
+                                    loggedInUserEmail)
+
+                                cartInfo?.let {  cartProduct ->
+                                    var existingUserQuantity = cartProduct.product.userSelectedProductQty
+                                    if (existingUserQuantity >= 0) {
+                                        if (isIncrement) {
+                                            existingQuantity -= 1
+                                            existingUserQuantity += 1
+                                        } else {
+                                            existingQuantity += 1
+                                            existingUserQuantity -= 1
+                                        }
+                                        val updateProductQuantityResponse = myCartFireStoreRepository.updateProductQuantity(
+                                            product.productId,
+                                            existingQuantity,
+                                            existingUserQuantity
+                                        )
+                                        when (updateProductQuantityResponse) {
+                                            is Response.Success -> {
+                                                when(myCartFireStoreRepository.updateUserSelectedQuantity(cartProduct.cartId,existingQuantity,existingUserQuantity,loggedInUserEmail)){
+                                                 is Response.Success -> {
+                                                     _state.value =
+                                                         Response.SuccessConfirmation("Edited Product in Cart", false)
+                                                 }
+                                                 is Response.Error -> {
+                                                     _state.value = Response.Error("Failed User Qty update in Cart")
+                                                 }
+                                                 else -> {
+                                                     _state.value = Response.Error("Failed User Qty update in Cart")
+                                                 }
+                                             }
+                                            }
+                                            is Response.Error -> {
+                                                _state.value = Response.Error("Failed Qty update")
+                                            }
+                                            else -> {
+                                                _state.value = Response.Error("Failed Qty update")
+                                            }
+                                        }
+                                    }else{
+                                        _state.value = Response.Error("Failed Qty update")
+                                    }
+
+                                }
+
+                            } else {
+                                val cartProduct = Product(productId = product.productId, productName = product.productName, productImage = product.productImage,
+                                productDiscountedPrice = product.productDiscountedPrice, productOriginalPrice = product.productOriginalPrice,
+                                productQtyUnits = product.productQtyUnits, productQty = product.productQty, userSelectedProductQty = 1,
+                                categoryName = product.categoryName, storeName = product.storeName)
+                                val cart = Cart(loggedInUserEmail = loggedInUserEmail, product = cartProduct)
+                                when (myCartFireStoreRepository.addProductToCart(cart)) {
+                                    is Response.Success -> {
+                                        _state.value = Response.SuccessConfirmation("Product Created")
+                                        if (isIncrement) {
+                                            existingQuantity -= 1
+                                        }else{
+                                            existingQuantity += 1
+                                        }
+                                        myCartFireStoreRepository.updateProductQuantity(
+                                            product.productId,
+                                            existingQuantity,
+                                            0)
+                                    }
+                                    is Response.Error -> {
+                                        _state.value = Response.Error("Error in Product Creation in Cart")
+                                    }
+                                    else -> {
+
+                                    }
                                 }
                             }
-                            is Response.Error -> {
-                                _state.value = Response.Error("Failed Qty update")
-                            }
-                            else -> {
-                                _state.value = Response.Error("Failed Qty update")
-                            }
                         }
-                    }else{
-                        _state.value = Response.Error("Failed Qty update")
+                        is Response.Error -> {
+                            _state.value = Response.Error("Error in Product Creation in Cart")
+                        }
+                        else -> {
+                            _state.value = Response.Error("Error in Product Creation in Cart")
+                        }
                     }
                 }
                 else{

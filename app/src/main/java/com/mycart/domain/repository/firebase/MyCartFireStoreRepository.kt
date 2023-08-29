@@ -1,10 +1,7 @@
 package com.mycart.domain.repository.firebase
 
 import androidx.room.PrimaryKey
-import com.mycart.domain.model.Category
-import com.mycart.domain.model.Product
-import com.mycart.domain.model.Store
-import com.mycart.domain.model.User
+import com.mycart.domain.model.*
 import com.mycart.ui.common.Response
 
 typealias AddUserResponse = Response<Boolean>
@@ -19,6 +16,10 @@ typealias ProductAvailableResponse = Response<Boolean>
 typealias DeleteProductResponse = Response<Boolean>
 typealias EditProductResponse = Response<Boolean>
 typealias EditProductQuantityResponse = Response<Boolean>
+
+typealias ProductAvailableInCartResponse = Response<Boolean>
+typealias AddProductCartResponse = Response<Boolean>
+typealias EditProductQuantityInCartResponse = Response<Boolean>
 
 interface MyCartFireStoreRepository {
 
@@ -45,6 +46,11 @@ interface MyCartFireStoreRepository {
     suspend fun fetchProductInfo(categoryName: String,store: String,productName:String):Product?
     suspend fun editProductInfo(product:Product):EditProductResponse
     suspend fun fetchProductQuantity(categoryName: String,store: String,productName:String):Int
-    suspend fun fetchUserSelectedProductQuantity(categoryName: String,store: String,productName:String):Int
     suspend fun updateProductQuantity(productID:String,productQty:Int,userSelectedQty:Int):EditProductQuantityResponse
+
+    suspend fun fetchUserSelectedProductQuantity(loggedInUserEmail:String,categoryName: String,store: String,productName:String):Int
+    suspend fun isProductAvailableInCart(productName:String,categoryName: String,store:String,userEmail:String) : ProductAvailableInCartResponse
+    suspend fun addProductToCart(cartProduct: Cart) : AddProductCartResponse
+    suspend fun updateUserSelectedQuantity(cartId:String,productQty:Int,userSelectedQty:Int,userEmail:String):EditProductQuantityInCartResponse
+    suspend fun fetchCartInfo(productName:String,categoryName: String,store:String,userEmail:String):Cart?
 }

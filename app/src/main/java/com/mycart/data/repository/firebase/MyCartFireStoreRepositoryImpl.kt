@@ -1,10 +1,7 @@
 package com.mycart.data.repository.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.mycart.domain.model.Category
-import com.mycart.domain.model.Product
-import com.mycart.domain.model.Store
-import com.mycart.domain.model.User
+import com.mycart.domain.model.*
 import com.mycart.domain.repository.firebase.*
 import com.mycart.ui.common.Response
 import kotlinx.coroutines.tasks.await
@@ -386,16 +383,18 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     }
 
     override suspend fun fetchUserSelectedProductQuantity(
+        loggedInUserEmail:String,
         categoryName: String,
         store: String,
         productName: String
     ): Int {
         var quantity = -1
         try {
-            val querySnapshot = fireStore.collection("products")
-                .whereEqualTo("storeName", store)
-                .whereEqualTo("categoryName", categoryName)
-                .whereEqualTo("productName", productName)
+            val querySnapshot = fireStore.collection("cart")
+                .whereEqualTo("loggedInUserEmail",loggedInUserEmail)
+                .whereEqualTo("product.storeName", store)
+                .whereEqualTo("product..categoryName", categoryName)
+                .whereEqualTo("product.productName", productName)
                 .get()
                 .await()
 
@@ -425,12 +424,90 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         productDocRef.update(
             mapOf(
                 "productQty" to productQty,
-                "userSelectedProductQty" to userSelectedQty
+                "userSelectedProductQty" to 0
             )
         ).await()
         Response.Success(true)
     }catch (e: Exception) {
         Response.Error(e.message.toString())
     }
+
+    override suspend fun isProductAvailableInCart(
+        productName: String,
+        categoryName: String,
+        store: String,
+        userEmail:String
+    ): ProductAvailableInCartResponse = try {
+        val querySnapshot = fireStore.collection("cart")
+            .whereEqualTo("loggedInUserEmail",userEmail)
+            .whereEqualTo("product.storeName", store)
+            .whereEqualTo("product.categoryName",categoryName)
+            .whereEqualTo("product.productName",productName)
+            .get()
+            .await()
+
+        val productExists = querySnapshot.documents.any { documentSnapshot ->
+            val cart = documentSnapshot.toObject(Cart::class.java)
+            cart?.product?.productName == productName
+
+        }
+        if (productExists) {
+            Response.Success(true)
+        } else {
+            Response.Success(false)
+        }
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun addProductToCart(cartProduct: Cart): AddProductCartResponse  = try {
+        fireStore.collection("cart")
+            .document(cartProduct.cartId)
+            .set(cartProduct)
+            .await()
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun updateUserSelectedQuantity(
+        cartId: String,
+        productQty: Int,
+        userSelectedQty: Int,
+        userEmail: String
+    ): EditProductQuantityInCartResponse = try {
+        val productDocRef = fireStore.collection("cart").document(cartId)
+        productDocRef.update(
+            mapOf(
+                "product.productQty" to productQty,
+                "product.userSelectedProductQty" to userSelectedQty
+            )
+        ).await()
+        Response.Success(true)
+    }catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
+    override suspend fun fetchCartInfo(
+        productName: String,
+        categoryName: String,
+        store: String,
+        userEmail: String
+    ): Cart? {
+        val querySnapshot = fireStore.collection("cart")
+            .whereEqualTo("loggedInUserEmail",userEmail)
+            .whereEqualTo("product.storeName", store)
+            .whereEqualTo("product.categoryName",categoryName)
+            .whereEqualTo("product.productName",productName)
+
+            .get()
+            .await()
+
+        val cartProduct: List<Cart> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Cart::class.java)
+        }
+        return cartProduct.firstOrNull()
+    }
+
 
 }

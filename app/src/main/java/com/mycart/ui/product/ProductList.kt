@@ -186,13 +186,21 @@ fun DisplayProductList(
                 productList = productList,
                 isAdmin,
                 onPlusClick = {productIncrement:Product,canIncrement:Boolean ->
-                    productViewModel.updateProductQuantity(productIncrement,true)
+                    userEmail?.let { email ->
+                        productViewModel.updateProductQuantity(email,productIncrement,true)
+                    }
+
                 },
                 onMinusClick = {productDecrement:Product,canIncrement:Boolean ->
-                    productViewModel.updateProductQuantity(productDecrement,false)
+                    userEmail?.let { email ->
+
+                        productViewModel.updateProductQuantity(email,productDecrement, false)
+                    }
                 },
                 onAddClick = { productToAdd: Product ->
-                   productViewModel.updateProductQuantity(productToAdd,true)
+                    userEmail?.let { email ->
+                        productViewModel.updateProductQuantity(email, productToAdd, true)
+                    }
 
                 },
                 onAddToCart = { canAdd ->
@@ -246,236 +254,7 @@ fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean
     }
 }
 
-@Composable
-fun ProductListItem(category: Category, product: Product, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onAddToCart:(Boolean) -> Unit,onDelete: (Product) -> Unit) {
-    var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
-    val constraintSet = productListItemConstraints()
-    BoxWithConstraints(
-        modifier = Modifier
-            .padding(top = 0.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
-            .border(
-                BorderStroke(1.dp, Color.LightGray),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(8.dp)
-    ) {
-        ConstraintLayout(constraintSet, modifier = Modifier.fillMaxWidth()) {
-            Box(
-                Modifier
-                    .layoutId("productImage")
-                    .width(100.dp)
-                    .height(100.dp)
-                    .border(
-                        BorderStroke(1.dp, Color.LightGray)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                //FetchImageFromDrawable(imageName = "ic_baseline_shopping_cart_24")
-                FetchImageFromURLWithPlaceHolder(imageUrl = category.categoryImage)
-            }
 
-            Text(
-                text = product.productName, modifier = Modifier.layoutId("productName"),
-                fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = product.productQtyUnits, modifier = Modifier.layoutId("productUnit"),
-                fontSize = 16.sp, color = Color.Gray
-            )
-            Text(
-                text = product.productDiscountedPrice,
-                modifier = Modifier.layoutId("productDiscountedCost"),
-                fontSize = 16.sp,
-                color = Color.Blue,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = getStrikethroughAnnotatedString(product.productOriginalPrice),
-                modifier = Modifier.layoutId("productCost"),
-                fontSize = 16.sp
-            )
-
-            if (!isAdmin) {
-                if (showNumberPlusMinusLayout) {
-                    MinusNumberPlusLayout(Modifier.layoutId("minusPlusLayout"),
-                        onIncrement = {
-                            onPlusClick(product,it)
-                        } ,
-
-                        onDecrement = {
-                             onMinusClick(product,it)
-                        }
-                         ) { showAdd ->
-                        if (showAdd) {
-                            showNumberPlusMinusLayout = false
-                            onAddToCart(false)
-                        }
-                    }
-                } else {
-                    Button(
-                        onClick = {
-                            onAddClick(product)
-                            onAddToCart(true)
-                            showNumberPlusMinusLayout = true },
-                        Modifier.layoutId("productAddButton")
-                    ) {
-                        Text(text = "ADD")
-
-                    }
-
-                }
-            }
-            if (isAdmin) {
-
-                Icon(
-                    imageVector = Icons.Default.Edit, // Replace with your desired icon
-                    contentDescription = null, // Provide content description if needed
-                    modifier = Modifier
-                        .layoutId("editProductIcon")
-                        .clickable {
-                            onEdit(product)
-                        }
-                )
-
-                Icon(
-                    imageVector = Icons.Default.Delete, // Replace with your desired icon
-                    contentDescription = null, // Provide content description if needed
-                    modifier = Modifier
-                        .layoutId("deleteProductIcon")
-                        .clickable {
-                            onDelete(product)
-                        }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -> Unit,onDecrement:(Boolean)->Unit,showAdd: (Boolean) -> Unit) {
-    var quantity by remember { mutableStateOf(1) }
-    ConstraintLayout(
-        modifier = modifier,
-    ) {
-        val (minusButton, numberText, plusButton) = createRefs()
-
-        FetchImageWithBorderFromDrawable(
-            imageName = "ic_baseline_minus_24",
-            modifier = Modifier.constrainAs(minusButton) {
-                start.linkTo(parent.start)
-                top.linkTo(parent.top)
-
-            }) {
-            println("Clicked Minus ")
-            quantity -= 1
-            if (quantity < 1) {
-                quantity = 0
-                showAdd(true)
-            }
-            onDecrement(true)
-
-        }
-
-        DisplayBorderedLabel(label = quantity.toString(), modifier = Modifier
-            .constrainAs(numberText) {
-                start.linkTo(minusButton.end)
-                top.linkTo(parent.top)
-            }
-            .size(25.dp)
-            .border(1.dp, Color.Blue)
-            .wrapContentSize(Alignment.Center))
-
-
-        FetchImageWithBorderFromDrawable(
-            imageName = "ic_baseline_add_24",
-            modifier = Modifier.constrainAs(plusButton) {
-                start.linkTo(numberText.end)
-                top.linkTo(parent.top)
-
-            }) {
-            println("Clicked Plus")
-            quantity += 1
-            if (quantity > 3) {
-                quantity = 3
-            }else{
-                onIncrement(true)
-            }
-        }
-    }
-}
-
-private fun productListItemConstraints(): ConstraintSet {
-    return ConstraintSet {
-        val productImageRef = createRefFor("productImage")
-        val productNameRef = createRefFor("productName")
-        val productUnitRef = createRefFor("productUnit")
-        val productCostRef = createRefFor("productCost")
-        val productDiscountedCostRef = createRefFor("productDiscountedCost")
-        val productAddButtonRef = createRefFor("productAddButton")
-        val minusPlusLayoutRef = createRefFor("minusPlusLayout")
-        val deleteProductRef = createRefFor("deleteProductIcon")
-        val editProductRef = createRefFor("editProductIcon")
-
-        constrain(productImageRef) {
-            top.linkTo(parent.top, 5.dp)
-            start.linkTo(parent.start, 10.dp)
-            width = Dimension.wrapContent
-
-        }
-
-        constrain(productNameRef) {
-            top.linkTo(parent.top, 5.dp)
-            start.linkTo(productImageRef.end, 5.dp)
-            width = Dimension.fillToConstraints
-
-        }
-
-        constrain(productUnitRef) {
-            top.linkTo(productNameRef.bottom, 5.dp)
-            start.linkTo(productImageRef.end, 5.dp)
-            width = Dimension.wrapContent
-
-        }
-
-        constrain(productDiscountedCostRef) {
-            top.linkTo(productUnitRef.bottom, 5.dp)
-            start.linkTo(productImageRef.end, 5.dp)
-            width = Dimension.wrapContent
-        }
-
-        constrain(productCostRef) {
-            top.linkTo(productUnitRef.bottom, 5.dp)
-            start.linkTo(productDiscountedCostRef.end, 5.dp)
-            width = Dimension.wrapContent
-        }
-
-        constrain(productAddButtonRef) {
-            top.linkTo(productCostRef.bottom, 10.dp)
-            end.linkTo(parent.end, 5.dp)
-            width = Dimension.wrapContent
-        }
-        constrain(minusPlusLayoutRef) {
-            top.linkTo(productCostRef.bottom, 10.dp)
-            end.linkTo(parent.end, 5.dp)
-            width = Dimension.wrapContent
-        }
-        constrain(deleteProductRef) {
-            top.linkTo(productCostRef.bottom, 20.dp)
-            end.linkTo(productAddButtonRef.start, 10.dp)
-            width = Dimension.wrapContent
-        }
-
-        constrain(editProductRef) {
-            top.linkTo(productCostRef.bottom, 20.dp)
-            end.linkTo(deleteProductRef.start, 10.dp)
-            width = Dimension.wrapContent
-        }
-
-    }
-
-
-}
 
 @Composable
 fun ShowLogOutDialog(productViewModel: ProductViewModel, canShowDialog: (Boolean) -> Unit) {
@@ -502,8 +281,7 @@ fun ShowLogOutDialog(productViewModel: ProductViewModel, canShowDialog: (Boolean
 fun DeleteProduct(
     selectedProduct: Product,
     productViewModel: ProductViewModel,
-    canShowDialog: (Boolean) -> Unit
-) {
+    canShowDialog: (Boolean) -> Unit) {
     DisplaySimpleAlertDialog(
         title = "Delete Product",
         description = "Do you want to Delete selected Product ?",
@@ -523,17 +301,3 @@ fun DeleteProduct(
     )
 }
 
-fun getStrikethroughAnnotatedString(input: String): AnnotatedString {
-    return AnnotatedString.Builder().apply {
-        withStyle(
-            style = SpanStyle(
-                textDecoration = TextDecoration.LineThrough,
-                color = Color.Gray
-            )
-        ) {
-            append("(")
-            append(input)
-            append(")")
-        }
-    }.toAnnotatedString()
-}
