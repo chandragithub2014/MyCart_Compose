@@ -20,6 +20,7 @@ typealias EditProductQuantityResponse = Response<Boolean>
 typealias ProductAvailableInCartResponse = Response<Boolean>
 typealias AddProductCartResponse = Response<Boolean>
 typealias EditProductQuantityInCartResponse = Response<Boolean>
+typealias DeleteCartProductResponse = Response<Boolean>
 
 interface MyCartFireStoreRepository {
 
@@ -53,4 +54,5 @@ interface MyCartFireStoreRepository {
     suspend fun addProductToCart(cartProduct: Cart) : AddProductCartResponse
     suspend fun updateUserSelectedQuantity(cartId:String,productQty:Int,userSelectedQty:Int,userEmail:String):EditProductQuantityInCartResponse
     suspend fun fetchCartInfo(productName:String,categoryName: String,store:String,userEmail:String):Cart?
+    suspend fun deleteProductFromCart(product: Product,loggedInUserEmail:String):DeleteCartProductResponse
 }

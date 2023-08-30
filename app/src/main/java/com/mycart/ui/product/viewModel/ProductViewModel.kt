@@ -277,6 +277,9 @@ class ProductViewModel(
                                                  is Response.Success -> {
                                                      _state.value =
                                                          Response.SuccessConfirmation("Edited Product in Cart", false)
+                                                     if(existingUserQuantity == 0){
+                                                         deleteProductFromCart(product,loggedInUserEmail)
+                                                     }
                                                  }
                                                  is Response.Error -> {
                                                      _state.value = Response.Error("Failed User Qty update in Cart")
@@ -337,6 +340,29 @@ class ProductViewModel(
                 }
                 else{
                     _state.value = Response.Error("Failed Qty update")
+                }
+            }catch (e: Exception) {
+                _state.value = Response.Error("${e.message}")
+            }
+        }
+    }
+
+  private  fun deleteProductFromCart(product: Product,loggedUserEmail:String){
+        viewModelScope.launch {
+            try{
+                _state.value = Response.Loading
+                when (myCartFireStoreRepository.deleteProductFromCart(
+                    product,loggedUserEmail
+                )){
+                    is Response.Success -> {
+                        _state.value = Response.SuccessConfirmation("",false)
+                    }
+                    is Response.Error -> {
+                        _state.value = Response.Error("Error in Product Deletion from Cart")
+                    }
+                    else -> {
+
+                    }
                 }
             }catch (e: Exception) {
                 _state.value = Response.Error("${e.message}")

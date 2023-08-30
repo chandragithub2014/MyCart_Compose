@@ -509,5 +509,25 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         return cartProduct.firstOrNull()
     }
 
+    override suspend fun deleteProductFromCart(
+        product: Product,
+        loggedInUserEmail: String
+    ): DeleteCartProductResponse  = try {
+        val querySnapshot = fireStore.collection("cart")
+            .whereEqualTo("loggedInUserEmail",loggedInUserEmail)
+            .whereEqualTo("product.storeName", product.storeName)
+            .whereEqualTo("product.categoryName", product.categoryName)
+            .whereEqualTo("product.productName", product.productName)
+            .get()
+            .await()
+        for (documentSnapshot in querySnapshot.documents) {
+            val productDocumentRef = documentSnapshot.reference
+            productDocumentRef.delete().await()
+        }
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
+
 
 }

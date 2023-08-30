@@ -19,7 +19,7 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -
         modifier = modifier,
     ) {
         val (minusButton, numberText, plusButton) = createRefs()
-
+//Minus ImageView
         FetchImageWithBorderFromDrawable(
             imageName = "ic_baseline_minus_24",
             modifier = Modifier.constrainAs(minusButton) {
@@ -46,7 +46,7 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -
             .border(1.dp, Color.Blue)
             .wrapContentSize(Alignment.Center))
 
-
+//Plus Image View
         FetchImageWithBorderFromDrawable(
             imageName = "ic_baseline_add_24",
             modifier = Modifier.constrainAs(plusButton) {
