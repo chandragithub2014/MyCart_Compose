@@ -34,3 +34,17 @@ fun navigateToEditProduct(
     navController.popBackStack()
     navController.navigate("editProduct/${categoryName}/${storeName}/${productName}/$userEmail")
 }
+
+
+fun navigateToCart(
+    navController: NavHostController,
+    categoryName: String,
+    storeName: String,
+    userEmail: String?
+) {
+    userEmail?.let { email ->
+        navController.popBackStack()
+        navController.navigate("cartList/${email}/${storeName}/${categoryName}")
+    }
+
+}

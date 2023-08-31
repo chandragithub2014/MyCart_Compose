@@ -17,7 +17,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -113,4 +117,19 @@ fun DisplayBorderedLabel(label:String,modifier: Modifier=Modifier){
         modifier = modifier
 
     )
+}
+
+fun getStrikethroughAnnotatedString(input: String): AnnotatedString {
+    return AnnotatedString.Builder().apply {
+        withStyle(
+            style = SpanStyle(
+                textDecoration = TextDecoration.LineThrough,
+                color = Color.Gray
+            )
+        ) {
+            append("(")
+            append(input)
+            append(")")
+        }
+    }.toAnnotatedString()
 }

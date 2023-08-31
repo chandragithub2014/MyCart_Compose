@@ -55,4 +55,5 @@ interface MyCartFireStoreRepository {
     suspend fun updateUserSelectedQuantity(cartId:String,productQty:Int,userSelectedQty:Int,userEmail:String):EditProductQuantityInCartResponse
     suspend fun fetchCartInfo(productName:String,categoryName: String,store:String,userEmail:String):Cart?
     suspend fun deleteProductFromCart(product: Product,loggedInUserEmail:String):DeleteCartProductResponse
+    suspend fun fetchProductListFromCart(userEmail:String,store:String) : List<Cart>
 }

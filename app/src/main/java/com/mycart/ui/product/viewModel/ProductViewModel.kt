@@ -238,7 +238,7 @@ class ProductViewModel(
         }
     }
 
-    fun updateProductQuantity(loggedInUserEmail:String,product: Product,isIncrement : Boolean = false){
+    fun updateProductQuantity(loggedInUserEmail:String,product: Product,isIncrement : Boolean = false,productImage:String){
         viewModelScope.launch {
             try {
                 _state.value = Response.Loading
@@ -303,7 +303,7 @@ class ProductViewModel(
                                 }
 
                             } else {
-                                val cartProduct = Product(productId = product.productId, productName = product.productName, productImage = product.productImage,
+                                val cartProduct = Product(productId = product.productId, productName = product.productName, productImage = productImage,
                                 productDiscountedPrice = product.productDiscountedPrice, productOriginalPrice = product.productOriginalPrice,
                                 productQtyUnits = product.productQtyUnits, productQty = product.productQty, userSelectedProductQty = 1,
                                 categoryName = product.categoryName, storeName = product.storeName)

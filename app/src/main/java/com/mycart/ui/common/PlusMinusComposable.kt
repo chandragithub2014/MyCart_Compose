@@ -13,8 +13,8 @@ import com.mycart.ui.utils.DisplayBorderedLabel
 import com.mycart.ui.utils.FetchImageWithBorderFromDrawable
 
 @Composable
-fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -> Unit, onDecrement:(Boolean)->Unit, showAdd: (Boolean) -> Unit) {
-    var quantity by remember { mutableStateOf(1) }
+fun MinusNumberPlusLayout(modifier: Modifier = Modifier, initialQuantity:Int = 1,onIncrement:(Boolean) -> Unit, onDecrement:(Boolean)->Unit, showAdd: (Boolean) -> Unit) {
+    var quantity by remember { mutableStateOf(initialQuantity) }
     ConstraintLayout(
         modifier = modifier,
     ) {
@@ -56,11 +56,16 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, onIncrement:(Boolean) -
             }) {
             println("Clicked Plus")
             quantity += 1
-            if (quantity > 3) {
+            if(quantity <= 3){
+                onIncrement(true)
+            }else{
+                quantity = 3
+            }
+           /* if (quantity > 3) {
                 quantity = 3
             }else{
                 onIncrement(true)
-            }
+            }*/
         }
     }
 }

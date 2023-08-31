@@ -529,5 +529,22 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Error(e.message.toString())
     }
 
+    override suspend fun fetchProductListFromCart(userEmail: String, store: String): List<Cart> {
+        val productList: MutableList<Cart>
+        val querySnapshot = fireStore.collection("cart")
+            .whereEqualTo("product.storeName", store)
+            .whereEqualTo("loggedInUserEmail",userEmail)
+            .get()
+            .await()
+
+        val cartList: List<Cart> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Cart::class.java)
+        }
+
+        productList = cartList.toMutableList()
+
+        return productList
+    }
+
 
 }

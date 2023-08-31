@@ -10,6 +10,7 @@ import com.mycart.data.repository.firebase.MyCartFireStoreRepositoryImpl
 import com.mycart.domain.repository.MyCartRepository
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
+import com.mycart.ui.cart.viewModel.CartViewModel
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.launcher.viewmodel.AppLauncherViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
@@ -36,6 +37,7 @@ val appModule = module {
     single<MyCartFireStoreRepository>{ MyCartFireStoreRepositoryImpl(get()) }
     viewModel { CategoryViewModel(get(),get()) }
     viewModel { ProductViewModel(get(),get()) }
+    viewModel{CartViewModel(get(),get())}
     viewModel { RegistrationViewModel(get(),get()) }
     viewModel{LoginViewModel(get())}
     viewModel{StoreViewModel(get(),get())}

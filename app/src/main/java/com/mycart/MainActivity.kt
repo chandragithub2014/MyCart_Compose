@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mycart.ui.cart.CartComposable
 import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.category.CreateCategory
@@ -185,6 +186,32 @@ fun Navigator(navHostController: NavHostController) {
                 }
             }
         }
+
+        composable(
+            "cartList/{emailId}/{store}/{category}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType },
+                navArgument("store") { type = NavType.StringType },
+                navArgument("category") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("emailId")
+            val storeName = backStackEntry.arguments?.getString("store")
+            val categoryName = backStackEntry.arguments?.getString("category")
+            email?.let { userEmail ->
+                storeName?.let { store ->
+                    categoryName?.let { category->
+                        CartComposable(
+                            userEmail,
+                            store,
+                            category,
+                            navController = navHostController
+                        )
+                    }
+
+                }
+            }
+        }
+
     }
 
 

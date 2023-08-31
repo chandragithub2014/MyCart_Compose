@@ -19,6 +19,7 @@ enum class DataType {
     DEALS,
     SEASONALDEALS,
     STORE,
-    PRODUCT
+    PRODUCT,
+    CART
     // Add more types as needed
 }

@@ -34,6 +34,7 @@ import com.google.common.io.Files.append
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.domain.model.User
+import com.mycart.navigator.navigateToCart
 import com.mycart.navigator.navigateToCategoryList
 import com.mycart.navigator.navigateToEditProduct
 import com.mycart.navigator.navigateToProductList
@@ -161,7 +162,7 @@ fun DisplayProductList(
         canShowCart = true,
         cartItemCount = cartCount,
         onCartClick = {
-
+           navigateToCart(navController,category,storeName,userEmail)
         },
         onLogoutClick = {
             // Handle logout action
@@ -187,19 +188,18 @@ fun DisplayProductList(
                 isAdmin,
                 onPlusClick = {productIncrement:Product,canIncrement:Boolean ->
                     userEmail?.let { email ->
-                        productViewModel.updateProductQuantity(email,productIncrement,true)
+                        productViewModel.updateProductQuantity(email,productIncrement,true,categoryInfo.categoryImage)
                     }
 
                 },
                 onMinusClick = {productDecrement:Product,canIncrement:Boolean ->
                     userEmail?.let { email ->
-
-                        productViewModel.updateProductQuantity(email,productDecrement, false)
+                        productViewModel.updateProductQuantity(email,productDecrement, false,categoryInfo.categoryImage)
                     }
                 },
                 onAddClick = { productToAdd: Product ->
                     userEmail?.let { email ->
-                        productViewModel.updateProductQuantity(email, productToAdd, true)
+                        productViewModel.updateProductQuantity(email, productToAdd, true,categoryInfo.categoryImage)
                     }
 
                 },
