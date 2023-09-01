@@ -33,6 +33,9 @@ import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 @Composable
 fun ProductListItem(category: Category, product: Product, isAdmin: Boolean, onPlusClick:(Product, Boolean) -> Unit, onMinusClick:(Product, Boolean) -> Unit, onAddClick: (Product) -> Unit, onEdit:(Product) -> Unit, onAddToCart:(Boolean) -> Unit, onDelete: (Product) -> Unit) {
     var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
+    if(product.userSelectedProductQty > 0){
+        showNumberPlusMinusLayout = true
+    }
     val constraintSet = productListItemConstraints()
     BoxWithConstraints(
         modifier = Modifier
@@ -84,6 +87,7 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean, onPl
                 if (showNumberPlusMinusLayout) {
                     MinusNumberPlusLayout(
                         Modifier.layoutId("minusPlusLayout"),
+                        initialQuantity = if (product.userSelectedProductQty > 0) product.userSelectedProductQty else 1,
                         onIncrement = {
                             onPlusClick(product,it)
                         } ,

@@ -12,6 +12,7 @@ import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.cart.viewModel.CartViewModel
 import com.mycart.ui.category.viewmodel.CategoryViewModel
+import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.launcher.viewmodel.AppLauncherViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.product.viewModel.ProductViewModel
@@ -42,4 +43,5 @@ val appModule = module {
     viewModel{LoginViewModel(get())}
     viewModel{StoreViewModel(get(),get())}
     viewModel{AppLauncherViewModel(get())}
+
 }

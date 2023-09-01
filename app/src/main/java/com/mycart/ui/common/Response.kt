@@ -11,6 +11,7 @@ sealed class Response<out T> {
     object SignOut : Response<Nothing>()
     object Login: Response<Nothing>()
     object Empty:Response<Nothing>()
+    object Refresh : Response<Nothing>()
 
 }
 

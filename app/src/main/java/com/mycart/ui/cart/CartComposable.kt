@@ -37,6 +37,8 @@ fun CartComposable(
     val context = LocalContext.current
     var isLogOut by remember { mutableStateOf(false) }
 
+
+
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
             cartViewModel.fetchProductListFromCart(email, storeName)
@@ -84,6 +86,12 @@ fun CartComposable(
             is Response.SuccessConfirmation -> {
                 showProgress = false
             }
+            is Response.Refresh -> {
+                showProgress = false
+                userEmail?.let { email ->
+                    cartViewModel.fetchProductListFromCart(email, storeName)
+                }
+            }
             else -> {
                 showProgress = false
             }
@@ -113,6 +121,7 @@ fun CartComposable(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
+
         if (showProgress) {
             ProgressBar()
         }

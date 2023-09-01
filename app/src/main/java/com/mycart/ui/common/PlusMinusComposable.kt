@@ -14,7 +14,13 @@ import com.mycart.ui.utils.FetchImageWithBorderFromDrawable
 
 @Composable
 fun MinusNumberPlusLayout(modifier: Modifier = Modifier, initialQuantity:Int = 1,onIncrement:(Boolean) -> Unit, onDecrement:(Boolean)->Unit, showAdd: (Boolean) -> Unit) {
+    println("Initial Quantity is $initialQuantity")
     var quantity by remember { mutableStateOf(initialQuantity) }
+
+    LaunchedEffect(initialQuantity) {
+        quantity = initialQuantity
+    }
+    println("Quantity is .................$quantity")
     ConstraintLayout(
         modifier = modifier,
     ) {
@@ -36,7 +42,7 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, initialQuantity:Int = 1
             onDecrement(true)
 
         }
-
+        println(" Quantity is $quantity")
         DisplayBorderedLabel(label = quantity.toString(), modifier = Modifier
             .constrainAs(numberText) {
                 start.linkTo(minusButton.end)

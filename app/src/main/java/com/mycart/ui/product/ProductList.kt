@@ -77,7 +77,7 @@ fun DisplayProductList(
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
-            productViewModel.checkForAdminFromFireStore(email)
+            productViewModel.checkForAdmin(email)
         }
     }
 
@@ -102,7 +102,6 @@ fun DisplayProductList(
                 }
 
             }
-
 
             is Response.Success -> {
                 when ((currentState as Response.Success).data) {
@@ -136,7 +135,14 @@ fun DisplayProductList(
                         productList =
                             (currentState as Response.SuccessList).dataList.filterIsInstance<Product>()
                         showProgress = false
+                        userEmail?.let { email ->
+                            productViewModel.fetchProductListFromCart(email,storeName)
+                        }
 
+                    }
+                    DataType.CART ->{
+                        cartCount = productViewModel.cartCount.value
+                        showProgress = false
                     }
                     else -> {
 

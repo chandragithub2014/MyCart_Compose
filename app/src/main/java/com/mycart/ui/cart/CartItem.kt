@@ -25,8 +25,12 @@ import com.mycart.ui.utils.getStrikethroughAnnotatedString
 
 @Composable
 fun CartListItem(loggedInUserEmail:String, store:String, cart: Cart, onPlusClick:(Product, Boolean) -> Unit, onMinusClick:(Product, Boolean) -> Unit) {
-    val showNumberPlusMinusLayout by remember { mutableStateOf(true) }
+    println("Received Cart is $cart")
+    var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
     val constraintSet = productListItemConstraints()
+    if(cart.product.userSelectedProductQty > 0) {
+        showNumberPlusMinusLayout = true
+    }
     BoxWithConstraints(
         modifier = Modifier
             .padding(top = 0.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
@@ -85,6 +89,7 @@ fun CartListItem(loggedInUserEmail:String, store:String, cart: Cart, onPlusClick
                     }
                 ) { showAdd ->
                     if (showAdd) {
+                        showNumberPlusMinusLayout = false
                       //Delete that Product from Cart
                         // This is Irrelevant in Cart , but is relevant in Product screen
 
