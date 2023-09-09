@@ -31,11 +31,11 @@ import com.mycart.domain.model.Product
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 @Composable
-fun ProductListItem(category: Category, product: Product, isAdmin: Boolean, onPlusClick:(Product, Boolean) -> Unit, onMinusClick:(Product, Boolean) -> Unit, onAddClick: (Product) -> Unit, onEdit:(Product) -> Unit, onAddToCart:(Boolean) -> Unit, onDelete: (Product) -> Unit) {
+fun ProductListItem(category: Category, product: Product,userSelectedQty:Int = 0, isAdmin: Boolean, onPlusClick:(Product, Boolean) -> Unit, onMinusClick:(Product, Boolean) -> Unit, onAddClick: (Product) -> Unit, onEdit:(Product) -> Unit, onAddToCart:(Boolean) -> Unit, onDelete: (Product) -> Unit) {
     var showNumberPlusMinusLayout by remember { mutableStateOf(false) }
-    if(product.userSelectedProductQty > 0){
-        showNumberPlusMinusLayout = true
-    }
+
+    showNumberPlusMinusLayout = userSelectedQty > 0
+    println("UserSelected Quantity is $userSelectedQty and $showNumberPlusMinusLayout")
     val constraintSet = productListItemConstraints()
     BoxWithConstraints(
         modifier = Modifier
@@ -87,7 +87,7 @@ fun ProductListItem(category: Category, product: Product, isAdmin: Boolean, onPl
                 if (showNumberPlusMinusLayout) {
                     MinusNumberPlusLayout(
                         Modifier.layoutId("minusPlusLayout"),
-                        initialQuantity = if (product.userSelectedProductQty > 0) product.userSelectedProductQty else 1,
+                        initialQuantity = if (userSelectedQty > 0) userSelectedQty else 1,
                         onIncrement = {
                             onPlusClick(product,it)
                         } ,

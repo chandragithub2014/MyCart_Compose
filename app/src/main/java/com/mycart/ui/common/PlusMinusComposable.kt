@@ -34,11 +34,11 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, initialQuantity:Int = 1
 
             }) {
             println("Clicked Minus ")
-            quantity -= 1
+            /*quantity -= 1
             if (quantity < 1) {
                 quantity = 0
                 showAdd(true)
-            }
+            }*/
             onDecrement(true)
 
         }
@@ -61,12 +61,14 @@ fun MinusNumberPlusLayout(modifier: Modifier = Modifier, initialQuantity:Int = 1
 
             }) {
             println("Clicked Plus")
-            quantity += 1
+           /* quantity += 1
             if(quantity <= 3){
                 onIncrement(true)
             }else{
                 quantity = 3
-            }
+            }*/
+
+            onIncrement(true)
            /* if (quantity > 3) {
                 quantity = 3
             }else{

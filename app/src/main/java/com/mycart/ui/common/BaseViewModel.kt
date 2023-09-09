@@ -29,6 +29,15 @@ open class BaseViewModel(
     private var _refreshCart = mutableStateOf(false)
     val refreshCart: State<Boolean> = _refreshCart
 
+    private var _userSelectedQuantity = mutableStateOf(0)
+    val userSelectedQuantity :State<Int> = _userSelectedQuantity
+
+    private var _cartProductList = mutableStateOf(listOf<Cart>())
+    val cartProductList:State<List<Cart>> = _cartProductList
+
+    private var _maxProductAddCountWarning = mutableStateOf(0)
+    val maxProductAddCountWarning:State<Int> = _maxProductAddCountWarning
+
     fun checkForAdmin(email: String) {
         viewModelScope.launch {
             try {
@@ -84,9 +93,18 @@ open class BaseViewModel(
                                         if (isIncrement) {
                                             existingQuantity -= 1
                                             existingUserQuantity += 1
+                                            if(existingUserQuantity >=4){
+                                                existingUserQuantity = 3
+                                                _maxProductAddCountWarning.value = existingUserQuantity
+                                            }else{
+                                                _maxProductAddCountWarning.value = 0
+                                            }
                                         } else {
                                             existingQuantity += 1
                                             existingUserQuantity -= 1
+                                            if(existingUserQuantity < 3){
+                                                _maxProductAddCountWarning.value = 0
+                                            }
                                         }
                                         val updateProductQuantityResponse =
                                             myCartFireStoreRepository.updateProductQuantity(
@@ -105,6 +123,7 @@ open class BaseViewModel(
                                                     is Response.Success -> {
                                                         /*   _state.value =
                                                                Response.SuccessConfirmation("Edited Product in Cart", false)*/
+                                                        _userSelectedQuantity.value = existingUserQuantity
                                                         updateState(
                                                             (Response.SuccessConfirmation(
                                                                 "Edited Product in Cart",
@@ -203,6 +222,7 @@ open class BaseViewModel(
             } catch (e: Exception) {
                 updateState((Response.Error("${e.message}")))
             }
+            fetchProductListFromCart(loggedInUserEmail,product.storeName)
         }
     }
 

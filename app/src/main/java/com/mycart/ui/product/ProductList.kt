@@ -31,6 +31,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.google.common.io.Files.append
+import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.domain.model.User
@@ -60,20 +61,21 @@ fun DisplayProductList(
     productViewModel: ProductViewModel = get()
 ) {
     var productList by rememberSaveable { mutableStateOf(listOf<Product>()) }
+    var cartProductList by rememberSaveable { mutableStateOf(listOf<Cart>()) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val currentState by productViewModel.state.collectAsState()
     var isAdmin by rememberSaveable {
         mutableStateOf(false)
     }
-    var canShowMinusPlusLayout by rememberSaveable { mutableStateOf(false) }
     var categoryInfo by remember { mutableStateOf(Category()) }
     var isLogOut by remember { mutableStateOf(false) }
-    var selectedProduct by remember { mutableStateOf(Product())}
+    var selectedProduct by remember { mutableStateOf(Product()) }
     var showDialog by remember { mutableStateOf(false) }
     var cartCount by remember {
         mutableStateOf(0)
     }
+    var maxProductCountWarning by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -107,11 +109,6 @@ fun DisplayProductList(
                 when ((currentState as Response.Success).data) {
                     is User -> {
                         val user = (currentState as Response.Success).data as User
-                        /*if (user.admin) {
-                           // categoryViewModel.fetchCategoryByStoreFromFireStore(user.userStore)
-                        } else {
-                           // categoryViewModel.fetchCategoryByStoreFromFireStore(storeName)
-                        }*/
                         productViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(
                             category,
                             storeName
@@ -136,13 +133,18 @@ fun DisplayProductList(
                             (currentState as Response.SuccessList).dataList.filterIsInstance<Product>()
                         showProgress = false
                         userEmail?.let { email ->
-                            productViewModel.fetchProductListFromCart(email,storeName)
+                            productViewModel.fetchProductListFromCart(email, storeName)
                         }
 
                     }
-                    DataType.CART ->{
+                    DataType.CART -> {
                         cartCount = productViewModel.cartCount.value
+                        cartProductList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Cart>()
                         showProgress = false
+
+                        println("ProductCount and ProductList is $cartCount $cartProductList")
+
                     }
                     else -> {
 
@@ -151,6 +153,14 @@ fun DisplayProductList(
             }
             is Response.SuccessConfirmation -> {
                 showProgress = false
+                //    userSelectedQuantityInCart = productViewModel.userSelectedQuantity.value
+
+            }
+            is Response.Refresh -> {
+                showProgress = false
+                userEmail?.let { email ->
+                    productViewModel.fetchProductListFromCart(email, storeName)
+                }
             }
             else -> {
                 showProgress = false
@@ -168,7 +178,7 @@ fun DisplayProductList(
         canShowCart = true,
         cartItemCount = cartCount,
         onCartClick = {
-           navigateToCart(navController,category,storeName,userEmail)
+            navigateToCart(navController, category, storeName, userEmail)
         },
         onLogoutClick = {
             // Handle logout action
@@ -184,66 +194,110 @@ fun DisplayProductList(
         floatingActionButtonPosition = FabPosition.End
     ) {
 
+        if (productViewModel.maxProductAddCountWarning.value == 3) {
+            Toast.makeText(context, "Maximum Count of 3 can be added..", Toast.LENGTH_LONG).show()
+        }
         if (showProgress) {
             ProgressBar()
         }
         if (!TextUtils.isEmpty(categoryInfo.categoryImage) && productList.isNotEmpty()) {
-            //ProductListItem(categoryInfo)
-            ProductList(category = categoryInfo,
-                productList = productList,
-                isAdmin,
-                onPlusClick = {productIncrement:Product,canIncrement:Boolean ->
-                    userEmail?.let { email ->
-                        productViewModel.updateProductQuantity(email,productIncrement,true,categoryInfo.categoryImage)
-                    }
+            userEmail?.let { email ->
 
-                },
-                onMinusClick = {productDecrement:Product,canIncrement:Boolean ->
-                    userEmail?.let { email ->
-                        productViewModel.updateProductQuantity(email,productDecrement, false,categoryInfo.categoryImage)
-                    }
-                },
-                onAddClick = { productToAdd: Product ->
-                    userEmail?.let { email ->
-                        productViewModel.updateProductQuantity(email, productToAdd, true,categoryInfo.categoryImage)
-                    }
 
-                },
-                onAddToCart = { canAdd ->
-                     if(canAdd){
-                         cartCount += 1
-                     }else{
-                         cartCount -= 1
-                     }
+                ProductList(
+                    email,
+                    category = categoryInfo,
+                    cartProductList = cartProductList,
+                    productList = productList,
+                    isAdmin,
+                    onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
 
-                },
-                onEdit = { selectedProductToEdit:Product ->
-                userEmail?.let { email ->
-                    navigateToEditProduct(navController, selectedProductToEdit.categoryName, selectedProductToEdit.storeName,selectedProductToEdit.productName,email)
+                        productViewModel.updateProductQuantity(
+                            email,
+                            productIncrement,
+                            true,
+                            categoryInfo.categoryImage
+                        )
+
+
+                    },
+                    onMinusClick = { productDecrement: Product, canIncrement: Boolean ->
+
+                        productViewModel.updateProductQuantity(
+                            email,
+                            productDecrement,
+                            false,
+                            categoryInfo.categoryImage
+                        )
+
+                    },
+                    onAddClick = { productToAdd: Product ->
+
+                        productViewModel.updateProductQuantity(
+                            email,
+                            productToAdd,
+                            true,
+                            categoryInfo.categoryImage
+                        )
+
+
+                    },
+                    onAddToCart = { canAdd ->
+                        if (canAdd) {
+                            cartCount += 1
+                        } else {
+                            cartCount -= 1
+                        }
+
+                    },
+                    onEdit = { selectedProductToEdit: Product ->
+
+                        navigateToEditProduct(
+                            navController,
+                            selectedProductToEdit.categoryName,
+                            selectedProductToEdit.storeName,
+                            selectedProductToEdit.productName,
+                            email
+                        )
+
+
+                    }
+                ) { toDeletedProduct ->
+                    selectedProduct = toDeletedProduct
+                    showDialog = true
                 }
+            }
+            if (isLogOut) {
+                ShowLogOutDialog(productViewModel) {
+                    isLogOut = it
+                }
+            }
 
-            }
-            ){ toDeletedProduct ->
-                selectedProduct = toDeletedProduct
-                showDialog = true
-            }
-        }
-        if (isLogOut) {
-            ShowLogOutDialog(productViewModel) {
-                isLogOut = it
-            }
-        }
-
-        if(showDialog){
-            DeleteProduct(selectedProduct, productViewModel) {
-                showDialog = it
+            if (showDialog) {
+                DeleteProduct(selectedProduct, productViewModel) {
+                    showDialog = it
+                }
             }
         }
     }
+
 }
 
 @Composable
-fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean,onPlusClick:(Product,Boolean) -> Unit,onMinusClick:(Product,Boolean) -> Unit,onAddClick: (Product) -> Unit,onEdit:(Product) -> Unit,onAddToCart:(Boolean) -> Unit,onDelete: (Product) -> Unit) {
+fun ProductList(
+    loggedInUserEmail: String,
+    category: Category,
+    cartProductList: List<Cart>,
+    productList: List<Product>,
+    isAdmin: Boolean,
+    onPlusClick: (Product, Boolean) -> Unit,
+    onMinusClick: (Product, Boolean) -> Unit,
+    onAddClick: (Product) -> Unit,
+    onEdit: (Product) -> Unit,
+    onAddToCart: (Boolean) -> Unit,
+    onDelete: (Product) -> Unit
+) {
+    println("CartProductList is $cartProductList")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -254,12 +308,29 @@ fun ProductList(category: Category, productList: List<Product>, isAdmin: Boolean
 
             ) {
             items(items = productList) { product ->
-                ProductListItem(category, product, isAdmin,onPlusClick,onMinusClick,onAddClick,onEdit,onAddToCart,onDelete)
+                val userSelectedQuantity = getUserSelectedProductQty(
+                    cartProductList,
+                    loggedInUserEmail,
+                    product.productName,
+                    product.storeName
+                )
+                println("UserSelectedQuantity is $userSelectedQuantity")
+                ProductListItem(
+                    category,
+                    product,
+                    userSelectedQty = userSelectedQuantity,
+                    isAdmin,
+                    onPlusClick,
+                    onMinusClick,
+                    onAddClick,
+                    onEdit,
+                    onAddToCart,
+                    onDelete
+                )
             }
         }
     }
 }
-
 
 
 @Composable
@@ -287,7 +358,8 @@ fun ShowLogOutDialog(productViewModel: ProductViewModel, canShowDialog: (Boolean
 fun DeleteProduct(
     selectedProduct: Product,
     productViewModel: ProductViewModel,
-    canShowDialog: (Boolean) -> Unit) {
+    canShowDialog: (Boolean) -> Unit
+) {
     DisplaySimpleAlertDialog(
         title = "Delete Product",
         description = "Do you want to Delete selected Product ?",
@@ -306,4 +378,28 @@ fun DeleteProduct(
         }
     )
 }
+
+
+fun getUserSelectedProductQty(
+    cartList: List<Cart>,
+    loggedInUserEmail: String,
+    productName: String,
+    storeName: String
+): Int {
+    // Filter the cartList based on the criteria
+    val filteredCartList = cartList.filter { cart ->
+        cart.loggedInUserEmail == loggedInUserEmail &&
+                cart.product.productName == productName &&
+                cart.product.storeName == storeName
+    }
+
+    // If there are matching items, return the userSelectedProductQty of the first item
+    if (filteredCartList.isNotEmpty()) {
+        return filteredCartList[0].product.userSelectedProductQty
+    }
+
+    // Return a default value (e.g., 0) if no matching items were found
+    return 0
+}
+
 
