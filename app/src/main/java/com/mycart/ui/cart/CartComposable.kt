@@ -3,12 +3,12 @@ package com.mycart.ui.cart
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.FabPosition
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -165,18 +165,40 @@ fun CartProductList(
     onPlusClick: (Product, Boolean) -> Unit,
     onMinusClick: (Product, Boolean) -> Unit
 ) {
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(10.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+        Column(modifier = Modifier.fillMaxSize()) {
 
-            ) {
+
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+
+        ) {
             items(items = productList) { cart ->
                 CartListItem(loggedInUser, storeName, cart, onPlusClick, onMinusClick)
             }
         }
+
+        Button(
+            onClick = {
+                // Handle button click
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(text = "Check out")
+        }
+        }
     }
+
 }
+
