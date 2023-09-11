@@ -546,5 +546,23 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         return productList
     }
 
+    override suspend fun createOrder(order: Order): AddOrderResponse = try {
+        fireStore.collection("orders")
+            .document(order.orderId)
+            .set(order)
+            .await()
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
 
+    override suspend fun createOrderDetails(orderDetail: OrderDetail): CreateOrderDetailResponse  = try {
+        fireStore.collection("orderDetails")
+            .document(orderDetail.orderDetailId)
+            .set(orderDetail)
+            .await()
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
 }
