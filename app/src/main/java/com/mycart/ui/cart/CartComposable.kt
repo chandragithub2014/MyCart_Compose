@@ -150,6 +150,12 @@ fun CartComposable(
                                 productDecrement.productImage
                             )
                         }
+                    },
+                    onCheckoutClick = {
+                        cartViewModel.performCheckout(
+                            loggedInUser = userEmail,
+                            storeName = storeName
+                        )
                     }
                 )
             }
@@ -163,7 +169,8 @@ fun CartProductList(
     storeName: String,
     productList: List<Cart>,
     onPlusClick: (Product, Boolean) -> Unit,
-    onMinusClick: (Product, Boolean) -> Unit
+    onMinusClick: (Product, Boolean) -> Unit,
+    onCheckoutClick: () -> Unit
 ) {
 
 
@@ -175,28 +182,48 @@ fun CartProductList(
         Column(modifier = Modifier.fillMaxSize()) {
 
 
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-
-        ) {
-            items(items = productList) { cart ->
-                CartListItem(loggedInUser, storeName, cart, onPlusClick, onMinusClick)
+            ) {
+                items(items = productList) { cart ->
+                    CartListItem(loggedInUser, storeName, cart, onPlusClick, onMinusClick)
+                }
             }
-        }
 
-        Button(
-            onClick = {
-                // Handle button click
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(text = "Check out")
-        }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp), // Adjust padding as needed
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Text(
+                    text = "Total Cost:",
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                    // Takes up available space
+                )
+
+                Text(
+                    text = "200",
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                    // Takes up available space
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    onClick = {
+                        onCheckoutClick()
+                    },
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                ) {
+                    Text(text = "Check out")
+                }
+            }
+
         }
     }
 
