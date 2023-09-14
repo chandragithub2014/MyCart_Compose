@@ -24,6 +24,7 @@ typealias DeleteCartProductResponse = Response<Boolean>
 
 typealias AddOrderResponse = Response<Boolean>
 typealias CreateOrderDetailResponse = Response<Boolean>
+typealias DeleteCartInfoResponse = Response<Boolean>
 
 interface MyCartFireStoreRepository {
 
@@ -62,4 +63,5 @@ interface MyCartFireStoreRepository {
 
     suspend fun createOrder(order: Order) : AddOrderResponse
     suspend fun createOrderDetails(orderDetail:OrderDetail):CreateOrderDetailResponse
+    suspend fun deleteCartInfoBasedOnLoggedUser(loggedInUser:String,storeName:String):DeleteCartInfoResponse
 }

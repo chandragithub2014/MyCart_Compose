@@ -565,4 +565,22 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     } catch (e: Exception) {
         Response.Error(e.message.toString())
     }
+
+    override suspend fun deleteCartInfoBasedOnLoggedUser(
+        loggedInUser: String,
+        storeName: String
+    ): DeleteCartInfoResponse= try {
+        val querySnapshot = fireStore.collection("cart")
+            .whereEqualTo("loggedInUserEmail",loggedInUser)
+            .whereEqualTo("product.storeName", storeName)
+            .get()
+            .await()
+        for (documentSnapshot in querySnapshot.documents) {
+            val productDocumentRef = documentSnapshot.reference
+            productDocumentRef.delete().await()
+        }
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
+    }
 }

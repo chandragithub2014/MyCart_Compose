@@ -28,6 +28,7 @@ class CartViewModel(
     LifecycleObserver {
 
 
+
     fun performCheckout(loggedInUser:String,storeName:String){
         viewModelScope.launch {
             try {
@@ -55,7 +56,7 @@ class CartViewModel(
                 when (myCartFireStoreRepository.createOrder(order)) {
                     is Response.Success -> {
                         updateState((Response.SuccessConfirmation("Order Created")))
-
+                        deleteCartInfoForLoggedInUser(order.loggedInUserEmail,order.store)
                     }
                     is Response.Error -> {
                         updateState((Response.Error("Error in Order Creation")))
@@ -88,6 +89,30 @@ class CartViewModel(
         }
     }
 
+
+    private fun deleteCartInfoForLoggedInUser(loggedInUser:String,storeName:String){
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                when (myCartFireStoreRepository.deleteCartInfoBasedOnLoggedUser(
+                    loggedInUser, storeName
+                )) {
+                    is Response.Success -> {
+                        updateState((Response.Refresh))
+
+                    }
+                    is Response.Error -> {
+                        updateState(Response.Error("Error in Product Deletion from Cart"))
+                    }
+                    else -> {
+
+                    }
+                }
+            }catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
 
 }
 

@@ -11,6 +11,7 @@ import androidx.compose.material.FabPosition
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -36,12 +37,15 @@ fun CartComposable(
     var showProgress by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     var isLogOut by remember { mutableStateOf(false) }
-
+    var cartCost by remember {
+        mutableStateOf(0)
+    }
 
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
             cartViewModel.fetchProductListFromCart(email, storeName)
+            cartViewModel.calculateCost(email,storeName)
         }
     }
 
@@ -121,7 +125,7 @@ fun CartComposable(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
-
+        cartCost = cartViewModel.totalCost.value
         if (showProgress) {
             ProgressBar()
         }
@@ -131,6 +135,7 @@ fun CartComposable(
                     loggedInUser = email,
                     storeName = storeName,
                     productList = productList,
+                    cartCost = cartCost,
                     onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
                         userEmail.let { email ->
                             cartViewModel.updateProductQuantity(
@@ -159,6 +164,23 @@ fun CartComposable(
                     }
                 )
             }
+        }else{
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = "Cart is Empty!! Please add products",
+                        modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+                    )
+                }
+            }
+
         }
     }
 }
@@ -168,6 +190,7 @@ fun CartProductList(
     loggedInUser: String,
     storeName: String,
     productList: List<Cart>,
+    cartCost : Int,
     onPlusClick: (Product, Boolean) -> Unit,
     onMinusClick: (Product, Boolean) -> Unit,
     onCheckoutClick: () -> Unit
@@ -207,7 +230,7 @@ fun CartProductList(
                 )
 
                 Text(
-                    text = "200",
+                    text = "$cartCost (Rs)",
                     modifier = Modifier
                         .padding(top = 10.dp)
                     // Takes up available space

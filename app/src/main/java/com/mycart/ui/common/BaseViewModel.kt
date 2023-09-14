@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import kotlin.math.log
 
 open class BaseViewModel(
     private val myCartAuthenticationRepository: MyCartAuthenticationRepository,
@@ -223,6 +224,7 @@ open class BaseViewModel(
                 updateState((Response.Error("${e.message}")))
             }
             fetchProductListFromCart(loggedInUserEmail,product.storeName)
+            calculateCost(loggedInUserEmail,product.storeName)
         }
     }
 
@@ -267,6 +269,28 @@ open class BaseViewModel(
                 _cartCount.value = productList.size
             }catch (e: Exception) {
                 updateState(Response.Error("${e.message}"))
+            }
+        }
+    }
+
+    private var _totalCost = mutableStateOf(0)
+    val totalCost: State<Int> = _totalCost
+
+    fun calculateCost(loggedInUser: String,storeName: String){
+        var cartCost = 0
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val productList = myCartFireStoreRepository.fetchProductListFromCart(loggedInUser,storeName)
+                if(productList.isNotEmpty()){
+                    for(cartProduct in productList) {
+                        cartCost += (cartProduct.product.userSelectedProductQty) * (cartProduct.product.productDiscountedPrice).toInt()
+                    }
+                    _totalCost.value = cartCost
+                }
+
+            }catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
             }
         }
     }
