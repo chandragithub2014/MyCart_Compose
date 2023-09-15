@@ -1,6 +1,7 @@
 package com.mycart.ui.store
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.navigation.NavHostController
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
+import com.mycart.navigator.navigateToCategoryList
 import com.mycart.ui.common.*
 import com.mycart.ui.store.viewmodel.StoreViewModel
 import com.mycart.ui.utils.FetchImageFromDrawable
@@ -106,6 +108,10 @@ fun StoreList(
             }
         }
     }
+
+  /* BackHandler(true) {
+
+    }*/
 
     AppScaffold(
         title = "Stores",

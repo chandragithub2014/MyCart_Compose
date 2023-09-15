@@ -16,9 +16,13 @@ fun navigateToProductList(
 }
 
 
-fun navigateToCategoryList(navController: NavHostController,storeName: String,userEmail: String?){
+fun navigateToCategoryList(
+    navController: NavHostController,
+    storeName: String,
+    userEmail: String?
+) {
 
-    userEmail?.let{email ->
+    userEmail?.let { email ->
         navController.navigate("category/${email}/${storeName}")
     }
 
@@ -28,7 +32,7 @@ fun navigateToEditProduct(
     navController: NavHostController,
     categoryName: String,
     storeName: String,
-    productName:String,
+    productName: String,
     userEmail: String?
 ) {
     navController.popBackStack()
@@ -47,4 +51,28 @@ fun navigateToCart(
         navController.navigate("cartList/${email}/${storeName}/${categoryName}")
     }
 
+}
+
+
+fun navigateToStore(
+    navController: NavHostController,
+    userEmail: String?,
+    canLaunchSingleTop: Boolean = false
+) {
+    userEmail?.let { emailId ->
+        navController.popBackStack()
+        navController.navigate("store/${emailId}"){
+            popUpTo(navController.graph.startDestinationId)
+            // You can also use `inclusive = false` if you don't want to include the start destination in the cleared stack
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+}
+
+fun navigateToOrders(navController: NavHostController, userEmail: String?, store: String) {
+    userEmail?.let { emailId ->
+        navController.navigate("orderList/${emailId}/${store}")
+
+    }
 }

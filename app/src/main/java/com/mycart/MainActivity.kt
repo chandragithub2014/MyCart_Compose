@@ -16,6 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mycart.bottomnavigation.BottomNavigationBar
+import com.mycart.bottomnavigation.Screen
 import com.mycart.ui.cart.CartComposable
 import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
@@ -23,6 +25,7 @@ import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.category.EditCategory
 import com.mycart.ui.launcher.LaunchApp
 import com.mycart.ui.login.LoginScreen
+import com.mycart.ui.orders.OrderComposable
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.product.CreateProduct
 import com.mycart.ui.product.DisplayProductList
@@ -86,6 +89,12 @@ fun Navigator(navHostController: NavHostController) {
             email?.let { userEmail ->
                 storeName?.let { store ->
                     Category(userEmail, store, navController = navHostController)
+                    BottomNavigationBar(
+                        selectedScreen = Screen.Home,
+                        navController = navHostController,
+                        userEmail,
+                        store
+                    )
                 }
             }
         }
@@ -112,20 +121,20 @@ fun Navigator(navHostController: NavHostController) {
             arguments = listOf(navArgument("emailId") { type = NavType.StringType },
                 navArgument("store") { type = NavType.StringType },
                 navArgument("category") { type = NavType.StringType }
-                )
+            )
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("emailId")
             val storeName = backStackEntry.arguments?.getString("store")
             val categoryName = backStackEntry.arguments?.getString("category")
             email?.let { userEmail ->
                 storeName?.let { store ->
-                    categoryName?.let { category->
-                            DisplayProductList(
-                                userEmail,
-                                store,
-                                category,
-                                navController = navHostController
-                            )
+                    categoryName?.let { category ->
+                        DisplayProductList(
+                            userEmail,
+                            store,
+                            category,
+                            navController = navHostController
+                        )
                     }
 
                 }
@@ -138,20 +147,19 @@ fun Navigator(navHostController: NavHostController) {
                 navArgument("store") { type = NavType.StringType },
                 navArgument("category") { type = NavType.StringType })
 
-        ) {
-                backStackEntry ->
+        ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("emailId")
             val storeName = backStackEntry.arguments?.getString("store")
             val categoryName = backStackEntry.arguments?.getString("category")
             email?.let { userEmail ->
                 storeName?.let { store ->
-                    categoryName?.let { category->
-                            CreateProduct(
-                                userEmail,
-                                store,
-                                category,
-                                navController = navHostController
-                            )
+                    categoryName?.let { category ->
+                        CreateProduct(
+                            userEmail,
+                            store,
+                            category,
+                            navController = navHostController
+                        )
                     }
 
                 }
@@ -168,7 +176,7 @@ fun Navigator(navHostController: NavHostController) {
         ) { backStackEntry ->
             val category = backStackEntry.arguments?.getString("categoryName")
             val store = backStackEntry.arguments?.getString("storeName")
-            val product =  backStackEntry.arguments?.getString("productName")
+            val product = backStackEntry.arguments?.getString("productName")
             val userEmail = backStackEntry.arguments?.getString("email")
             category?.let { categoryName ->
                 store?.let { storeName ->
@@ -199,7 +207,7 @@ fun Navigator(navHostController: NavHostController) {
             val categoryName = backStackEntry.arguments?.getString("category")
             email?.let { userEmail ->
                 storeName?.let { store ->
-                    categoryName?.let { category->
+                    categoryName?.let { category ->
                         CartComposable(
                             userEmail,
                             store,
@@ -212,8 +220,33 @@ fun Navigator(navHostController: NavHostController) {
             }
         }
 
-    }
 
+        composable(
+            "orderList/{emailId}/{store}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType },
+                navArgument("store") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("emailId")
+            val storeName = backStackEntry.arguments?.getString("store")
+            email?.let { userEmail ->
+                storeName?.let { store ->
+                    OrderComposable(
+                        userEmail,
+                        store,
+                        navController = navHostController
+                    )
+                    BottomNavigationBar(
+                        selectedScreen = Screen.Orders,
+                        navController = navHostController,
+                        userEmail,
+                        store
+                    )
+                }
+
+            }
+        }
+    }
 
 
 }
