@@ -115,6 +115,7 @@ fun StoreList(
 
     AppScaffold(
         title = "Stores",
+        canShowBottomNavigation = false,
         onCartClick = {
 
         },

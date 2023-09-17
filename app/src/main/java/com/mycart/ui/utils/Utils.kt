@@ -90,10 +90,9 @@ fun DisplayLabel(label:String,modifier: Modifier = Modifier){
 }
 
 @Composable
-fun DisplayOutLinedLabel(label:String){
+fun DisplayOutLinedLabel(label:String,modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)){
     Box(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = modifier,
     ) {
         Text(
             text = label,

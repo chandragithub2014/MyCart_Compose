@@ -15,6 +15,7 @@ import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.launcher.viewmodel.AppLauncherViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
+import com.mycart.ui.orders.viewmodel.OrderViewModel
 import com.mycart.ui.product.viewModel.ProductViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
 import com.mycart.ui.store.viewmodel.StoreViewModel
@@ -36,6 +37,7 @@ val appModule = module {
     single<MyCartRepository> { MyCartRepositoryImpl(get(), get()) }
     single<MyCartAuthenticationRepository> { MyCartAuthenticationRepositoryImpl() }
     single<MyCartFireStoreRepository>{ MyCartFireStoreRepositoryImpl(get()) }
+    viewModel { OrderViewModel(get(),get()) }
     viewModel { CategoryViewModel(get(),get()) }
     viewModel { ProductViewModel(get(),get()) }
     viewModel{CartViewModel(get(),get())}

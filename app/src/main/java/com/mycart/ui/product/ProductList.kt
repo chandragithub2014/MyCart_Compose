@@ -31,6 +31,7 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.google.common.io.Files.append
+import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
@@ -175,6 +176,8 @@ fun DisplayProductList(
     }
     AppScaffold(
         title = category,
+        navController = navController,
+        selectedScreen = Screen.Products,
         canShowCart = true,
         cartItemCount = cartCount,
         onCartClick = {

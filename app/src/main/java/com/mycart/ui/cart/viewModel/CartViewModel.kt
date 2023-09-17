@@ -29,13 +29,13 @@ class CartViewModel(
 
 
 
-    fun performCheckout(loggedInUser:String,storeName:String){
+    fun performCheckout(loggedInUser:String,storeName:String,totalCost:String){
         viewModelScope.launch {
             try {
                 updateState((Response.Loading))
                 val productList = myCartFireStoreRepository.fetchProductListFromCart(loggedInUser,storeName)
                 if(productList.isNotEmpty()){
-                  val order =   Order(loggedInUserEmail = loggedInUser, store = storeName, orderedDateTime = getCurrentDateTime())
+                  val order =   Order(loggedInUserEmail = loggedInUser, store = storeName, orderedDateTime = getCurrentDateTime(), totalCost = totalCost)
                   val orderId = order.orderId
                   for(cartProduct in productList){
                       val orderDetail = OrderDetail(orderId = orderId, loggedInUserEmail = loggedInUser, product = cartProduct.product)

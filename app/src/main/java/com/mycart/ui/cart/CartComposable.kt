@@ -15,7 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
+import com.mycart.bottomnavigation.BottomNavigationBar
+import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Product
 import com.mycart.navigator.navigateToProductList
@@ -45,7 +49,7 @@ fun CartComposable(
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
             cartViewModel.fetchProductListFromCart(email, storeName)
-            cartViewModel.calculateCost(email,storeName)
+            cartViewModel.calculateCost(email, storeName)
         }
     }
 
@@ -112,6 +116,10 @@ fun CartComposable(
     AppScaffold(
         title = "Cart",
         canShowCart = true,
+        userEmail = userEmail?:"",
+        store = storeName,
+        navController = navController,
+        selectedScreen = Screen.Cart,
         cartItemCount = cartViewModel.cartCount.value,
         onCartClick = {
 
@@ -131,40 +139,51 @@ fun CartComposable(
         }
         if (productList.isNotEmpty()) {
             userEmail?.let { email ->
-                CartProductList(
-                    loggedInUser = email,
-                    storeName = storeName,
-                    productList = productList,
-                    cartCost = cartCost,
-                    onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
-                        userEmail.let { email ->
-                            cartViewModel.updateProductQuantity(
-                                email,
-                                productIncrement,
-                                true,
-                                productIncrement.productImage
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp)
+                ) {
+
+
+                    CartProductList(
+                        loggedInUser = email,
+                        storeName = storeName,
+                        productList = productList,
+                        cartCost = cartCost,
+                        onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
+                            userEmail.let { email ->
+                                cartViewModel.updateProductQuantity(
+                                    email,
+                                    productIncrement,
+                                    true,
+                                    productIncrement.productImage
+                                )
+                            }
+                        },
+                        onMinusClick = { productDecrement: Product, canIncrement: Boolean ->
+                            userEmail.let { email ->
+                                cartViewModel.updateProductQuantity(
+                                    email,
+                                    productDecrement,
+                                    false,
+                                    productDecrement.productImage
+                                )
+                            }
+                        },
+                        onCheckoutClick = {
+                            cartViewModel.performCheckout(
+                                loggedInUser = userEmail,
+                                storeName = storeName,
+                                totalCost = cartCost.toString()
                             )
                         }
-                    },
-                    onMinusClick = { productDecrement: Product, canIncrement: Boolean ->
-                        userEmail.let { email ->
-                            cartViewModel.updateProductQuantity(
-                                email,
-                                productDecrement,
-                                false,
-                                productDecrement.productImage
-                            )
-                        }
-                    },
-                    onCheckoutClick = {
-                        cartViewModel.performCheckout(
-                            loggedInUser = userEmail,
-                            storeName = storeName
-                        )
-                    }
-                )
+                    )
+
+                }
             }
-        }else{
+
+        } else {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -190,12 +209,11 @@ fun CartProductList(
     loggedInUser: String,
     storeName: String,
     productList: List<Cart>,
-    cartCost : Int,
+    cartCost: Int,
     onPlusClick: (Product, Boolean) -> Unit,
     onMinusClick: (Product, Boolean) -> Unit,
     onCheckoutClick: () -> Unit
 ) {
-
 
     Box(
         modifier = Modifier
@@ -203,7 +221,6 @@ fun CartProductList(
             .padding(10.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-
 
             LazyColumn(
                 modifier = Modifier
@@ -219,9 +236,9 @@ fun CartProductList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp), // Adjust padding as needed
+                    .padding(bottom = 50.dp), // Adjust padding as needed
                 horizontalArrangement = Arrangement.SpaceBetween
-            ){
+            ) {
                 Text(
                     text = "Total Cost:",
                     modifier = Modifier
@@ -248,7 +265,13 @@ fun CartProductList(
             }
 
         }
+
     }
 
 }
+
+
+
+
+
 

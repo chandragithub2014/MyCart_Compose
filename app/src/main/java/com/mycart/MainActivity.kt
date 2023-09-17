@@ -89,12 +89,12 @@ fun Navigator(navHostController: NavHostController) {
             email?.let { userEmail ->
                 storeName?.let { store ->
                     Category(userEmail, store, navController = navHostController)
-                    BottomNavigationBar(
+                   /* BottomNavigationBar(
                         selectedScreen = Screen.Home,
                         navController = navHostController,
                         userEmail,
                         store
-                    )
+                    )*/
                 }
             }
         }
@@ -135,6 +135,12 @@ fun Navigator(navHostController: NavHostController) {
                             category,
                             navController = navHostController
                         )
+                       /* BottomNavigationBar(
+                            selectedScreen = Screen.Home,
+                            navController = navHostController,
+                            userEmail,
+                            store
+                        )*/
                     }
 
                 }
@@ -214,6 +220,7 @@ fun Navigator(navHostController: NavHostController) {
                             category,
                             navController = navHostController
                         )
+
                     }
 
                 }
@@ -236,12 +243,12 @@ fun Navigator(navHostController: NavHostController) {
                         store,
                         navController = navHostController
                     )
-                    BottomNavigationBar(
+                   /* BottomNavigationBar(
                         selectedScreen = Screen.Orders,
                         navController = navHostController,
                         userEmail,
                         store
-                    )
+                    )*/
                 }
 
             }

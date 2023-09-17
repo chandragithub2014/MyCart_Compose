@@ -7,4 +7,5 @@ val loggedInUserEmail:String = "",
 val store:String = "",
 val orderedDateTime:String ="",
 val totalCost:String = "" ,
-val orderStatus:String = "In Progress")
+val orderStatus:String = "In Progress",
+val additionalMessage:String = "")

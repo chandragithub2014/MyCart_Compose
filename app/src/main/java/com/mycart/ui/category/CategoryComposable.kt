@@ -133,6 +133,9 @@ fun Category(
 
     AppScaffold(
         title = "Category",
+        navController = navController,
+        userEmail = userEmail?:"",
+        store = storeName,
         onCartClick = {
 
         },
@@ -154,7 +157,7 @@ fun Category(
         if (showProgress) {
             ProgressBar()
         }
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(bottom = 30.dp)) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
 
@@ -230,13 +233,13 @@ fun CategoryScreen(
 
 @Composable
 fun SeasonalCategoryTitle(title: String) {
-    DisplayOutLinedLabel(label = title)
+    DisplayOutLinedLabel(label = title,Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
 }
 
 
 @Composable
 fun SeasonalCategoryRow(categories: List<Category>) {
-    Column {
+    Column(modifier = Modifier.padding(bottom = 20.dp)) {
         SeasonalCategoryTitle("Seasonal Specials")
         LazyRow(
             modifier = Modifier.fillMaxWidth(),

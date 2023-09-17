@@ -191,15 +191,15 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     }
 
     override suspend fun editCategoryInfo(
-        categoryId:String,
+        categoryId: String,
         isDeal: Boolean,
         isSeasonal: Boolean,
         dealInfo: String
-    ) = try{
+    ) = try {
 
-     /*   fireStore.collection("categories").document(categoryId).update("deal", isDeal,
-            "dealInfo", dealInfo,
-            "seasonal", isSeasonal).wait()*/
+        /*   fireStore.collection("categories").document(categoryId).update("deal", isDeal,
+               "dealInfo", dealInfo,
+               "seasonal", isSeasonal).wait()*/
         val categoryDocRef = fireStore.collection("categories").document(categoryId)
         categoryDocRef.update(
             mapOf(
@@ -210,7 +210,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         ).await()
 
         Response.Success(true)
-    }catch (e: Exception) {
+    } catch (e: Exception) {
         Response.Error(e.message.toString())
     }
 
@@ -252,11 +252,11 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         productName: String,
         categoryName: String,
         store: String
-    )= try {
+    ) = try {
 
         val querySnapshot = fireStore.collection("products")
             .whereEqualTo("storeName", store)
-            .whereEqualTo("categoryName",categoryName)
+            .whereEqualTo("categoryName", categoryName)
             .get()
             .await()
 
@@ -282,7 +282,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         val productList: MutableList<Product>
         val querySnapshot = fireStore.collection("products")
             .whereEqualTo("storeName", store)
-            .whereEqualTo("categoryName",categoryName)
+            .whereEqualTo("categoryName", categoryName)
             .get()
             .await()
 
@@ -323,7 +323,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         val querySnapshot = fireStore.collection("products")
             .whereEqualTo("storeName", store)
             .whereEqualTo("categoryName", categoryName)
-            .whereEqualTo("productName",productName)
+            .whereEqualTo("productName", productName)
 
             .get()
             .await()
@@ -334,7 +334,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         return products.firstOrNull()
     }
 
-    override suspend fun editProductInfo(product: Product): EditProductResponse = try{
+    override suspend fun editProductInfo(product: Product): EditProductResponse = try {
 
         val productDocRef = fireStore.collection("products").document(product.productId)
         productDocRef.update(
@@ -347,7 +347,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
             )
         ).await()
         Response.Success(true)
-    }catch (e: Exception) {
+    } catch (e: Exception) {
         Response.Error(e.message.toString())
     }
 
@@ -369,21 +369,20 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
             val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
                 documentSnapshot.toObject(Product::class.java)
             }
-           products.firstOrNull()?.productQty?.let {  productQuantity ->
-               quantity = productQuantity
-           }
+            products.firstOrNull()?.productQty?.let { productQuantity ->
+                quantity = productQuantity
+            }
 
 
-
-        }catch (e:Exception){
-            return  quantity
+        } catch (e: Exception) {
+            return quantity
         }
 
         return quantity
     }
 
     override suspend fun fetchUserSelectedProductQuantity(
-        loggedInUserEmail:String,
+        loggedInUserEmail: String,
         categoryName: String,
         store: String,
         productName: String
@@ -391,7 +390,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         var quantity = -1
         try {
             val querySnapshot = fireStore.collection("cart")
-                .whereEqualTo("loggedInUserEmail",loggedInUserEmail)
+                .whereEqualTo("loggedInUserEmail", loggedInUserEmail)
                 .whereEqualTo("product.storeName", store)
                 .whereEqualTo("product..categoryName", categoryName)
                 .whereEqualTo("product.productName", productName)
@@ -401,14 +400,13 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
             val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
                 documentSnapshot.toObject(Product::class.java)
             }
-            products.firstOrNull()?.userSelectedProductQty?.let {  productQuantity ->
+            products.firstOrNull()?.userSelectedProductQty?.let { productQuantity ->
                 quantity = productQuantity
             }
 
 
-
-        }catch (e:Exception){
-            return  quantity
+        } catch (e: Exception) {
+            return quantity
         }
 
         return quantity
@@ -417,7 +415,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     override suspend fun updateProductQuantity(
         productID: String,
         productQty: Int,
-        userSelectedQty:Int
+        userSelectedQty: Int
 
     ) = try {
         val productDocRef = fireStore.collection("products").document(productID)
@@ -428,7 +426,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
             )
         ).await()
         Response.Success(true)
-    }catch (e: Exception) {
+    } catch (e: Exception) {
         Response.Error(e.message.toString())
     }
 
@@ -436,13 +434,13 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         productName: String,
         categoryName: String,
         store: String,
-        userEmail:String
+        userEmail: String
     ): ProductAvailableInCartResponse = try {
         val querySnapshot = fireStore.collection("cart")
-            .whereEqualTo("loggedInUserEmail",userEmail)
+            .whereEqualTo("loggedInUserEmail", userEmail)
             .whereEqualTo("product.storeName", store)
-            .whereEqualTo("product.categoryName",categoryName)
-            .whereEqualTo("product.productName",productName)
+            .whereEqualTo("product.categoryName", categoryName)
+            .whereEqualTo("product.productName", productName)
             .get()
             .await()
 
@@ -460,7 +458,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Error(e.message.toString())
     }
 
-    override suspend fun addProductToCart(cartProduct: Cart): AddProductCartResponse  = try {
+    override suspend fun addProductToCart(cartProduct: Cart): AddProductCartResponse = try {
         fireStore.collection("cart")
             .document(cartProduct.cartId)
             .set(cartProduct)
@@ -484,7 +482,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
             )
         ).await()
         Response.Success(true)
-    }catch (e: Exception) {
+    } catch (e: Exception) {
         Response.Error(e.message.toString())
     }
 
@@ -495,10 +493,10 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         userEmail: String
     ): Cart? {
         val querySnapshot = fireStore.collection("cart")
-            .whereEqualTo("loggedInUserEmail",userEmail)
+            .whereEqualTo("loggedInUserEmail", userEmail)
             .whereEqualTo("product.storeName", store)
-            .whereEqualTo("product.categoryName",categoryName)
-            .whereEqualTo("product.productName",productName)
+            .whereEqualTo("product.categoryName", categoryName)
+            .whereEqualTo("product.productName", productName)
 
             .get()
             .await()
@@ -512,9 +510,9 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     override suspend fun deleteProductFromCart(
         product: Product,
         loggedInUserEmail: String
-    ): DeleteCartProductResponse  = try {
+    ): DeleteCartProductResponse = try {
         val querySnapshot = fireStore.collection("cart")
-            .whereEqualTo("loggedInUserEmail",loggedInUserEmail)
+            .whereEqualTo("loggedInUserEmail", loggedInUserEmail)
             .whereEqualTo("product.storeName", product.storeName)
             .whereEqualTo("product.categoryName", product.categoryName)
             .whereEqualTo("product.productName", product.productName)
@@ -533,7 +531,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         val productList: MutableList<Cart>
         val querySnapshot = fireStore.collection("cart")
             .whereEqualTo("product.storeName", store)
-            .whereEqualTo("loggedInUserEmail",userEmail)
+            .whereEqualTo("loggedInUserEmail", userEmail)
             .get()
             .await()
 
@@ -556,22 +554,23 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Error(e.message.toString())
     }
 
-    override suspend fun createOrderDetails(orderDetail: OrderDetail): CreateOrderDetailResponse  = try {
-        fireStore.collection("orderDetails")
-            .document(orderDetail.orderDetailId)
-            .set(orderDetail)
-            .await()
-        Response.Success(true)
-    } catch (e: Exception) {
-        Response.Error(e.message.toString())
-    }
+    override suspend fun createOrderDetails(orderDetail: OrderDetail): CreateOrderDetailResponse =
+        try {
+            fireStore.collection("orderDetails")
+                .document(orderDetail.orderDetailId)
+                .set(orderDetail)
+                .await()
+            Response.Success(true)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
+        }
 
     override suspend fun deleteCartInfoBasedOnLoggedUser(
         loggedInUser: String,
         storeName: String
-    ): DeleteCartInfoResponse= try {
+    ): DeleteCartInfoResponse = try {
         val querySnapshot = fireStore.collection("cart")
-            .whereEqualTo("loggedInUserEmail",loggedInUser)
+            .whereEqualTo("loggedInUserEmail", loggedInUser)
             .whereEqualTo("product.storeName", storeName)
             .get()
             .await()
@@ -582,5 +581,21 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Success(true)
     } catch (e: Exception) {
         Response.Error(e.message.toString())
+    }
+
+    override suspend fun fetchOrderList(email: String): List<Order> {
+        val orderList: MutableList<Order>
+        val querySnapshot = fireStore.collection("orders")
+            .whereEqualTo("loggedInUserEmail", email)
+            .get()
+            .await()
+
+        val category: List<Order> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Order::class.java)
+        }
+
+        orderList = category.toMutableList()
+
+        return orderList
     }
 }
