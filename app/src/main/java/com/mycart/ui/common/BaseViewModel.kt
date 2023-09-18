@@ -295,6 +295,24 @@ open class BaseViewModel(
         }
     }
 
+    fun logOut() {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val isSignOut = myCartAuthenticationRepository.signOut()
+                if (isSignOut) {
+                    updateState((Response.SignOut))
+                } else {
+                    updateState((Response.SuccessConfirmation("Logout Failed")))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                updateState((Response.SuccessConfirmation(e.message.toString())))
+            }
+        }
+    }
+
     fun updateState(response: Response<Any>) {
         _state.value = response
     }

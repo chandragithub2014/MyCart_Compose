@@ -33,4 +33,19 @@ class OrderDetailViewModel(
         }
     }
 
+    fun fetchOrderListByOrderId(orderId:String){
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderDetailListByOrderId(orderID= orderId)
+                updateState((Response.SuccessList(
+                    orderList,
+                    DataType.ORDER_DETAIL
+                )))
+            }catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
 }

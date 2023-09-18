@@ -59,7 +59,7 @@ fun CreateCategory(
     val currentState by categoryViewModel.state.collectAsState()
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
-            categoryViewModel.checkForAdminFromFireStore(email)
+            categoryViewModel.checkForAdmin(email)
         }
     }
     LaunchedEffect(key1 = currentState) {

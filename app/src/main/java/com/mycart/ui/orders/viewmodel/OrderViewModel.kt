@@ -31,4 +31,19 @@ class OrderViewModel(private val myCartAuthenticationRepository: MyCartAuthentic
         }
     }
 
+    fun fetchOrderListByStore(store:String){
+        viewModelScope.launch {
+            try{
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderListByStore(store=store)
+                updateState((Response.SuccessList(
+                    orderList,
+                    DataType.ORDER
+                )))
+            }catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
 }

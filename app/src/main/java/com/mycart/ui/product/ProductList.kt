@@ -176,6 +176,8 @@ fun DisplayProductList(
     }
     AppScaffold(
         title = category,
+        userEmail = userEmail?:"",
+        store = storeName,
         navController = navController,
         selectedScreen = Screen.Products,
         canShowCart = true,

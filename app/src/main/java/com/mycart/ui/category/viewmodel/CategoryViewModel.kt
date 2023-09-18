@@ -9,6 +9,7 @@ import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
+import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,12 +18,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthenticationRepository,private val myCartFireStoreRepository: MyCartFireStoreRepository) :
-    ViewModel(),
-    LifecycleObserver {
+class CategoryViewModel(
+    private val myCartAuthenticationRepository: MyCartAuthenticationRepository,
+    private val myCartFireStoreRepository: MyCartFireStoreRepository
+) :
+    BaseViewModel(myCartAuthenticationRepository, myCartFireStoreRepository) {
 
-    private val _state = MutableStateFlow<Response<Any>>(Response.Loading)
-    val state = _state.asStateFlow()
 
     private val _categoryList = mutableStateOf<List<Category>>(emptyList())
     val categoryList: State<List<Category>> = _categoryList
@@ -33,33 +34,11 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
 
     val responseEvent = MutableSharedFlow<Response<Any>>()
 
-    private var _isAdminState = mutableStateOf(false)
-    val isAdminState: State<Boolean> = _isAdminState
-
-    fun checkForAdminFromFireStore(email: String) {
-        viewModelScope.launch {
-            try {
-                _state.value = Response.Loading
-                val user = myCartFireStoreRepository.checkForAdmin(email)
-                user?.let { userInfo ->
-                    _isAdminState.value = userInfo.admin
-                    _state.value = Response.Success(userInfo)
-                } ?: run {
-                    _state.value = Response.Error("Not an Admin")
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _state.value = Response.Error("${e.message}")
-            }
-        }
-    }
-
 
     fun createCategory(category: Category) {
         viewModelScope.launch {
             try {
-                _state.value = Response.Loading
+                updateState((Response.Loading))
                 val response = myCartFireStoreRepository.isCategoryAvailable(
                     category.categoryName,
                     category.storeName
@@ -67,14 +46,14 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
                 when (response) {
                     is Response.Success -> {
                         if (response.data) {
-                            _state.value = Response.Error("Category Already Exists")
+                            updateState((Response.Error("Category Already Exists")))
                         } else {
                             when (myCartFireStoreRepository.createCategory(category)) {
                                 is Response.Success -> {
-                                    _state.value = Response.SuccessConfirmation("Category Created")
+                                    updateState((Response.SuccessConfirmation("Category Created")))
                                 }
                                 is Response.Error -> {
-                                    _state.value = Response.Error("Error in Category Creation")
+                                    updateState((Response.Error("Error in Category Creation")))
                                 }
                                 else -> {
 
@@ -83,7 +62,7 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
                         }
                     }
                     is Response.Error -> {
-                        _state.value = Response.Error("Error in Category Creation")
+                        updateState((Response.Error("Error in Category Creation")))
                     }
 
                     else -> {
@@ -93,7 +72,8 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
 
 
             } catch (e: Exception) {
-                _state.value = Response.Error("${e.message}")
+
+                updateState(Response.Error("${e.message}"))
             }
         }
     }
@@ -101,7 +81,7 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             try {
-                _state.value = Response.Loading
+                updateState((Response.Loading))
                 when (myCartFireStoreRepository.deleteCategoryFromFireStore(
                     category.categoryName,
                     category.storeName
@@ -110,7 +90,7 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
                         fetchCategoryByStoreFromFireStore(category.storeName)
                     }
                     is Response.Error -> {
-                        _state.value = Response.Error("Error in Category Deletion")
+                        updateState((Response.Error("Error in Category Deletion")))
                     }
                     else -> {
 
@@ -118,7 +98,7 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
                 }
 
             } catch (e: Exception) {
-                _state.value = Response.Error("${e.message}")
+                updateState(Response.Error("${e.message}"))
             }
         }
     }
@@ -127,18 +107,18 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
     fun fetchCategoryInfoByCategoryNameAndStoreNumber(categoryName: String, storeName: String) {
         viewModelScope.launch {
             try {
-                _state.value = Response.Loading
+                updateState((Response.Loading))
                 val receivedCategory =
                     myCartFireStoreRepository.fetchCategoryInfo(categoryName, storeName)
                 receivedCategory?.let {
-                    _state.value = Response.Success(it)
+                    updateState(Response.Success(it))
 
                 } ?: run {
-                    _state.value = Response.Error("Failed to Fetch Category Info")
+                    updateState((Response.Error("Failed to Fetch Category Info")))
                 }
 
             } catch (e: Exception) {
-                _state.value = Response.Error("${e.message}")
+                updateState(Response.Error("${e.message}"))
             }
         }
     }
@@ -152,7 +132,7 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
     ) {
         viewModelScope.launch {
             try {
-                _state.value = Response.Loading
+                updateState((Response.Loading))
                 val response = myCartFireStoreRepository.editCategoryInfo(
                     categoryId,
                     isDeal,
@@ -162,22 +142,22 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
                 when (response) {
                     is Response.Success -> {
                         if (response.data) {
-                            _state.value = Response.SuccessConfirmation("Edited category")
+                            updateState(Response.SuccessConfirmation("Edited category"))
                         } else {
-                            _state.value = Response.Error("No Rows Updated")
+                            updateState(Response.Error("No Rows Updated"))
                         }
                     }
 
                     is Response.Error -> {
-                        _state.value = Response.Error("No Rows Updated")
+                        updateState(Response.Error("No Rows Updated"))
                     }
                     else -> {
-                        _state.value = Response.Error("No Rows Updated")
+                        updateState(Response.Error("No Rows Updated"))
                     }
                 }
 
             } catch (e: Exception) {
-                _state.value = Response.Error("${e.message}")
+                updateState(Response.Error("${e.message}"))
             }
         }
     }
@@ -186,16 +166,19 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
     fun fetchCategoryByStoreFromFireStore(storeName: String) {
         viewModelScope.launch {
             try {
+                updateState((Response.Loading))
                 val categoryList = myCartFireStoreRepository.fetchCategoryBasedOnStore(
                     storeName
                 )
-                _state.value = Response.SuccessList(
-                    categoryList,
-                    DataType.CATEGORY
+                updateState(
+                    Response.SuccessList(
+                        categoryList,
+                        DataType.CATEGORY
+                    )
                 )
 
             } catch (e: Exception) {
-                _state.value = Response.Error("${e.message}")
+                updateState(Response.Error("${e.message}"))
             }
         }
     }
@@ -203,17 +186,17 @@ class CategoryViewModel(private val myCartAuthenticationRepository: MyCartAuthen
     fun signOut() {
         viewModelScope.launch {
             try {
-                _state.value = Response.Loading
+                updateState((Response.Loading))
                 val isSignOut = myCartAuthenticationRepository.signOut()
                 if (isSignOut) {
-                    _state.value = Response.SignOut
+                    updateState(Response.SignOut)
                 } else {
-                    _state.value = Response.SuccessConfirmation("Logout Failed")
+                    updateState(Response.SuccessConfirmation("Logout Failed"))
                 }
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                _state.value = Response.SuccessConfirmation(e.message.toString())
+                updateState(Response.SuccessConfirmation(e.message.toString()))
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.mycart.ui.cart
 
 
+import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,7 @@ import com.mycart.bottomnavigation.BottomNavigationBar
 import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Product
+import com.mycart.navigator.navigateToCategoryList
 import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.cart.viewModel.CartViewModel
 import com.mycart.ui.common.*
@@ -109,7 +111,12 @@ fun CartComposable(
     BackHandler(true) {
         userEmail?.let { email ->
             navController.popBackStack()
-            navigateToProductList(navController, categoryName, storeName, email)
+            if(!TextUtils.isEmpty(categoryName) && categoryName != "NONE") {
+                navigateToProductList(navController, categoryName, storeName, email)
+            }else{
+                //Navigate to Category List .....
+                navigateToCategoryList(navController,storeName,email)
+            }
         }
     }
 

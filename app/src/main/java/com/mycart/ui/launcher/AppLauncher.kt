@@ -61,6 +61,7 @@ fun LaunchApp(
 
     AppScaffold(
         title = "Home",
+        canShowBottomNavigation = false,
         onCartClick = {
 
         },

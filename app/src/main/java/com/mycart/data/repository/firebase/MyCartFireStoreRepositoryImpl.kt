@@ -615,4 +615,37 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         orderDetailList = orderDetail.toMutableList()
         return orderDetailList
     }
+
+    override suspend fun fetchOrderDetailListByOrderId(orderID: String): List<OrderDetail> {
+        val orderDetailList: MutableList<OrderDetail>
+        val querySnapshot = fireStore.collection("orderDetails")
+            .whereEqualTo("orderId", orderID)
+            .get()
+            .await()
+
+        val orderDetail: List<OrderDetail> =
+            querySnapshot.documents.mapNotNull { documentSnapshot ->
+                documentSnapshot.toObject(OrderDetail::class.java)
+
+            }
+        orderDetailList = orderDetail.toMutableList()
+        return orderDetailList
+    }
+
+    override suspend fun fetchOrderListByStore(store: String): List<Order> {
+        val orderList: MutableList<Order>
+        val querySnapshot = fireStore.collection("orders")
+            .whereEqualTo("store", store)
+            .whereEqualTo("orderStatus","In Progress")
+            .get()
+            .await()
+
+        val category: List<Order> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Order::class.java)
+        }
+
+        orderList = category.toMutableList()
+
+        return orderList
+    }
 }

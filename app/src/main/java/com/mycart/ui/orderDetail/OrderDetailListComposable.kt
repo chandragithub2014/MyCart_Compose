@@ -21,6 +21,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
+import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Order
 import com.mycart.domain.model.OrderDetail
 import com.mycart.domain.model.User
@@ -65,9 +66,13 @@ fun OrderDetailComposable(
                 when ((currentState as Response.Success).data) {
                     is User -> {
                         val user = (currentState as Response.Success).data as User
-                        orderDetailViewModel.fetchOrderListByOrderIdLoggedInUser(
-                            user.userEmail, orderId
-                        )
+                        if(user.admin){
+                          orderDetailViewModel.fetchOrderListByOrderId(orderId)
+                        }else {
+                            orderDetailViewModel.fetchOrderListByOrderIdLoggedInUser(
+                                user.userEmail, orderId
+                            )
+                        }
                         showProgress = false
                     }
 
@@ -99,6 +104,10 @@ fun OrderDetailComposable(
     }
     AppScaffold(
         title = "Order Details",
+        userEmail = userEmail?:"",
+        store = storeName,
+        navController = navController,
+        selectedScreen = Screen.OrderDetails,
         onCartClick = {
 
         },

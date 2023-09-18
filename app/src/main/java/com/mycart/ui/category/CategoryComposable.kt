@@ -24,6 +24,7 @@ import com.mycart.domain.model.Category
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.get
 import com.mycart.domain.model.User
+import com.mycart.navigator.navigateToCart
 import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
 import com.mycart.ui.utils.DisplayLabel
@@ -52,11 +53,13 @@ fun Category(
     val context = LocalContext.current
     val currentState by categoryViewModel.state.collectAsState()
     var isLogOut by remember { mutableStateOf(false) }
-
+    var cartCount by remember {
+        mutableStateOf(0)
+    }
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
-            categoryViewModel.checkForAdminFromFireStore(email)
+            categoryViewModel.checkForAdmin(email)
         }
     }
 
@@ -101,6 +104,10 @@ fun Category(
                         println("CategoryList in Composable :::: $categoryList")
                         dealList = categoryList.filter { it.deal }
                         seasonalDeals = categoryList.filter { it.seasonal }
+
+                        userEmail?.let { email ->
+                            categoryViewModel.fetchProductListFromCart(email, storeName)
+                        }
                     }
 
                     DataType.DEALS -> {
@@ -116,7 +123,10 @@ fun Category(
                         showProgress = false
                         println("SeasonalDealList in Composable :::: $seasonalDeals")
                     }
-
+                    DataType.CART -> {
+                        cartCount = categoryViewModel.cartCount.value
+                        showProgress = false
+                    }
                     else -> {
                         showProgress = false
                     }
@@ -136,8 +146,10 @@ fun Category(
         navController = navController,
         userEmail = userEmail?:"",
         store = storeName,
+        canShowCart = true,
+        cartItemCount = cartCount,
         onCartClick = {
-
+            navigateToCart(navController, "NONE", storeName, userEmail)
         },
         onLogoutClick = {
             // Handle logout action

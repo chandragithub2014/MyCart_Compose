@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -23,6 +26,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
+import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Order
 import com.mycart.domain.model.Product
 import com.mycart.domain.model.User
@@ -46,6 +50,9 @@ fun OrderComposable(userEmail: String?,
     var showDialog by remember { mutableStateOf(false) }
     val currentState by orderViewModel.state.collectAsState()
     val context = LocalContext.current
+    var isAdmin by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -68,9 +75,14 @@ fun OrderComposable(userEmail: String?,
                 when ((currentState as Response.Success).data) {
                     is User -> {
                         val user = (currentState as Response.Success).data as User
-                        orderViewModel.fetchOrderListByLoggedInUser(
-                            user.userEmail
-                        )
+                        isAdmin =  orderViewModel.isAdminState.value
+                        if(isAdmin){
+                            orderViewModel.fetchOrderListByStore(storeName)
+                        }else {
+                            orderViewModel.fetchOrderListByLoggedInUser(
+                                user.userEmail
+                            )
+                        }
                         showProgress = false
                     }
 
@@ -94,6 +106,14 @@ fun OrderComposable(userEmail: String?,
                 //    userSelectedQuantityInCart = productViewModel.userSelectedQuantity.value
 
             }
+            is Response.SignOut -> {
+                navController.navigate("loginScreen") {
+                    popUpTo("loginScreen") {
+                        inclusive = true
+                    }
+                }
+
+            }
 
             else -> {
 
@@ -102,6 +122,10 @@ fun OrderComposable(userEmail: String?,
     }
     AppScaffold(
         title = "Orders",
+        userEmail = userEmail?:"",
+        store = storeName,
+        navController = navController,
+        selectedScreen = Screen.Orders,
         onCartClick = {
 
         },
@@ -123,7 +147,9 @@ fun OrderComposable(userEmail: String?,
                 ) {
                 items(items = orderList) { order ->
                     userEmail?.let { email ->
-                        DisplayOrder(order = order, email, navController)
+                        DisplayOrder(order = order, email = email, navController = navController,isAdmin = isAdmin, onEdit = {
+
+                        })
                     }
                 }
             }
@@ -136,7 +162,7 @@ fun OrderComposable(userEmail: String?,
                     positiveButtonTitle = "OK",
                     negativeButtonTitle = "Cancel",
                     onPositiveButtonClick = {
-                      //  storeViewModel.signOut()
+                      orderViewModel.logOut()
 
                     },
                     onNegativeButtonClick = {
@@ -155,7 +181,7 @@ fun OrderComposable(userEmail: String?,
 
 
 @Composable
-fun DisplayOrder(order: Order, email: String, navController: NavHostController) {
+fun DisplayOrder(order: Order, email: String, navController: NavHostController,isAdmin:Boolean = false,onEdit:(Order) -> Unit) {
     val constraintSet = orderItemConstraints()
     BoxWithConstraints(
         modifier = Modifier
@@ -189,15 +215,27 @@ fun DisplayOrder(order: Order, email: String, navController: NavHostController) 
                 text = order.additionalMessage, modifier = Modifier.layoutId("orderAdditionalMessage"),
                 fontSize = 16.sp, color = Color.Red
             )
-          //  FetchImageFromDrawable(imageName = "ic_detail", modifier = Modifier.layoutId("orderDetail"))
             FetchImageWithBorderFromDrawable(imageName = "ic_detail", modifier = Modifier.layoutId("orderDetail")){
                 navigateToOrderDetails(navController,email,order.store,order.orderId)
+            }
+            if(isAdmin) {
+                Icon(
+                    imageVector = Icons.Default.Edit, // Replace with your desired icon
+                    contentDescription = null, // Provide content description if needed
+                    modifier = Modifier
+                        .layoutId("orderEdit")
+                        .clickable {
+                            onEdit(order)
+                        }
+                )
+            }
+
             }
 
         }
     }
 
-}
+
 
 
 private fun orderItemConstraints(): ConstraintSet {
@@ -209,6 +247,7 @@ private fun orderItemConstraints(): ConstraintSet {
         val orderStatusRef = createRefFor("orderStatus")
         val orderDetailRef = createRefFor("orderDetail")
         val orderAdditionalMessageRef = createRefFor("orderAdditionalMessage")
+        val orderEditRef = createRefFor("orderEdit")
 
 
         constrain(cartImageRef) {
@@ -255,6 +294,12 @@ private fun orderItemConstraints(): ConstraintSet {
             top.linkTo(parent.top)
             end.linkTo(parent.end)
             bottom.linkTo(parent.bottom)
+            width = Dimension.wrapContent
+
+        }
+        constrain(orderEditRef){
+            top.linkTo(orderStatusRef.bottom, 5.dp)
+            end.linkTo(parent.end)
             width = Dimension.wrapContent
 
         }
