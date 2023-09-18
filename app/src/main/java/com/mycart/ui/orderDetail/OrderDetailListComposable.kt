@@ -1,9 +1,8 @@
-package com.mycart.ui.orders
+package com.mycart.ui.orderDetail
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
@@ -24,32 +22,31 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.mycart.domain.model.Order
-import com.mycart.domain.model.Product
+import com.mycart.domain.model.OrderDetail
 import com.mycart.domain.model.User
-import com.mycart.navigator.navigateToOrderDetails
-import com.mycart.ui.cart.viewModel.CartViewModel
 import com.mycart.ui.common.*
-import com.mycart.ui.orders.viewmodel.OrderViewModel
-import com.mycart.ui.utils.FetchImageFromDrawable
-import com.mycart.ui.utils.FetchImageWithBorderFromDrawable
+import com.mycart.ui.orderDetail.viewModel.OrderDetailViewModel
+import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 import org.koin.androidx.compose.get
 
 @Composable
-fun OrderComposable(userEmail: String?,
-                    storeName: String,
-                    navController: NavHostController,
-                    orderViewModel: OrderViewModel = get()
-){
+fun OrderDetailComposable(
+    userEmail: String?,
+    orderId: String,
+    storeName: String,
+    navController: NavHostController,
+    orderDetailViewModel: OrderDetailViewModel = get()
+) {
 
-    var orderList by rememberSaveable { mutableStateOf(listOf<Order>()) }
+    var orderDetailList by rememberSaveable { mutableStateOf(listOf<OrderDetail>()) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    val currentState by orderViewModel.state.collectAsState()
+    val currentState by orderDetailViewModel.state.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
-            orderViewModel.checkForAdmin(email)
+            orderDetailViewModel.checkForAdmin(email)
         }
     }
 
@@ -68,8 +65,8 @@ fun OrderComposable(userEmail: String?,
                 when ((currentState as Response.Success).data) {
                     is User -> {
                         val user = (currentState as Response.Success).data as User
-                        orderViewModel.fetchOrderListByLoggedInUser(
-                            user.userEmail
+                        orderDetailViewModel.fetchOrderListByOrderIdLoggedInUser(
+                            user.userEmail, orderId
                         )
                         showProgress = false
                     }
@@ -79,9 +76,9 @@ fun OrderComposable(userEmail: String?,
 
             is Response.SuccessList -> {
                 when ((currentState as Response.SuccessList).dataType) {
-                    DataType.ORDER -> {
-                        orderList =
-                            (currentState as Response.SuccessList).dataList.filterIsInstance<Order>()
+                    DataType.ORDER_DETAIL -> {
+                        orderDetailList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<OrderDetail>()
                         showProgress = false
                     }
                     else -> {
@@ -101,7 +98,7 @@ fun OrderComposable(userEmail: String?,
         }
     }
     AppScaffold(
-        title = "Orders",
+        title = "Order Details",
         onCartClick = {
 
         },
@@ -121,9 +118,9 @@ fun OrderComposable(userEmail: String?,
                 modifier = Modifier.fillMaxSize(),
 
                 ) {
-                items(items = orderList) { order ->
+                items(items = orderDetailList) { order ->
                     userEmail?.let { email ->
-                        DisplayOrder(order = order, email, navController)
+                        DisplayOrderDetail(orderDetail = order, email, navController)
                     }
                 }
             }
@@ -136,7 +133,7 @@ fun OrderComposable(userEmail: String?,
                     positiveButtonTitle = "OK",
                     negativeButtonTitle = "Cancel",
                     onPositiveButtonClick = {
-                      //  storeViewModel.signOut()
+                        //  storeViewModel.signOut()
 
                     },
                     onNegativeButtonClick = {
@@ -152,11 +149,9 @@ fun OrderComposable(userEmail: String?,
     }
 }
 
-
-
 @Composable
-fun DisplayOrder(order: Order, email: String, navController: NavHostController) {
-    val constraintSet = orderItemConstraints()
+fun DisplayOrderDetail(orderDetail: OrderDetail, email: String, navController: NavHostController) {
+    val constraintSet = orderDetailItemConstraints()
     BoxWithConstraints(
         modifier = Modifier
             .padding(top = 0.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
@@ -167,51 +162,44 @@ fun DisplayOrder(order: Order, email: String, navController: NavHostController) 
             .padding(8.dp)
     ){
         ConstraintLayout(constraintSet, modifier = Modifier.fillMaxWidth()) {
+            FetchImageFromURLWithPlaceHolder(imageUrl = orderDetail.product.productImage,modifier = Modifier.layoutId("productImage"))
 
-            FetchImageFromDrawable(imageName = "ic_baseline_shopping_cart_24",modifier = Modifier.layoutId("cartImage"))
             Text(
-                text = order.store, modifier = Modifier.layoutId("storeName"),
+                text = orderDetail.product.productName, modifier = Modifier.layoutId("productName"),
                 fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold
             )
             Text(
-                text = order.orderedDateTime, modifier = Modifier.layoutId("orderedDateTime"),
+                text = "${orderDetail.product.productDiscountedPrice}(In Rs)", modifier = Modifier.layoutId("productCost"),
                 fontSize = 16.sp, color = Color.Gray
             )
             Text(
-                text = "Total:${order.totalCost}(In Rs)", modifier = Modifier.layoutId("orderCost"),
+                text = "Quantity:${orderDetail.product.userSelectedProductQty} in ${orderDetail.product.productQtyUnits}", modifier = Modifier.layoutId("productQty"),
                 fontSize = 16.sp, color = Color.Black
             )
             Text(
-                text = order.orderStatus, modifier = Modifier.layoutId("orderStatus"),
+                text = orderDetail.status, modifier = Modifier.layoutId("orderDetailStatus"),
                 fontSize = 16.sp, color = Color.Magenta
             )
             Text(
-                text = order.additionalMessage, modifier = Modifier.layoutId("orderAdditionalMessage"),
+                text = orderDetail.additionalMessage, modifier = Modifier.layoutId("orderAdditionalMessage"),
                 fontSize = 16.sp, color = Color.Red
             )
-          //  FetchImageFromDrawable(imageName = "ic_detail", modifier = Modifier.layoutId("orderDetail"))
-            FetchImageWithBorderFromDrawable(imageName = "ic_detail", modifier = Modifier.layoutId("orderDetail")){
-                navigateToOrderDetails(navController,email,order.store,order.orderId)
-            }
-
         }
     }
 
 }
 
-
-private fun orderItemConstraints(): ConstraintSet {
+private fun orderDetailItemConstraints(): ConstraintSet {
     return ConstraintSet {
-        val cartImageRef = createRefFor("cartImage")
-        val orderedDateTimeRef = createRefFor("orderedDateTime")
-        val orderCostRef = createRefFor("orderCost")
-        val storeNameRef = createRefFor("storeName")
-        val orderStatusRef = createRefFor("orderStatus")
-        val orderDetailRef = createRefFor("orderDetail")
+        val productImageRef = createRefFor("productImage")
+        val productNameRef = createRefFor("productName")
+        val productCostRef = createRefFor("productCost")
+        val productQuantityRef = createRefFor("productQty")
+        val orderDetailStatusRef = createRefFor("orderDetailStatus")
         val orderAdditionalMessageRef = createRefFor("orderAdditionalMessage")
 
 
-        constrain(cartImageRef) {
+        constrain(productImageRef) {
             top.linkTo(parent.top)
             start.linkTo(parent.start,10.dp)
             bottom.linkTo(parent.bottom)
@@ -219,45 +207,37 @@ private fun orderItemConstraints(): ConstraintSet {
 
         }
 
-        constrain(storeNameRef) {
+        constrain(productNameRef) {
             top.linkTo(parent.top, 5.dp)
-            start.linkTo(cartImageRef.end, 5.dp)
+            start.linkTo(productImageRef.end, 5.dp)
             width = Dimension.fillToConstraints
 
         }
 
-        constrain(orderedDateTimeRef) {
-            top.linkTo(storeNameRef.bottom, 5.dp)
-            start.linkTo(cartImageRef.end, 5.dp)
-            width = Dimension.wrapContent
-
-        }
-
-        constrain(orderCostRef) {
-            top.linkTo(orderedDateTimeRef.bottom, 5.dp)
-            start.linkTo(cartImageRef.end, 5.dp)
+        constrain(productCostRef) {
+            top.linkTo(productNameRef.bottom, 5.dp)
+            start.linkTo(productImageRef.end, 5.dp)
             width = Dimension.wrapContent
         }
 
-        constrain(orderStatusRef) {
-            top.linkTo(orderedDateTimeRef.bottom, 5.dp)
-            start.linkTo(orderCostRef.end, 10.dp)
+        constrain(productQuantityRef) {
+            top.linkTo(productCostRef.bottom, 5.dp)
+            start.linkTo(productImageRef.end, 10.dp)
+            width = Dimension.wrapContent
+        }
+
+        constrain(orderDetailStatusRef) {
+            top.linkTo(productQuantityRef.bottom, 5.dp)
+            start.linkTo(productImageRef.end, 10.dp)
             width = Dimension.wrapContent
         }
 
         constrain(orderAdditionalMessageRef){
-            top.linkTo(orderStatusRef.bottom, 5.dp)
-            start.linkTo(cartImageRef.end, 5.dp)
+            top.linkTo(orderDetailStatusRef.bottom, 5.dp)
+            start.linkTo(productImageRef.end, 5.dp)
             width = Dimension.wrapContent
         }
 
-        constrain(orderDetailRef){
-            top.linkTo(parent.top)
-            end.linkTo(parent.end)
-            bottom.linkTo(parent.bottom)
-            width = Dimension.wrapContent
-
-        }
 
 
     }

@@ -66,4 +66,6 @@ interface MyCartFireStoreRepository {
     suspend fun deleteCartInfoBasedOnLoggedUser(loggedInUser:String,storeName:String):DeleteCartInfoResponse
 
     suspend fun fetchOrderList(email:String) : List<Order>
+
+    suspend fun fetchOrderDetailList(email:String,orderID:String):List<OrderDetail>
 }

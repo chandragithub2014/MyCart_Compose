@@ -25,6 +25,7 @@ import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.category.EditCategory
 import com.mycart.ui.launcher.LaunchApp
 import com.mycart.ui.login.LoginScreen
+import com.mycart.ui.orderDetail.OrderDetailComposable
 import com.mycart.ui.orders.OrderComposable
 import com.mycart.ui.password.ForgotPassword
 import com.mycart.ui.product.CreateProduct
@@ -243,12 +244,33 @@ fun Navigator(navHostController: NavHostController) {
                         store,
                         navController = navHostController
                     )
-                   /* BottomNavigationBar(
-                        selectedScreen = Screen.Orders,
-                        navController = navHostController,
-                        userEmail,
-                        store
-                    )*/
+
+                }
+
+            }
+        }
+
+        composable(
+            "orderDetailList/{emailId}/{store}/{orderId}",
+            arguments = listOf(navArgument("emailId") { type = NavType.StringType },
+                navArgument("store") { type = NavType.StringType },
+                navArgument("orderId") { type = NavType.StringType },
+
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("emailId")
+            val storeName = backStackEntry.arguments?.getString("store")
+            val selectedOrder =  backStackEntry.arguments?.getString("orderId")
+            email?.let { userEmail ->
+                storeName?.let { store ->
+                    selectedOrder ?.let { orderId ->
+                        OrderDetailComposable(
+                            userEmail,
+                            orderId = orderId,
+                            store,
+                            navController = navHostController
+                        )
+                    }
                 }
 
             }

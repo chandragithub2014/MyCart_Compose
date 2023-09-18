@@ -76,3 +76,11 @@ fun navigateToOrders(navController: NavHostController, userEmail: String?, store
 
     }
 }
+
+fun navigateToOrderDetails(navController: NavHostController, userEmail: String?, store: String,orderId:String) {
+    userEmail?.let { emailId ->
+        navController.navigate("orderDetailList/${emailId}/${store}/${orderId}")
+
+    }
+}
+

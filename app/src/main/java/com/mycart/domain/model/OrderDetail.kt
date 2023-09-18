@@ -6,5 +6,6 @@ data class OrderDetail(val orderId:String = "",
                        val orderDetailId:String = UUID.randomUUID().toString(),
                        var loggedInUserEmail:String  = "",
                        val product: Product = Product(),
-                       val status:String = "In Progress"
+                       val status:String = "In Progress",
+                       val additionalMessage:String = ""
 )

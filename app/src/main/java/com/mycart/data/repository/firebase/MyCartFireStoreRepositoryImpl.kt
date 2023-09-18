@@ -598,4 +598,21 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
 
         return orderList
     }
+
+    override suspend fun fetchOrderDetailList(email: String, orderID: String): List<OrderDetail> {
+        val orderDetailList: MutableList<OrderDetail>
+        val querySnapshot = fireStore.collection("orderDetails")
+            .whereEqualTo("loggedInUserEmail", email)
+            .whereEqualTo("orderId", orderID)
+            .get()
+            .await()
+
+        val orderDetail: List<OrderDetail> =
+            querySnapshot.documents.mapNotNull { documentSnapshot ->
+                documentSnapshot.toObject(OrderDetail::class.java)
+
+            }
+        orderDetailList = orderDetail.toMutableList()
+        return orderDetailList
+    }
 }

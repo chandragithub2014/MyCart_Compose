@@ -29,7 +29,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun FetchImageFromURLWithPlaceHolder(imageUrl : String){
+fun FetchImageFromURLWithPlaceHolder(imageUrl : String,modifier: Modifier = Modifier){
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(imageUrl)
@@ -38,7 +38,7 @@ fun FetchImageFromURLWithPlaceHolder(imageUrl : String){
         placeholder = painterResource(R.drawable.ic_baseline_shopping_cart_24),
         contentDescription = stringResource(R.string.app_name),
         contentScale = ContentScale.Crop,
-        modifier = Modifier.size(50.dp),
+        modifier = modifier.size(50.dp),
         colorFilter = ColorFilter.tint(Color.Blue)
     )
 }
