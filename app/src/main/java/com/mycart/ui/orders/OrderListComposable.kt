@@ -218,7 +218,7 @@ fun DisplayOrder(order: Order, email: String, navController: NavHostController,i
             FetchImageWithBorderFromDrawable(imageName = "ic_detail", modifier = Modifier.layoutId("orderDetail")){
                 navigateToOrderDetails(navController,email,order.store,order.orderId)
             }
-            if(isAdmin) {
+            /*if(isAdmin) {
                 Icon(
                     imageVector = Icons.Default.Edit, // Replace with your desired icon
                     contentDescription = null, // Provide content description if needed
@@ -228,7 +228,7 @@ fun DisplayOrder(order: Order, email: String, navController: NavHostController,i
                             onEdit(order)
                         }
                 )
-            }
+            }*/
 
             }
 
@@ -287,6 +287,7 @@ private fun orderItemConstraints(): ConstraintSet {
         constrain(orderAdditionalMessageRef){
             top.linkTo(orderStatusRef.bottom, 5.dp)
             start.linkTo(cartImageRef.end, 5.dp)
+            end.linkTo(orderDetailRef.start,3.dp)
             width = Dimension.wrapContent
         }
 

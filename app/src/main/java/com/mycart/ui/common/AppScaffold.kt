@@ -28,6 +28,7 @@ fun AppScaffold(
     canShowCart:Boolean = false,
     canShowBottomNavigation:Boolean = true,
     navController: NavHostController = NavHostController(LocalContext.current),
+    scaffoldState: ScaffoldState = rememberScaffoldState(),
     userEmail:String = "",
     store:String = "",
     selectedScreen:Screen = Screen.Home,
@@ -77,6 +78,7 @@ fun AppScaffold(
             floatingActionButton?.invoke()
         },
         floatingActionButtonPosition = floatingActionButtonPosition,
+        scaffoldState = scaffoldState,
         bottomBar = {
             if(canShowBottomNavigation){
                 BottomAppBar(

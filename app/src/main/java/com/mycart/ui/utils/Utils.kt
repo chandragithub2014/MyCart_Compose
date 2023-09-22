@@ -81,11 +81,12 @@ fun FetchImageWithBorderFromDrawable(imageName: String,modifier: Modifier=Modifi
 }
 
 @Composable
-fun DisplayLabel(label:String,modifier: Modifier = Modifier){
+fun DisplayLabel(label:String,modifier: Modifier = Modifier,textColor: Color = Color.Unspecified,textFont:FontWeight = FontWeight.Normal){
     Text(
         text = label,
         modifier = modifier,
-        fontWeight = FontWeight.Normal
+        color = textColor,
+        fontWeight = textFont
     )
 }
 

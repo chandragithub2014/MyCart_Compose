@@ -26,6 +26,8 @@ typealias AddOrderResponse = Response<Boolean>
 typealias CreateOrderDetailResponse = Response<Boolean>
 typealias DeleteCartInfoResponse = Response<Boolean>
 
+typealias UpdateOrderResponse = Response<Boolean>
+
 interface MyCartFireStoreRepository {
 
     suspend fun addUserToFireStore(user: User): AddUserResponse
@@ -67,6 +69,8 @@ interface MyCartFireStoreRepository {
 
     suspend fun fetchOrderList(email:String) : List<Order>
     suspend fun fetchOrderListByStore(store:String) : List<Order>
+    suspend fun fetchOrderInfo(orderID:String):Order?
+    suspend fun updateOrderStatus(orderId:String,orderAdditionalMessage:String,orderStatus:String):UpdateOrderResponse
 
     suspend fun fetchOrderDetailList(email:String,orderID:String):List<OrderDetail>
     suspend fun fetchOrderDetailListByOrderId(orderID:String):List<OrderDetail>

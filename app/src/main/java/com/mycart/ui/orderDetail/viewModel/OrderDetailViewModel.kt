@@ -48,4 +48,56 @@ class OrderDetailViewModel(
         }
     }
 
+    fun fetchOrderInfoByOrderId(orderId: String) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val selectedOrder = myCartFireStoreRepository.fetchOrderInfo(orderId)
+                selectedOrder?.let { orderInfo ->
+                    updateState((Response.Success(orderInfo)))
+                } ?: run {
+                    updateState((Response.Error("Failed to Fetch Order Info")))
+                }
+            } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
+    fun updateOrder(
+        orderId: String,
+        orderStatus: String,
+        additionalInfo: String = ""
+    ) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val response = myCartFireStoreRepository.updateOrderStatus(
+                    orderId,
+                    additionalInfo,
+                    orderStatus
+                )
+                when (response) {
+                    is Response.Success -> {
+                        if (response.data) {
+                            updateState(Response.SuccessConfirmation("Updated  Order"))
+                        } else {
+                            updateState(Response.Error("No Rows Updated"))
+                        }
+                    }
+
+                    is Response.Error -> {
+                        updateState(Response.Error("No Rows Updated"))
+                    }
+                    else -> {
+                        updateState(Response.Error("No Rows Updated"))
+                    }
+                }
+
+            } catch (e: Exception) {
+                updateState(Response.Error("${e.message}"))
+            }
+        }
+    }
+
 }

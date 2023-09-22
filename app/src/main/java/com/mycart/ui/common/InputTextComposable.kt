@@ -19,6 +19,9 @@ import com.mycart.R
 fun InputTextField(
     onValueChanged: (String) -> Unit,
     label: String,
+    modifier: Modifier = Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp),
+    singleLine:Boolean = true,
+    maxLines:Int = 1,
     error: String="",
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -40,8 +43,11 @@ fun InputTextField(
                 onValueChanged(it)},
             label = { Text(label) },
             visualTransformation = visualTransformation,
+            modifier = modifier,
             keyboardOptions = keyboardOptions,
-            modifier = Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp)
+            keyboardActions = keyboardActions,
+            singleLine = singleLine, // Allow multiple lines
+            maxLines = maxLines
 
         )
         if(!TextUtils.isEmpty(error) && isError) {

@@ -636,7 +636,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         val orderList: MutableList<Order>
         val querySnapshot = fireStore.collection("orders")
             .whereEqualTo("store", store)
-            .whereEqualTo("orderStatus","In Progress")
+            .whereEqualTo("orderStatus", "In Progress")
             .get()
             .await()
 
@@ -647,5 +647,37 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         orderList = category.toMutableList()
 
         return orderList
+    }
+
+    override suspend fun fetchOrderInfo(orderID: String): Order? {
+        val querySnapshot = fireStore.collection("orders")
+            .whereEqualTo("orderId", orderID)
+            .get()
+            .await()
+
+        val orders: List<Order> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Order::class.java)
+        }
+        return orders.firstOrNull()
+    }
+
+    override suspend fun updateOrderStatus(
+        orderId: String,
+        orderAdditionalMessage: String,
+        orderStatus: String
+    ) = try {
+
+
+        val orderRef = fireStore.collection("orders").document(orderId)
+        orderRef.update(
+            mapOf(
+                "orderStatus" to orderStatus,
+                "additionalMessage" to orderAdditionalMessage
+            )
+        ).await()
+
+        Response.Success(true)
+    } catch (e: Exception) {
+        Response.Error(e.message.toString())
     }
 }
