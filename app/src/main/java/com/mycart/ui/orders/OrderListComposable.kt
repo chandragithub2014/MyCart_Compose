@@ -34,8 +34,7 @@ import com.mycart.navigator.navigateToOrderDetails
 import com.mycart.ui.cart.viewModel.CartViewModel
 import com.mycart.ui.common.*
 import com.mycart.ui.orders.viewmodel.OrderViewModel
-import com.mycart.ui.utils.FetchImageFromDrawable
-import com.mycart.ui.utils.FetchImageWithBorderFromDrawable
+import com.mycart.ui.utils.*
 import org.koin.androidx.compose.get
 
 @Composable
@@ -46,6 +45,7 @@ fun OrderComposable(userEmail: String?,
 ){
 
     var orderList by rememberSaveable { mutableStateOf(listOf<Order>()) }
+    var orderListHistory by rememberSaveable { mutableStateOf(listOf<Order>()) }
     var showProgress by rememberSaveable { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     val currentState by orderViewModel.state.collectAsState()
@@ -94,10 +94,32 @@ fun OrderComposable(userEmail: String?,
                     DataType.ORDER -> {
                         orderList =
                             (currentState as Response.SuccessList).dataList.filterIsInstance<Order>()
+
+                        isAdmin =  orderViewModel.isAdminState.value
+                        if(isAdmin){
+                            orderViewModel.fetchOrderListHistoryByStore(storeName)
+                        }else {
+                            userEmail?.let {  loggedInEmail ->
+                                orderViewModel.fetchOrderListHistoryByLoggedInUser(
+                                    loggedInEmail
+                                )
+                            }
+
+                        }
+
+                        showProgress = false
+                    }
+                    DataType.ORDER_HISTORY -> {
+                        orderListHistory =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Order>()
+                        showProgress = false
+                    }
+                    DataType.ORDER_DETAIL -> {
+                        orderListHistory = (currentState as Response.SuccessList).dataList.filterIsInstance<Order>()
                         showProgress = false
                     }
                     else -> {
-
+                        showProgress = false
                     }
                 }
             }
@@ -136,7 +158,11 @@ fun OrderComposable(userEmail: String?,
         if (showProgress) {
             ProgressBar()
         }
-        Box(
+        userEmail?.let {  email ->
+            DisplayCombinedOrderList(navController,isAdmin,email,orderList,orderListHistory)
+        }
+
+       /* Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp)
@@ -145,6 +171,11 @@ fun OrderComposable(userEmail: String?,
                 modifier = Modifier.fillMaxSize(),
 
                 ) {
+                if(orderList.isNotEmpty()) {
+                    item {
+                        DisplayLabel(label = "Orders")
+                    }
+                }
                 items(items = orderList) { order ->
                     userEmail?.let { email ->
                         DisplayOrder(order = order, email = email, navController = navController,isAdmin = isAdmin, onEdit = {
@@ -152,33 +183,81 @@ fun OrderComposable(userEmail: String?,
                         })
                     }
                 }
-            }
-
-            if (showDialog) {
-                DisplaySimpleAlertDialog(
-                    showDialog = showDialog,
-                    title = "My Cart",
-                    description = "Do you want to Logout ?",
-                    positiveButtonTitle = "OK",
-                    negativeButtonTitle = "Cancel",
-                    onPositiveButtonClick = {
-                      orderViewModel.logOut()
-
-                    },
-                    onNegativeButtonClick = {
-                        showDialog = false
-
-                    },
-                    displayDialog = {
-                        showDialog = it
+                if(orderListHistory.isNotEmpty()) {
+                    item {
+                        DisplayLabel(label = "OrderHistory")
                     }
-                )
+                }
+                item {
+
+                }
             }
+
+
+        }*/
+        if (showDialog) {
+            DisplaySimpleAlertDialog(
+                showDialog = showDialog,
+                title = "My Cart",
+                description = "Do you want to Logout ?",
+                positiveButtonTitle = "OK",
+                negativeButtonTitle = "Cancel",
+                onPositiveButtonClick = {
+                    orderViewModel.logOut()
+
+                },
+                onNegativeButtonClick = {
+                    showDialog = false
+
+                },
+                displayDialog = {
+                    showDialog = it
+                }
+            )
         }
     }
 }
 
+//Display Order and OrderHistory List:::
+@Composable
+fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = false,email:String,orderList:List<Order>,orderHistory:List<Order>){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
+    ){
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            val combinedList = mutableListOf<Any>()
+            if (orderList.isNotEmpty()) {
+                combinedList.add("Orders")
+                combinedList.addAll(orderList)
+            }
+            if (orderHistory.isNotEmpty()) {
+                combinedList.add("OrderHistory")
+                combinedList.addAll(orderHistory)
+            }
+            items(items = combinedList) { item ->
+                when (item) {
+                    is String -> {
+                        // This is a header item
+                      //  DisplayLabel(label = item)
+                        DisplayHeaderLabel(item, paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
+                    }
+                    is Order -> {
+                            DisplayOrder(order = item, email = email, navController = navController, isAdmin = isAdmin, onEdit = {
+                                // Handle editing if needed
+                            })
 
+                    }
+                }
+            }
+
+
+        }
+    }
+}
 
 @Composable
 fun DisplayOrder(order: Order, email: String, navController: NavHostController,isAdmin:Boolean = false,onEdit:(Order) -> Unit) {

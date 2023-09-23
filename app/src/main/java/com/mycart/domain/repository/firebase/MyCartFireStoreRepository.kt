@@ -69,6 +69,8 @@ interface MyCartFireStoreRepository {
 
     suspend fun fetchOrderList(email:String) : List<Order>
     suspend fun fetchOrderListByStore(store:String) : List<Order>
+    suspend fun fetchOrderListHistory(email: String) : List<Order>
+    suspend fun fetchOrderListHistoryByStore(store: String) : List<Order>
     suspend fun fetchOrderInfo(orderID:String):Order?
     suspend fun updateOrderStatus(orderId:String,orderAdditionalMessage:String,orderStatus:String):UpdateOrderResponse
 

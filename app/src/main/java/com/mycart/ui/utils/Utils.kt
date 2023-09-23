@@ -1,6 +1,7 @@
 package com.mycart.ui.utils
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -139,4 +141,23 @@ fun getCurrentDateTime(): String {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
     return current.format(formatter)
 
+}
+
+@Composable
+fun DisplayHeaderLabel(label:String,paddingHorizontal: Dp = 16.dp,paddingVertical:Dp = 10.dp,modifier: Modifier = Modifier.padding(horizontal = paddingHorizontal, vertical = paddingVertical).background(Color.Unspecified),backgroundColor:Color = Color.Unspecified,textColor:Color = MaterialTheme.colors.onSurface ){
+    Box(
+        modifier = modifier.background(backgroundColor),
+    ) {
+        Text(
+            text = label,
+            color = textColor,
+            style = MaterialTheme.typography.body1,
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colors.onSurface, shape = MaterialTheme.shapes.small)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+
+
+        )
+    }
 }

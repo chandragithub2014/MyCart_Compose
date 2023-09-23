@@ -34,6 +34,25 @@ class OrderViewModel(
         }
     }
 
+    fun fetchOrderListHistoryByLoggedInUser(userEmail: String) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderListHistory(email = userEmail)
+                updateState(
+                    (Response.SuccessList(
+                        orderList,
+                        DataType.ORDER_HISTORY
+                    ))
+                )
+            } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
+
+
     fun fetchOrderListByStore(store: String) {
         viewModelScope.launch {
             try {
@@ -46,6 +65,24 @@ class OrderViewModel(
                     ))
                 )
             } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
+    fun fetchOrderListHistoryByStore(store:String){
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderListHistoryByStore(store = store)
+                updateState(
+                    (Response.SuccessList(
+                        orderList,
+                        DataType.ORDER_HISTORY
+                    ))
+                )
+
+            }catch (e: Exception) {
                 updateState((Response.Error("${e.message}")))
             }
         }

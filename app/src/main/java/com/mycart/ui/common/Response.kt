@@ -23,6 +23,7 @@ enum class DataType {
     PRODUCT,
     CART,
     ORDER,
-    ORDER_DETAIL
+    ORDER_DETAIL,
+    ORDER_HISTORY
     // Add more types as needed
 }

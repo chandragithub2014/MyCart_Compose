@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.mycart.domain.model.*
 import com.mycart.domain.repository.firebase.*
 import com.mycart.ui.common.Response
+import com.mycart.ui.utils.getCurrentDateTime
 import kotlinx.coroutines.tasks.await
 import okhttp3.internal.wait
 
@@ -584,9 +585,11 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     }
 
     override suspend fun fetchOrderList(email: String): List<Order> {
+
         val orderList: MutableList<Order>
         val querySnapshot = fireStore.collection("orders")
             .whereEqualTo("loggedInUserEmail", email)
+            .whereEqualTo("orderStatus", "In Progress")
             .get()
             .await()
 
@@ -679,5 +682,44 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         Response.Success(true)
     } catch (e: Exception) {
         Response.Error(e.message.toString())
+    }
+
+    override suspend fun fetchOrderListHistory(email: String): List<Order> {
+        val orderList: MutableList<Order>
+        val querySnapshot = fireStore.collection("orders")
+            .whereEqualTo("loggedInUserEmail", email)
+            .whereIn("orderStatus", listOf("Confirmed", "Rejected"))
+            .orderBy("orderStatus")
+            // .whereEqualTo("orderStatus", "Confirmed")
+            .get()
+            .await()
+
+        val category: List<Order> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Order::class.java)
+        }
+
+        orderList = category.toMutableList()
+        println("OrderListHistory is $orderList")
+
+        return orderList
+    }
+
+    override suspend fun fetchOrderListHistoryByStore(store: String): List<Order> {
+        val orderList: MutableList<Order>
+        val querySnapshot = fireStore.collection("orders")
+            .whereEqualTo("store", store)
+            .whereIn("orderStatus", listOf("Confirmed", "Rejected"))
+            .orderBy("orderStatus")
+           // .whereEqualTo("orderStatus", "Confirmed")
+            .get()
+            .await()
+
+        val category: List<Order> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Order::class.java)
+        }
+
+        orderList = category.toMutableList()
+
+        return orderList
     }
 }
