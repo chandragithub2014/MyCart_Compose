@@ -224,23 +224,30 @@ fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(10.dp)
+            .padding(10.dp, top = 10.dp,end=10.dp, bottom = 60.dp)
     ){
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
         ) {
             val combinedList = mutableListOf<Any>()
             if (orderList.isNotEmpty()) {
-                combinedList.add("Orders")
-                combinedList.addAll(orderList)
+               /* combinedList.add("Orders")
+                combinedList.addAll(orderList)*/
+                combinedList.add(OrderInfo.Header("InProgress"))
+              //  combinedList.add(OrderInfo.OrderList(orderList, "InProgress")
+                combinedList.addAll(orderList.map { OrderInfo.OrderList(it, "InProgress") })
+
             }
             if (orderHistory.isNotEmpty()) {
-                combinedList.add("OrderHistory")
-                combinedList.addAll(orderHistory)
+               /* combinedList.add("OrderHistory")
+                combinedList.addAll(orderHistory)*/
+                combinedList.add(OrderInfo.Header("History"))
+                combinedList.addAll(orderHistory.map { OrderInfo.OrderList(it, "History") })
+              //  combinedList.add(OrderInfo.OrderList(orderHistory, "History"))
             }
             items(items = combinedList) { item ->
                 when (item) {
-                    is String -> {
+                   /* is String -> {
                         // This is a header item
                       //  DisplayLabel(label = item)
                         DisplayHeaderLabel(item, paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
@@ -250,7 +257,27 @@ fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = 
                                 // Handle editing if needed
                             })
 
+                    }*/
+
+                    is OrderInfo.Header -> {
+                        if(item.headerType == "InProgress") {
+                            DisplayHeaderLabel(item.headerType, paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
+                        }else{
+                            DisplayHeaderLabel(item.headerType, paddingHorizontal = 10.dp, backgroundColor = Color.Gray, textColor = Color.Black)
+                        }
                     }
+
+                   is OrderInfo.OrderList -> {
+                      if(item.orderType == "InProgress"){
+                          DisplayOrder(order = item.orderList, email = email, navController = navController, isAdmin = isAdmin, onEdit = {
+                              // Handle editing if needed
+                          })
+                      }else{
+                          DisplayOrder(order = item.orderList, email = email, navController = navController, isAdmin = isAdmin, onEdit = {
+                              // Handle editing if needed
+                          })
+                      }
+                   }
                 }
             }
 
