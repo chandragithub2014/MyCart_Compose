@@ -142,7 +142,7 @@ fun OrderDetailComposable(
 
     AppScaffold(
         title = "Order Details",
-        scaffoldState = scaffoldState,
+      //  scaffoldState = scaffoldState,
         userEmail = userEmail ?: "",
         store = storeName,
         navController = navController,

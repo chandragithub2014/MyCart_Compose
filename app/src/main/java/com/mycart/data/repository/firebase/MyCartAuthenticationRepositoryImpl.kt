@@ -51,6 +51,15 @@ class MyCartAuthenticationRepositoryImpl() : MyCartAuthenticationRepository{
         }
     }
 
+    override suspend fun resetPassword(email: String): Boolean {
+        return try {
+            auth.sendPasswordResetEmail(email).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun FirebaseUser?.toUser(): User? {
         return this?.let {
             User(userEmail = it.email ?: "")

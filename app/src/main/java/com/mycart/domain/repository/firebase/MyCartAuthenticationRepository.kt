@@ -10,4 +10,5 @@ interface MyCartAuthenticationRepository {
     suspend fun signUp(email: String, password: String): FirebaseUser?
     suspend fun isUserLoggedIn():FirebaseUser?
     fun signOut() : Boolean
+    suspend fun resetPassword(email: String) : Boolean
 }

@@ -166,7 +166,8 @@ class RegistrationViewModel(
 
     private fun insertUserToFireBase(user: User) {
         viewModelScope.launch {
-            when (val result = myCartFireStoreRepository.addUserToFireStore(user)) {
+            val updatedUserInfo = user.copy(userPassword = "", confirmPassWord = "")
+            when (val result = myCartFireStoreRepository.addUserToFireStore(updatedUserInfo)) {
                 is Response.Success -> {
                     val successResult = result.data as? Boolean
                     if (successResult == true) {

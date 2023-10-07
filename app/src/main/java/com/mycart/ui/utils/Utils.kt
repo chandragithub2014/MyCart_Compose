@@ -1,5 +1,8 @@
 package com.mycart.ui.utils
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,11 +10,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,6 +33,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mycart.R
+import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -159,5 +166,76 @@ fun DisplayHeaderLabel(label:String,paddingHorizontal: Dp = 16.dp,paddingVertica
 
 
         )
+    }
+}
+
+@Composable
+fun DisplayHeaderLabelWithImage(label:String,paddingHorizontal: Dp = 16.dp,paddingVertical:Dp = 10.dp,modifier: Modifier = Modifier.padding(horizontal = paddingHorizontal, vertical = paddingVertical).background(Color.Unspecified),backgroundColor:Color = Color.Unspecified,textColor:Color = MaterialTheme.colors.onSurface,imageIcon:ImageVector,onClick: (Boolean) -> Unit ){
+    var isRotated by remember { mutableStateOf(false) }
+
+    val rotationDegrees by animateFloatAsState(
+        targetValue = if (isRotated) 180f else 0f,
+        animationSpec = spring()
+    )
+
+    LaunchedEffect(isRotated) {
+        // Delay for a short period to allow the animation to finish before executing onClick
+        delay(200)
+        onClick(isRotated)
+    }
+    Box(
+        modifier = modifier.background(backgroundColor),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically/*,
+            modifier = Modifier.clickable { onClick() }*/
+        ) {
+
+
+            Text(
+                text = label,
+                color = textColor,
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+
+
+            )
+                    Spacer(modifier = Modifier.weight(1f))
+
+           /* Image(
+                imageVector = imageIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(50.dp)
+                    .clickable {
+                        isRotated = !isRotated
+                    }
+                    .wrapContentSize(Alignment.Center)
+                    .rotate(rotationDegrees)
+            )*/
+
+            Box(
+                modifier = Modifier
+                    .size(25.dp)
+                    .border(1.dp, Color.Blue)
+                    .clickable {
+                        isRotated = !isRotated
+                        onClick(isRotated)
+                    }
+            ){
+                Image(
+                    imageVector = imageIcon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .wrapContentSize(Alignment.Center)
+                        .rotate(rotationDegrees)
+                )
+            }
+
+
+        }
     }
 }

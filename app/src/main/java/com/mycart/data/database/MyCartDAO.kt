@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MyCartDAO {
-    @Query("SELECT * FROM users")
+   /* @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<User>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -24,7 +24,7 @@ interface MyCartDAO {
     suspend fun getLoggedInUserInfo(email: String, password: String): User?
 
     @Query("SELECT * FROM users WHERE userEmail = :email")
-    suspend fun getLoggedInUserInfoByEmail(email: String): User?
+    suspend fun getLoggedInUserInfoByEmail(email: String): User?*/
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category): Long

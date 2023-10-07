@@ -12,6 +12,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -221,6 +223,7 @@ fun OrderComposable(userEmail: String?,
 //Display Order and OrderHistory List:::
 @Composable
 fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = false,email:String,orderList:List<Order>,orderHistory:List<Order>){
+    var canShowOrderHistory by remember{ mutableStateOf(false)}
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -263,7 +266,10 @@ fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = 
                         if(item.headerType == "InProgress") {
                             DisplayHeaderLabel(item.headerType, paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
                         }else{
-                            DisplayHeaderLabel(item.headerType, paddingHorizontal = 10.dp, backgroundColor = Color.Gray, textColor = Color.Black)
+                            DisplayHeaderLabelWithImage(item.headerType, paddingHorizontal = 10.dp, backgroundColor = Color.Gray, textColor = Color.Black, imageIcon = Icons.Default.KeyboardArrowUp){
+                              println("IsRotated.... $it")
+                                canShowOrderHistory = it
+                            }
                         }
                     }
 
@@ -273,9 +279,16 @@ fun DisplayCombinedOrderList(navController: NavHostController,isAdmin:Boolean = 
                               // Handle editing if needed
                           })
                       }else{
-                          DisplayOrder(order = item.orderList, email = email, navController = navController, isAdmin = isAdmin, onEdit = {
-                              // Handle editing if needed
-                          })
+                          if(canShowOrderHistory) {
+                              DisplayOrder(
+                                  order = item.orderList,
+                                  email = email,
+                                  navController = navController,
+                                  isAdmin = isAdmin,
+                                  onEdit = {
+                                      // Handle editing if needed
+                                  })
+                          }
                       }
                    }
                 }

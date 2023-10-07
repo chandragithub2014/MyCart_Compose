@@ -17,6 +17,7 @@ import com.mycart.ui.launcher.viewmodel.AppLauncherViewModel
 import com.mycart.ui.login.viewmodel.LoginViewModel
 import com.mycart.ui.orderDetail.viewModel.OrderDetailViewModel
 import com.mycart.ui.orders.viewmodel.OrderViewModel
+import com.mycart.ui.password.viewmodel.ResetPasswordViewModel
 import com.mycart.ui.product.viewModel.ProductViewModel
 import com.mycart.ui.register.viewmodel.RegistrationViewModel
 import com.mycart.ui.store.viewmodel.StoreViewModel
@@ -47,5 +48,6 @@ val appModule = module {
     viewModel{LoginViewModel(get())}
     viewModel{StoreViewModel(get(),get())}
     viewModel{AppLauncherViewModel(get())}
+    viewModel{ResetPasswordViewModel(get())}
 
 }

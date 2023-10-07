@@ -10,11 +10,11 @@ interface MyCartRepository {
     suspend fun fetchCategoryDetails(): List<Category>
     suspend fun fetchSeasonalCategoryDetails():List<Category>
     suspend fun fetchDeals():List<Deal>
-    suspend fun getAllUsers(): Flow<List<User>>
-    suspend fun insert(user: User):Long
-    suspend fun isUserAvailable(email:String):Boolean
-    suspend fun isValidLoggedInUser(email: String,password:String):User?
-    suspend fun fetchUserInfoByEmail(email: String):User?
+   // suspend fun getAllUsers(): Flow<List<User>>
+    //suspend fun insert(user: User):Long
+   // suspend fun isUserAvailable(email:String):Boolean
+   // suspend fun isValidLoggedInUser(email: String,password:String):User?
+   // suspend fun fetchUserInfoByEmail(email: String):User?
     suspend fun createCategory(category: Category):Long
     suspend fun isCategoryAvailable(categoryName:String,storeName:String):Boolean
     suspend fun fetchAllCategories(storeLoc:String,storeName:String,email:String):List<Category>
