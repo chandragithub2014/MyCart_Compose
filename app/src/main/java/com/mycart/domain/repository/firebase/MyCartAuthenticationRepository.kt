@@ -2,6 +2,7 @@ package com.mycart.domain.repository.firebase
 
 import com.google.firebase.auth.FirebaseUser
 import com.mycart.domain.model.User
+import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.Flow
 
 interface MyCartAuthenticationRepository {
@@ -11,4 +12,5 @@ interface MyCartAuthenticationRepository {
     suspend fun isUserLoggedIn():FirebaseUser?
     fun signOut() : Boolean
     suspend fun resetPassword(email: String) : Boolean
+    suspend fun sendEmailVerification(firebaseUser: FirebaseUser): Response<Boolean>
 }

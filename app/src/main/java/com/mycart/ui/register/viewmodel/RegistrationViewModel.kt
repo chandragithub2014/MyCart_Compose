@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseUser
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
@@ -142,8 +143,8 @@ class RegistrationViewModel(
                         _userState.value.userEmail,
                         _userState.value.userPassword
                     )
-                    result?.let {
-                        insertUserToFireBase(_userState.value)
+                    result?.let { firebaseUser ->
+                       sendEmailVerification(firebaseUser,_userState.value)
                     } ?: run {
                         receivedResponse.emit(Response.Error("Registration Failed"))
                     }
@@ -154,8 +155,9 @@ class RegistrationViewModel(
                         _userState.value.userEmail,
                         _userState.value.userPassword
                     )
-                    result?.let {
-                        insertUserToFireBase(_userState.value)
+                    result?.let { fireBaseUser ->
+                        sendEmailVerification(fireBaseUser,_userState.value)
+                      //  insertUserToFireBase(_userState.value)
                     } ?: run {
                         receivedResponse.emit(Response.Error("Registration Failed"))
                     }
@@ -203,6 +205,24 @@ class RegistrationViewModel(
 
             } catch (e: Exception) {
                 receivedResponse.emit(Response.Error("Registration Failed"))
+            }
+        }
+    }
+
+    private fun sendEmailVerification(firebaseUser: FirebaseUser,user: User){
+        viewModelScope.launch {
+            when(val emailVerificationLinkResult = myCartAuthenticationRepository.sendEmailVerification(firebaseUser) ){
+                is Response.Success -> {
+                    val successResult = emailVerificationLinkResult.data as? Boolean
+                    if (successResult == true) {
+                        insertUserToFireBase(user)
+                    }else{
+                        receivedResponse.emit(Response.Error("Email Verification link sent failed.."))
+                    }
+                }
+                else -> {
+                    receivedResponse.emit(emailVerificationLinkResult)
+                }
             }
         }
     }

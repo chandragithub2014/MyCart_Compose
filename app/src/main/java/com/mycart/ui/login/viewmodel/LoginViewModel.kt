@@ -17,15 +17,20 @@ class LoginViewModel(private val myCartAuthenticationRepository: MyCartAuthentic
              try{
                  responseEvent.emit((Response.Loading))
                  val result =    myCartAuthenticationRepository.signIn(email,password)
-                 result?.let {
-                      val receivedFlow = myCartAuthenticationRepository.getCurrentUser()
-                      receivedFlow.collect{  user ->
-                          user?.let {
-                              responseEvent.emit(Response.Success(it))
-                          }?:run{
-                              responseEvent.emit(Response.Error("Login Failed"))
-                          }
-                      }
+                 result?.let { firebaseUser ->
+                     if(firebaseUser.isEmailVerified){
+                         val receivedFlow = myCartAuthenticationRepository.getCurrentUser()
+                         receivedFlow.collect{  user ->
+                             user?.let {
+                                 responseEvent.emit(Response.Success(it))
+                             }?:run{
+                                 responseEvent.emit(Response.Error("Login Failed"))
+                             }
+                         }
+                     }else{
+                         responseEvent.emit(Response.Error("Email not Verified "))
+                     }
+
                  } ?:run {
                      responseEvent.emit(Response.Error("Login Failed"))
                  }

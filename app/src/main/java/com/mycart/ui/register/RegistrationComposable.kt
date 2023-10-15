@@ -49,7 +49,8 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
                     val successResult = event.data as? Boolean
                     if(successResult == true) {
                         Toast.makeText(context, "User Registration Successful", Toast.LENGTH_LONG).show()
-                        navigateToLogin(navController)
+                        //navigateToLogin(navController)
+                        navigateToEmailVerify(navController)
                     }
                 }
                 is Response.Error -> {
@@ -221,7 +222,10 @@ private fun navigateToLogin(navController: NavHostController){
     navController.popBackStack()
     navController.navigate("loginScreen")
 }
-
+private fun navigateToEmailVerify(navController: NavHostController){
+    navController.popBackStack()
+    navController.navigate("emailVerifyScreen")
+}
 @Composable
 @Preview
 fun RegisterPreview() {

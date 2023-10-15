@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.mycart.domain.model.User
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
+import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -60,9 +61,19 @@ class MyCartAuthenticationRepositoryImpl() : MyCartAuthenticationRepository{
         }
     }
 
+    override suspend fun sendEmailVerification(firebaseUser: FirebaseUser): Response<Boolean> {
+        return try {
+            firebaseUser.sendEmailVerification().await()
+            Response.Success(true)
+        } catch (e: Exception) {
+            Response.Error("Sending Email Verification Failed")
+        }
+    }
+
     private fun FirebaseUser?.toUser(): User? {
         return this?.let {
             User(userEmail = it.email ?: "")
         }
     }
+
 }

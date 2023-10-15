@@ -23,6 +23,7 @@ import com.mycart.ui.category.Category
 import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.category.EditCategory
+import com.mycart.ui.emailverify.EmailVerify
 import com.mycart.ui.launcher.LaunchApp
 import com.mycart.ui.login.LoginScreen
 import com.mycart.ui.orderDetail.OrderDetailComposable
@@ -62,6 +63,7 @@ fun Navigator(navHostController: NavHostController) {
     NavHost(navController = navHostController, startDestination = "appLauncherScreen") {
         composable("appLauncherScreen") { LaunchApp(navController = navHostController) }
         composable("loginScreen") { LoginScreen(navController = navHostController) }
+        composable("emailVerifyScreen") { EmailVerify(navController = navHostController) }
         composable("registrationScreen") { Register(navController = navHostController) }
         composable("forgotPasswordScreen") { ForgotPassword(navHostController) }
         composable(
