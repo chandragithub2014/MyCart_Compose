@@ -87,14 +87,16 @@ fun LoginScreen(navController: NavHostController, loginViewModel: LoginViewModel
         ) {
             ImageItem(R.drawable.ic_baseline_shopping_cart_24)
 
-            OutlinedTextField(value = userEmail, onValueChange = { userEmail = it },
-                label = { Text(stringResource(R.string.username_label)) })
+            OutlinedTextField(value = userEmail, onValueChange = { userEmail = it },modifier =  Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp),
+                label = { Text(stringResource(R.string.username_label)) }, singleLine = true)
 
             OutlinedTextField(
                 value = password, onValueChange = { password = it },
+                modifier =  Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp),
                 label = { Text(stringResource(R.string.password_label)) },
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true
             )
             TextButton(
                 onClick = { navController.navigate("forgotPasswordScreen") },
