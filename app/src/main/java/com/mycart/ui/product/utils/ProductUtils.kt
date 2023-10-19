@@ -6,7 +6,7 @@ object ProductUtils {
         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
     )
     private val productQtyUnits = listOf(
-        "unit","kgs","gram","litre"
+        "unit","kgs","gram","litre","dozen","halfDozen"
     )
     fun fetchProductQty() = productQtyList
     fun fetchProductQtyInUnits() = productQtyUnits
