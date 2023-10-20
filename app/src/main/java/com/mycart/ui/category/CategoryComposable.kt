@@ -27,6 +27,7 @@ import com.mycart.domain.model.User
 import com.mycart.navigator.navigateToCart
 import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
+import com.mycart.ui.utils.DisplayHeaderLabel
 import com.mycart.ui.utils.DisplayLabel
 import com.mycart.ui.utils.DisplayOutLinedLabel
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
@@ -175,21 +176,25 @@ fun Category(
 
                 ) {
                 item {
-                    DisplayLabel(
+                   /* DisplayLabel(
                         "Hot Deals", modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 16.dp, top = 10.dp)
-                    )
+                    )*/
+                    DisplayHeaderLabel("Hot Deals", paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
                 }
                 item {
-                    DealsComposable(dealList)
+                    DealsComposable(dealList,onClick = { categoryName: String, storeName: String ->
+                        navigateToProductList(navController, categoryName, storeName, userEmail)
+                    })
                 }
                 item {
-                    DisplayLabel(
+                   /* DisplayLabel(
                         "Shop By Category", modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 16.dp, top = 10.dp)
-                    )
+                    )*/
+                    DisplayHeaderLabel("Shop By Category", paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
                 }
                 item {
                     CategoryScreen(
@@ -207,7 +212,9 @@ fun Category(
                     }
                 }
                 item {
-                    SeasonalCategoryRow(seasonalDeals)
+                    SeasonalCategoryRow(seasonalDeals,onClick = { categoryName: String, storeName: String ->
+                        navigateToProductList(navController, categoryName, storeName, userEmail)
+                    })
                 }
 
 
@@ -245,12 +252,13 @@ fun CategoryScreen(
 
 @Composable
 fun SeasonalCategoryTitle(title: String) {
-    DisplayOutLinedLabel(label = title,Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+   // DisplayOutLinedLabel(label = title,Modifier.padding(horizontal = 16.dp, vertical = 5.dp))
+    DisplayHeaderLabel(title, paddingHorizontal = 10.dp, backgroundColor = Color.Blue, textColor = Color.White)
 }
 
 
 @Composable
-fun SeasonalCategoryRow(categories: List<Category>) {
+fun SeasonalCategoryRow(categories: List<Category>,onClick: (String, String) -> Unit) {
     Column(modifier = Modifier.padding(bottom = 20.dp)) {
         SeasonalCategoryTitle("Seasonal Specials")
         LazyRow(
@@ -258,7 +266,7 @@ fun SeasonalCategoryRow(categories: List<Category>) {
             contentPadding = PaddingValues(16.dp)
         ) {
             items(categories.size) { index ->
-                SeasonalCategoryItem(category = categories[index])
+                SeasonalCategoryItem(category = categories[index],onClick)
             }
         }
     }
@@ -289,7 +297,7 @@ fun CategoryGrid(
 }
 
 @Composable
-fun SeasonalCategoryItem(category: Category) {
+fun SeasonalCategoryItem(category: Category,onClick: (String, String) -> Unit) {
     Box(
         modifier = Modifier
             .padding(2.dp)
@@ -298,7 +306,10 @@ fun SeasonalCategoryItem(category: Category) {
             .border(
                 BorderStroke(1.dp, Color.LightGray)/*,
                 shape = RoundedCornerShape(8.dp)*/
-            ),
+            )
+            .clickable {
+                       onClick(category.categoryName,category.storeName)
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(

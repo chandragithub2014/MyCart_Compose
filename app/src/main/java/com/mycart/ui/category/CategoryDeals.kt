@@ -31,21 +31,21 @@ import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DealsComposable(deals: List<Category>) {
+fun DealsComposable(deals: List<Category>, onClick: (String, String) -> Unit) {
 
-    HorizontalPagerWithIndicators(deals)
+    HorizontalPagerWithIndicators(deals,onClick)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HorizontalPagerWithIndicators(deals: List<Category>) {
+fun HorizontalPagerWithIndicators(deals: List<Category>,onClick: (String, String) -> Unit) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
       Column{
         HorizontalPager(pageCount = deals.size, state = pagerState,
             contentPadding = PaddingValues(horizontal = 20.dp), pageSpacing = 10.dp) { page ->
              Column() {
-                 DisplayDeal(deal = deals[page])
+                 DisplayDeal(deal = deals[page],onClick)
 
                  Box(
                      modifier = Modifier
@@ -80,11 +80,14 @@ fun HorizontalPagerWithIndicators(deals: List<Category>) {
 }
 
 @Composable
-fun DisplayDeal(deal: Category) {
+fun DisplayDeal(deal: Category,onClick: (String, String) -> Unit) {
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(200.dp)
-        .background(Color.Magenta),
+        .background(Color.Magenta)
+        .clickable {
+                   onClick(deal.categoryName,deal.storeName)
+        },
             contentAlignment = Alignment.Center,
     ) {
 
