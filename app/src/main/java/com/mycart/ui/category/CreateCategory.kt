@@ -1,5 +1,6 @@
 package com.mycart.ui.category
 
+import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -46,6 +47,9 @@ fun CreateCategory(
     }
     var selectedCategoryUrl by rememberSaveable {
         mutableStateOf(defaultCategoryImageURL)
+    }
+    var newCategory by rememberSaveable {
+        mutableStateOf("")
     }
     var isDeal by rememberSaveable { mutableStateOf(false) }
     var dealInfo by rememberSaveable {
@@ -128,7 +132,7 @@ fun CreateCategory(
         }
 
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(bottom = 60.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(
@@ -154,12 +158,40 @@ fun CreateCategory(
                     )
 
                 )
+                Text(
+                    text = "Select category from below list ",
+                    color = Color.Blue,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(start = 50.dp, end = 50.dp, top = 20.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Blue,
+                    )
+                )
 
                 ExposedDropDownMenu(options = CategoryUtils.fetchCategoryList()) {
                     println("Selected Items is $it")
                     selectedCategory = it
                 }
 
+                Text(
+                    text = "Category Not in above List?",
+                    color = Color.Blue,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(start = 50.dp, end = 50.dp, top = 20.dp),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Blue,
+                    )
+                )
+                OutlinedTextField(value = newCategory, onValueChange = { newCategory = it },modifier =  Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp),
+                    label = { Text("Create New Category ") }, singleLine = true)
                 Text(
                     text = "Category Image",
                     color = Color.Blue,
@@ -173,7 +205,12 @@ fun CreateCategory(
                         color = Color.Blue,
                     )
                 )
-                selectedCategoryUrl = fetchCategoryImageUrlByCategory(selectedCategory)
+                selectedCategoryUrl = if(!TextUtils.isEmpty(newCategory)){
+                   "https://firebasestorage.googleapis.com/v0/b/mycart-45ee2.appspot.com/o/Categories%2Fmycart.png?alt=media"
+                } else{
+                    fetchCategoryImageUrlByCategory(selectedCategory)
+                }
+
                 Row(
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier
@@ -250,7 +287,7 @@ fun CreateCategory(
                                 selectedCategoryUrl?.let { imageUrl ->
 
                                     val category = com.mycart.domain.model.Category(
-                                        categoryName = selectedCategory,
+                                        categoryName = if (!TextUtils.isEmpty(newCategory)) newCategory else selectedCategory,
                                         categoryImage = imageUrl,
                                         userEmail = email,
                                         storeLoc = storeLocation,

@@ -13,7 +13,7 @@ data class Product(
     val storeName: String = "",
     val userEmail: String = "",
     val productName: String = "",
-    val productQty: Int = 0,
+    val productQty: Int = 10,
     val productDiscountedPrice: String = "",
     val productImage: String = "",
     val productOriginalPrice: String = "",

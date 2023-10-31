@@ -25,15 +25,15 @@ import com.mycart.bottomnavigation.Screen
 @Composable
 fun AppScaffold(
     title: String,
-    canShowLogout:Boolean = true,
-    canShowCart:Boolean = false,
-    canShowBottomNavigation:Boolean = true,
+    canShowLogout: Boolean = true,
+    canShowCart: Boolean = false,
+    canShowBottomNavigation: Boolean = true,
     navController: NavHostController = NavHostController(LocalContext.current),
     scaffoldState: ScaffoldState = rememberScaffoldState(),
-    userEmail:String = "",
-    store:String = "",
-    selectedScreen:Screen = Screen.Home,
-    cartItemCount:Int =0,
+    userEmail: String = "",
+    store: String = "",
+    selectedScreen: Screen = Screen.Home,
+    cartItemCount: Int = 0,
     onCartClick: () -> Unit,
     onLogoutClick: () -> Unit,
     floatingActionButton: @Composable (() -> Unit)? = null,
@@ -42,29 +42,36 @@ fun AppScaffold(
 ) {
 
 
-
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = title) },
                 actions = {
-                    if(canShowCart){
-                        Box(modifier = Modifier
-                            .width(50.dp)
-                            .height(50.dp)
-                            .clickable { onCartClick() },
+                    if (canShowCart) {
+                        Box(
+                            modifier = Modifier
+                                .width(50.dp)
+                                .height(50.dp)
+                                .clickable { onCartClick() },
                             //.background(Color.Magenta),
                             contentAlignment = Alignment.Center,
-                        ){
+                        ) {
                             if (cartItemCount > 0) {
-                                Badge(content = { Text(text = cartItemCount.toString()) }, modifier = Modifier.align(
-                                    Alignment.TopStart))
+                                Badge(
+                                    content = { Text(text = cartItemCount.toString()) },
+                                    modifier = Modifier.align(
+                                        Alignment.TopStart
+                                    )
+                                )
                             }
-                            Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.align(Alignment.Center))
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         }
                     }
-                    if(canShowLogout) {
+                    if (canShowLogout) {
                         IconButton(onClick = onLogoutClick) {
                             Icon(Icons.Default.ExitToApp, contentDescription = null)
                         }
@@ -78,35 +85,26 @@ fun AppScaffold(
         floatingActionButtonPosition = floatingActionButtonPosition,
         scaffoldState = scaffoldState,
         bottomBar = {
-            if(canShowBottomNavigation){
+            if (canShowBottomNavigation) {
                 BottomAppBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                     backgroundColor = Color.White, // Set your desired background color
                     cutoutShape = CircleShape // You can customize the shape as needed
                 ) {
-                    BottomNavigatorComposable(selectedScreen = selectedScreen,
+                    BottomNavigatorComposable(
+                        selectedScreen = selectedScreen,
                         navController = navController,
                         userEmail,
-                        store)
+                        store
+                    )
                 }
             }
         }
-    ){
-     innerPadding ->
-        // Ensure that the content is displayed within the keyboard's bounds
-        Column(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            content()
-        }
+    ) {
+        content()
+
     }
 }
 
-/*
-Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Create Category") }
-            )
-        }
-    )
- */

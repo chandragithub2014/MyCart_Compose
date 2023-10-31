@@ -53,8 +53,11 @@ fun CreateProduct(
     var productCost by rememberSaveable { mutableStateOf("") }
     var productDiscountedCost by rememberSaveable { mutableStateOf("") }
 
-    var selectedQty by rememberSaveable {
+  /*  var selectedQty by rememberSaveable {
         mutableStateOf(ProductUtils.fetchProductQty()[0])
+    }*/
+    var selectedQty by rememberSaveable {
+        mutableStateOf("10")
     }
 
     var selectedQtyUnits by rememberSaveable {
@@ -105,7 +108,8 @@ fun CreateProduct(
         onLogoutClick = {
             // Handle logout action
 
-        }
+        },
+        canShowBottomNavigation = false
 
     ) {
         if (showProgress) {
@@ -134,20 +138,31 @@ fun CreateProduct(
             )
 
             Text(
-                text = "Select Product Quantity",
+                text = "Enter Product Quantity",
                 modifier = Modifier.layoutId("productQuantityText"),
                 fontSize = 16.sp,
                 color = Color.Blue
             )
 
-            ExposedDropDownMenu(
+            OutlinedTextField(value = selectedQty, onValueChange = { selectedQty = it },
+                modifier = Modifier.layoutId("productQtyDropDown"),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
+            )
+          /*  ExposedDropDownMenu(
                 options = ProductUtils.fetchProductQty(),
                 modifier = Modifier.layoutId("productQtyDropDown"),
                 label = "Qty"
             ) {
                 println("Selected Items is $it")
                 selectedQty = it
-            }
+            }*/
 
             ExposedDropDownMenu(
                 options = ProductUtils.fetchProductQtyInUnits(),
@@ -214,7 +229,7 @@ fun CreateProduct(
                         // Action to perform when "OK" button is clicked
                         userEmail?.let { email ->
 
-                            if (!TextUtils.isEmpty(productName) && !TextUtils.isEmpty(productCost)) {
+                            if (!TextUtils.isEmpty(productName) && !TextUtils.isEmpty(productCost) && !TextUtils.isEmpty(selectedQty)) {
 
                                 val product = Product(
                                     categoryName = category,

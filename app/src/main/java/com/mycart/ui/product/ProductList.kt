@@ -306,7 +306,8 @@ fun ProductList(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(10.dp)
+           // .padding(10.dp)
+            .padding(10.dp,10.dp,10.dp,56.dp)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
