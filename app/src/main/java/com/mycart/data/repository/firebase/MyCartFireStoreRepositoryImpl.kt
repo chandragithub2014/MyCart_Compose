@@ -4,9 +4,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.mycart.domain.model.*
 import com.mycart.domain.repository.firebase.*
 import com.mycart.ui.common.Response
-import com.mycart.ui.utils.getCurrentDateTime
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
+
 
 class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
     MyCartFireStoreRepository {
@@ -344,7 +343,8 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
                 "productQty" to product.productQty,
                 "productQtyUnits" to product.productQtyUnits,
                 "productDiscountedPrice" to product.productDiscountedPrice,
-                "productOriginalPrice" to product.productOriginalPrice
+                "productOriginalPrice" to product.productOriginalPrice,
+                "keywords" to product.keywords
             )
         ).await()
         Response.Success(true)
@@ -721,5 +721,33 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         orderList = category.toMutableList()
 
         return orderList
+    }
+
+    override suspend fun fetchProductsBySearchForStore(
+        searchProduct:String,
+        categoryName: String,
+        store: String
+    ): List<Product> {
+        val productList: MutableList<Product>
+      /* val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereGreaterThanOrEqualTo("productName", searchProduct)
+            .whereLessThanOrEqualTo("productName", searchProduct + "\uf8ff")
+            .get()
+            .await()*/
+
+        val querySnapshot = fireStore.collection("products")
+            .whereEqualTo("storeName", store)
+            .whereArrayContains("keywords", searchProduct.trim())
+            .limit(50)
+            .get()
+            .await()
+        val products: List<Product> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(Product::class.java)
+        }
+
+        productList = products.toMutableList()
+
+        return productList
     }
 }

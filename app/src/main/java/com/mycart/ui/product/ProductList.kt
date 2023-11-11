@@ -3,34 +3,23 @@ package com.mycart.ui.product
 import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DockedSearchBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.*
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
-import com.google.common.io.Files.append
 import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Cart
 import com.mycart.domain.model.Category
@@ -39,18 +28,8 @@ import com.mycart.domain.model.User
 import com.mycart.navigator.navigateToCart
 import com.mycart.navigator.navigateToCategoryList
 import com.mycart.navigator.navigateToEditProduct
-import com.mycart.navigator.navigateToProductList
-import com.mycart.ui.category.CategoryImageFromURLWithPlaceHolder
-import com.mycart.ui.category.DeleteCategory
-import com.mycart.ui.category.ShowLogOutDialog
-import com.mycart.ui.category.navigateToEditCategory
-import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.*
 import com.mycart.ui.product.viewModel.ProductViewModel
-import com.mycart.ui.utils.DisplayBorderedLabel
-import com.mycart.ui.utils.FetchImageFromDrawable
-import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
-import com.mycart.ui.utils.FetchImageWithBorderFromDrawable
 import org.koin.androidx.compose.get
 
 @Composable
@@ -76,7 +55,8 @@ fun DisplayProductList(
     var cartCount by remember {
         mutableStateOf(0)
     }
-    var maxProductCountWarning by remember { mutableStateOf("") }
+    var title by remember{ mutableStateOf(category) }
+
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -132,6 +112,9 @@ fun DisplayProductList(
                     DataType.PRODUCT -> {
                         productList =
                             (currentState as Response.SuccessList).dataList.filterIsInstance<Product>()
+                        if(productList.isNotEmpty()){
+                            title = productList[0].categoryName
+                        }
                         showProgress = false
                         userEmail?.let { email ->
                             productViewModel.fetchProductListFromCart(email, storeName)
@@ -175,7 +158,7 @@ fun DisplayProductList(
         }
     }
     AppScaffold(
-        title = category,
+        title = title,
         userEmail = userEmail?:"",
         store = storeName,
         navController = navController,
@@ -207,69 +190,74 @@ fun DisplayProductList(
         }
         if (!TextUtils.isEmpty(categoryInfo.categoryImage) && productList.isNotEmpty()) {
             userEmail?.let { email ->
+                Column {
 
-
-                ProductList(
-                    email,
-                    category = categoryInfo,
-                    cartProductList = cartProductList,
-                    productList = productList,
-                    isAdmin,
-                    onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
-
-                        productViewModel.updateProductQuantity(
-                            email,
-                            productIncrement,
-                            true,
-                            categoryInfo.categoryImage
-                        )
-
-
-                    },
-                    onMinusClick = { productDecrement: Product, canIncrement: Boolean ->
-
-                        productViewModel.updateProductQuantity(
-                            email,
-                            productDecrement,
-                            false,
-                            categoryInfo.categoryImage
-                        )
-
-                    },
-                    onAddClick = { productToAdd: Product ->
-
-                        productViewModel.updateProductQuantity(
-                            email,
-                            productToAdd,
-                            true,
-                            categoryInfo.categoryImage
-                        )
-
-
-                    },
-                    onAddToCart = { canAdd ->
-                        if (canAdd) {
-                            cartCount += 1
-                        } else {
-                            cartCount -= 1
-                        }
-
-                    },
-                    onEdit = { selectedProductToEdit: Product ->
-
-                        navigateToEditProduct(
-                            navController,
-                            selectedProductToEdit.categoryName,
-                            selectedProductToEdit.storeName,
-                            selectedProductToEdit.productName,
-                            email
-                        )
-
-
+                    ShowSearchBar(productList = productList){ searchString ->
+                        //println("To be searched Product is $it")
+                        productViewModel.fetchProductListBySearchForStoreNumber(searchString,category,storeName)
                     }
-                ) { toDeletedProduct ->
-                    selectedProduct = toDeletedProduct
-                    showDialog = true
+                    ProductList(
+                        email,
+                        category = categoryInfo,
+                        cartProductList = cartProductList,
+                        productList = productList,
+                        isAdmin,
+                        onPlusClick = { productIncrement: Product, canIncrement: Boolean ->
+
+                            productViewModel.updateProductQuantity(
+                                email,
+                                productIncrement,
+                                true,
+                                categoryInfo.categoryImage
+                            )
+
+
+                        },
+                        onMinusClick = { productDecrement: Product, canIncrement: Boolean ->
+
+                            productViewModel.updateProductQuantity(
+                                email,
+                                productDecrement,
+                                false,
+                                categoryInfo.categoryImage
+                            )
+
+                        },
+                        onAddClick = { productToAdd: Product ->
+
+                            productViewModel.updateProductQuantity(
+                                email,
+                                productToAdd,
+                                true,
+                                categoryInfo.categoryImage
+                            )
+
+
+                        },
+                        onAddToCart = { canAdd ->
+                            if (canAdd) {
+                                cartCount += 1
+                            } else {
+                                cartCount -= 1
+                            }
+
+                        },
+                        onEdit = { selectedProductToEdit: Product ->
+
+                            navigateToEditProduct(
+                                navController,
+                                selectedProductToEdit.categoryName,
+                                selectedProductToEdit.storeName,
+                                selectedProductToEdit.productName,
+                                email
+                            )
+
+
+                        }
+                    ) { toDeletedProduct ->
+                        selectedProduct = toDeletedProduct
+                        showDialog = true
+                    }
                 }
             }
             if (isLogOut) {
@@ -306,8 +294,8 @@ fun ProductList(
     Box(
         modifier = Modifier
             .fillMaxSize()
-           // .padding(10.dp)
-            .padding(10.dp,10.dp,10.dp,56.dp)
+            // .padding(10.dp)
+            .padding(10.dp, 10.dp, 10.dp, 56.dp)
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -321,6 +309,7 @@ fun ProductList(
                     product.storeName
                 )
                 println("UserSelectedQuantity is $userSelectedQuantity")
+
                 ProductListItem(
                     category,
                     product,
@@ -385,6 +374,90 @@ fun DeleteProduct(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShowSearchBar(productList: List<Product>,
+                  onSearch:(String)->Unit){
+    var searchText by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) } // Active state for SearchBar
+    var searchHistory = remember { mutableStateListOf("") }
+    DockedSearchBar(
+        query = searchText,
+        onQueryChange = {
+            searchText = it
+            if(searchText.length >=3) {
+                onSearch(searchText)
+                active = false
+            }else if(searchText.isEmpty()){
+                active = false
+            }
+        }, onSearch = {
+            searchText = it
+            if(searchText.length >=3) {
+                onSearch(it)
+                active = false
+            }
+        }, active = active,
+        onActiveChange = {
+            active = it
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            // .padding(10.dp)
+            .padding(10.dp, 10.dp, 10.dp, 10.dp),
+        placeholder = {
+            Text(text = "Search Product")
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
+        },
+        trailingIcon = {
+            if (active) {
+                Icon(
+                    modifier = Modifier.clickable {
+                        if (searchText.isNotEmpty()) {
+                            searchText = ""
+                            active = false
+                        } else {
+                            active = false
+                        }
+                    },
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close icon"
+                )
+            }
+        }
+
+    ) {
+       /* LazyColumn {
+            items(productList) { product ->
+                Text(
+                    text = product.productName,
+                    modifier = Modifier.padding(
+                        start = 8.dp,
+                        top = 4.dp,
+                        end = 8.dp,
+                        bottom = 4.dp)
+                )
+            }
+        }*/
+       /* searchHistory.forEach {
+            if (it.isNotEmpty()) {
+                Row(modifier = Modifier.padding(all = 14.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text = it)
+                }
+            }
+        }*/
+    }
+}
 
 fun getUserSelectedProductQty(
     cartList: List<Cart>,

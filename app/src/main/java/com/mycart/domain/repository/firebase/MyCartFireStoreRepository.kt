@@ -1,6 +1,6 @@
 package com.mycart.domain.repository.firebase
 
-import androidx.room.PrimaryKey
+
 import com.mycart.domain.model.*
 import com.mycart.ui.common.Response
 
@@ -76,4 +76,6 @@ interface MyCartFireStoreRepository {
 
     suspend fun fetchOrderDetailList(email:String,orderID:String):List<OrderDetail>
     suspend fun fetchOrderDetailListByOrderId(orderID:String):List<OrderDetail>
+
+    suspend fun fetchProductsBySearchForStore(searchProduct:String,categoryName: String,store: String) : List<Product>
 }

@@ -1,20 +1,14 @@
 package com.mycart.data.repository
 
-import com.mycart.data.database.MyCartDAO
-import com.mycart.data.mock.MockAPI
-import com.mycart.domain.model.Category
-import com.mycart.domain.model.Deal
-import com.mycart.domain.model.Store
-import com.mycart.domain.model.User
-import com.mycart.domain.repository.MyCartRepository
 
-class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: MyCartDAO) :
+
+/*class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: MyCartDAO) :
     MyCartRepository {
     override suspend fun fetchCategoryDetails(): List<Category> = mockAPI.getCategoryDetails()
     override suspend fun fetchSeasonalCategoryDetails(): List<Category> =
         mockAPI.getSeasonalCategoryDetails()
 
-    override suspend fun fetchDeals(): List<Deal> = mockAPI.getDeals()
+    override suspend fun fetchDeals(): List<Deal> = mockAPI.getDeals()*/
    // override suspend fun getAllUsers() = myCartDAO.getAllUsers()
    // override suspend fun insert(user: User) = myCartDAO.insert(user)
     /*override suspend fun isUserAvailable(email: String): Boolean {
@@ -28,7 +22,7 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
 
     override suspend fun fetchUserInfoByEmail(email: String): User? {
         return myCartDAO.getLoggedInUserInfoByEmail(email)
-    }*/
+    }
 
     override suspend fun createCategory(category: Category) = myCartDAO.insertCategory(category)
     override suspend fun isCategoryAvailable(categoryName: String, storeName: String): Boolean {
@@ -84,4 +78,6 @@ class MyCartRepositoryImpl(private val mockAPI: MockAPI, private val myCartDAO: 
         isSeasonal: Boolean,
         dealInfo: String
     ) = myCartDAO.upDateCategory(categoryName, store, isDeal, isSeasonal, dealInfo)
-}
+
+     */
+//}

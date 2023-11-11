@@ -1,13 +1,7 @@
 package com.mycart.data.database
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import com.mycart.domain.model.Category
-import com.mycart.domain.model.Store
-import com.mycart.domain.model.User
-import kotlinx.coroutines.flow.Flow
+
 
 @Dao
 interface MyCartDAO {
@@ -25,7 +19,7 @@ interface MyCartDAO {
 
     @Query("SELECT * FROM users WHERE userEmail = :email")
     suspend fun getLoggedInUserInfoByEmail(email: String): User?*/
-
+/*
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category): Long
 
@@ -87,5 +81,5 @@ interface MyCartDAO {
         seasonal: Boolean,
         dealInfo: String
     ) :Int
-
+*/
 }

@@ -29,6 +29,7 @@ import androidx.constraintlayout.compose.Dimension
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
+import java.util.Locale
 
 @Composable
 fun ProductListItem(category: Category, product: Product,userSelectedQty:Int = 0, isAdmin: Boolean, onPlusClick:(Product, Boolean) -> Unit, onMinusClick:(Product, Boolean) -> Unit, onAddClick: (Product) -> Unit, onEdit:(Product) -> Unit, onAddToCart:(Boolean) -> Unit, onDelete: (Product) -> Unit) {
@@ -58,11 +59,15 @@ fun ProductListItem(category: Category, product: Product,userSelectedQty:Int = 0
                 contentAlignment = Alignment.Center
             ) {
                 //FetchImageFromDrawable(imageName = "ic_baseline_shopping_cart_24")
-                FetchImageFromURLWithPlaceHolder(imageUrl = category.categoryImage)
+                FetchImageFromURLWithPlaceHolder(imageUrl = product.categoryImage)
             }
 
             Text(
-                text = product.productName, modifier = Modifier.layoutId("productName"),
+                text = (product.productName).replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(
+                        Locale.getDefault()
+                    ) else it.toString()
+                }, modifier = Modifier.layoutId("productName"),
                 fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold
             )
             Text(

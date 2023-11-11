@@ -4,8 +4,6 @@ import android.text.TextUtils
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
@@ -28,11 +26,12 @@ import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Product
 import com.mycart.navigator.navigateToProductList
-import com.mycart.ui.category.navigateToCategory
 import com.mycart.ui.common.*
 import com.mycart.ui.product.utils.ProductUtils
 import com.mycart.ui.product.viewModel.ProductViewModel
+import com.mycart.ui.utils.generateKeywords
 import org.koin.androidx.compose.get
+import java.util.Locale
 
 @Composable
 fun EditProduct(
@@ -241,12 +240,13 @@ fun EditProduct(
                                 val editedProduct = Product(
                                     categoryName = product.categoryName,
                                     storeName = product.storeName,
-                                    productName = selectedProductName,
+                                    productName = selectedProductName.lowercase(Locale.getDefault()),
                                     productQty = selectedQty.toInt(),
                                     productQtyUnits = selectedQtyUnits,
                                     productOriginalPrice = productCost,
                                     productDiscountedPrice = productDiscountedCost,
-                                    productId = product.productId
+                                    productId = product.productId,
+                                    keywords = generateKeywords(selectedProductName.lowercase(Locale.getDefault()))
                                 )
                                 productViewModel.updateSelectedProduct(editedProduct)
                             }else{

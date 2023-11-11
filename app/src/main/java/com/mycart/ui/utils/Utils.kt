@@ -1,6 +1,5 @@
 package com.mycart.ui.utils
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -175,7 +174,7 @@ fun DisplayHeaderLabelWithImage(label:String,paddingHorizontal: Dp = 16.dp,paddi
 
     val rotationDegrees by animateFloatAsState(
         targetValue = if (isRotated) 180f else 0f,
-        animationSpec = spring()
+        animationSpec = spring(), label = ""
     )
 
     LaunchedEffect(isRotated) {
@@ -238,4 +237,17 @@ fun DisplayHeaderLabelWithImage(label:String,paddingHorizontal: Dp = 16.dp,paddi
 
         }
     }
+}
+
+fun generateKeywords(name: String): List<String> {
+    val keywords = mutableListOf<String>()
+    for (i in name.indices) {
+        for (j in (i+1)..name.length) {
+            val substring = name.slice(i until j)
+            if (!substring.contains(' ') && !substring.contains('(') && !substring.contains(')')) {
+                keywords.add(substring)
+            }
+        }
+    }
+    return keywords
 }

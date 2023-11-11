@@ -22,23 +22,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.mycart.R
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.navigator.navigateToProductList
-import com.mycart.ui.category.navigateToCategory
 import com.mycart.ui.common.*
 import com.mycart.ui.product.utils.ProductUtils
 import com.mycart.ui.product.viewModel.ProductViewModel
+import com.mycart.ui.utils.generateKeywords
 import org.koin.androidx.compose.get
+import java.util.Locale
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -53,9 +52,7 @@ fun CreateProduct(
     var productCost by rememberSaveable { mutableStateOf("") }
     var productDiscountedCost by rememberSaveable { mutableStateOf("") }
 
-  /*  var selectedQty by rememberSaveable {
-        mutableStateOf(ProductUtils.fetchProductQty()[0])
-    }*/
+
     var selectedQty by rememberSaveable {
         mutableStateOf("10")
     }
@@ -66,9 +63,17 @@ fun CreateProduct(
     var showDialog by remember { mutableStateOf(false) }
 
     var showProgress by rememberSaveable { mutableStateOf(false) }
+    var categoryInfo by remember { mutableStateOf(Category()) }
 
     val context = LocalContext.current
     val currentState by productViewModel.state.collectAsState()
+
+    LaunchedEffect(key1 = Unit) {
+        productViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(
+            category,
+            storeName
+        )
+    }
 
     LaunchedEffect(key1 = currentState) {
         when (currentState) {
@@ -88,6 +93,16 @@ fun CreateProduct(
                 }
 
 
+            }
+            is Response.Success -> {
+                when ((currentState as Response.Success).data) {
+                    is Category -> {
+                        categoryInfo = (currentState as Response.Success).data as Category
+
+                    }
+
+                }
+                showProgress = false
             }
             else -> {
                 showProgress = false
@@ -155,15 +170,6 @@ fun CreateProduct(
                     }
                 )
             )
-          /*  ExposedDropDownMenu(
-                options = ProductUtils.fetchProductQty(),
-                modifier = Modifier.layoutId("productQtyDropDown"),
-                label = "Qty"
-            ) {
-                println("Selected Items is $it")
-                selectedQty = it
-            }*/
-
             ExposedDropDownMenu(
                 options = ProductUtils.fetchProductQtyInUnits(),
                 modifier = Modifier.layoutId("productQtyUnitDropDown"),
@@ -233,13 +239,15 @@ fun CreateProduct(
 
                                 val product = Product(
                                     categoryName = category,
+                                    categoryImage = categoryInfo.categoryImage,
                                     storeName = storeName,
                                     userEmail = email,
-                                    productName = productName,
+                                    productName = productName.lowercase(Locale.getDefault()),
                                     productQty = selectedQty.toInt(),
                                     productQtyUnits = selectedQtyUnits,
                                     productOriginalPrice = productCost,
-                                    productDiscountedPrice = productDiscountedCost
+                                    productDiscountedPrice = productDiscountedCost,
+                                    keywords = generateKeywords(productName.lowercase(Locale.getDefault()))
                                 )
                                 productViewModel.createProduct(product)
                             } else {

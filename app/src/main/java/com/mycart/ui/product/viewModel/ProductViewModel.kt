@@ -2,24 +2,17 @@ package com.mycart.ui.product.viewModel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mycart.domain.model.Cart
-import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
-import com.mycart.ui.category.utils.CategoryUtils
 import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
 import com.mycart.ui.product.utils.ProductUtils
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import kotlin.math.log
+
 
 
 class ProductViewModel(
@@ -246,5 +239,29 @@ class ProductViewModel(
     }
 
 
+    fun fetchProductListBySearchForStoreNumber(searchProduct:String,categoryName: String, storeName: String) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val productList = myCartFireStoreRepository.fetchProductsBySearchForStore(
+                    searchProduct,
+                    categoryName = categoryName,
+                    storeName
+                )
+              if(productList.isNotEmpty()) {
+                  updateState(
+                      (Response.SuccessList(
+                          productList,
+                          DataType.PRODUCT
+                      ))
+                  )
+              }else{
+                  updateState(Response.Empty)
+              }
+            } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
 }
 
