@@ -2,7 +2,6 @@ package com.mycart.ui.product
 
 import android.text.TextUtils
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -63,7 +62,6 @@ fun EditProduct(
     LaunchedEffect(key1 = Unit){
         productViewModel.fetchProductInfoByCategoryStore(selectedCategory, store, productName)
     }
-    val scrollState = rememberScrollState()
     val currentState by productViewModel.state.collectAsState()
     LaunchedEffect(key1 = currentState ){
         when (currentState) {
@@ -119,6 +117,7 @@ fun EditProduct(
         onLogoutClick = {
             // Handle logout action
         },
+        canShowBottomNavigation = false,
 
         )
 
@@ -128,15 +127,16 @@ fun EditProduct(
         }
 
         val constraints = decoupledConstraints()
-        Column(
+        /*Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-
+*/
         ConstraintLayout(
             constraints, modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             OutlinedTextField(value = selectedProductName,
                 onValueChange = { newValue -> selectedProductName = newValue },
@@ -266,7 +266,7 @@ fun EditProduct(
 
         }
         }
-    }
+  //  }
 }
 
 

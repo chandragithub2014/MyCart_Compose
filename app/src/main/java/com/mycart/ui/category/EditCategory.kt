@@ -20,8 +20,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Category
-import com.mycart.domain.model.User
-import com.mycart.ui.category.utils.CategoryUtils
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.AppScaffold
 import com.mycart.ui.common.InputTextField
@@ -35,6 +33,7 @@ import org.koin.androidx.compose.get
 fun EditCategory(
     selectedCategory: String,
     store: String,
+    email:String,
     navController: NavHostController,
     categoryViewModel: CategoryViewModel = get()
 ) {
@@ -53,7 +52,7 @@ fun EditCategory(
 
 
     BackHandler(true) {
-        navigateToCategory(navController, category.userEmail, category.storeName)
+        navigateToCategoryListFromEdit(navController, email, store)
     }
 
     LaunchedEffect(key1 = Unit){
@@ -162,13 +161,9 @@ fun EditCategory(
                         .height(50.dp)
                         .padding(start = 50.dp, end = 50.dp)
                 ) {
-                    CategoryUtils.fetchCategoryImageUrlByCategory(
-                        category.categoryName
-                    )?.let { url ->
-                        FetchImageFromURLWithPlaceHolder(
-                            imageUrl = url
-                        )
-                    }
+                   FetchImageFromURLWithPlaceHolder(
+                        imageUrl = category.categoryImage
+                    )
                 }
 
                 Row(
@@ -249,10 +244,10 @@ fun EditCategory(
 
                     OutlinedButton(
                         onClick = {
-                            navigateToCategory(
+                            navigateToCategoryListFromEdit(
                                 navController,
-                                category.userEmail,
-                                category.storeName
+                                email,
+                                store
                             )
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
@@ -267,8 +262,9 @@ fun EditCategory(
         }
     }
 
-    fun navigateToCategory(navController: NavHostController, userEmail: String, storeName: String) {
-        navController.popBackStack()
-        navController.navigate("category/${userEmail}/${storeName}")
-    }
+
+}
+fun navigateToCategoryListFromEdit(navController: NavHostController, userEmail: String, storeName: String) {
+    navController.popBackStack()
+    navController.navigate("category/${userEmail}/${storeName}")
 }

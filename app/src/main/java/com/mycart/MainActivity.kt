@@ -16,11 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mycart.bottomnavigation.BottomNavigationBar
-import com.mycart.bottomnavigation.Screen
 import com.mycart.ui.cart.CartComposable
 import com.mycart.ui.category.Category
-import com.mycart.ui.category.CategoryScreen
 import com.mycart.ui.category.CreateCategory
 import com.mycart.ui.category.EditCategory
 import com.mycart.ui.emailverify.EmailVerify
@@ -105,15 +102,25 @@ fun Navigator(navHostController: NavHostController) {
 
 
         composable(
-            "edit/{categoryName}/{storeName}",
+            "edit/{categoryName}/{storeName}/{userEmail}",
             arguments = listOf(navArgument("categoryName") { type = NavType.StringType },
-                navArgument("storeName") { type = NavType.StringType })
+                navArgument("storeName") { type = NavType.StringType },
+                navArgument("userEmail"){type = NavType.StringType}
+            )
         ) { backStackEntry ->
             val category = backStackEntry.arguments?.getString("categoryName")
             val store = backStackEntry.arguments?.getString("storeName")
+            val email = backStackEntry.arguments?.getString("userEmail")
             category?.let { categoryName ->
                 store?.let { storeName ->
-                    EditCategory(categoryName, storeName, navController = navHostController)
+                    email?.let {userMail ->
+                        EditCategory(
+                            categoryName,
+                            storeName,
+                            userMail,
+                            navController = navHostController
+                        )
+                    }
                 }
             }
         }

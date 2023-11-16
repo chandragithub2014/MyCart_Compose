@@ -78,4 +78,6 @@ interface MyCartFireStoreRepository {
     suspend fun fetchOrderDetailListByOrderId(orderID:String):List<OrderDetail>
 
     suspend fun fetchProductsBySearchForStore(searchProduct:String,categoryName: String,store: String) : List<Product>
+
+    suspend fun fetchCategoryInfo():List<CategoryInfo>
 }

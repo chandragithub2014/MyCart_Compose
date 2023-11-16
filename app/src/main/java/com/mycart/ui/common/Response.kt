@@ -24,6 +24,7 @@ enum class DataType {
     CART,
     ORDER,
     ORDER_DETAIL,
-    ORDER_HISTORY
+    ORDER_HISTORY,
+    CATEGORY_INFO_LIST
     // Add more types as needed
 }

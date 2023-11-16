@@ -49,6 +49,7 @@ fun ExposedDropDownMenu(options: List<String>, modifier:Modifier = Modifier,labe
                     Text(text = selectionOption)
                 }
             }
+
         }
     }
 }

@@ -2,8 +2,6 @@ package com.mycart.ui.category.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Deal
@@ -13,8 +11,6 @@ import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -197,6 +193,24 @@ class CategoryViewModel(
             } catch (e: Exception) {
                 e.printStackTrace()
                 updateState(Response.SuccessConfirmation(e.message.toString()))
+            }
+        }
+    }
+
+    fun fetchCategoryInfoList(){
+        viewModelScope.launch {
+            try {
+                updateState(Response.Loading)
+                val categoryInfoList = myCartFireStoreRepository.fetchCategoryInfo()
+                updateState(
+                    (Response.SuccessList(
+                        categoryInfoList.sortedBy { it.categoryName },
+                        DataType.CATEGORY_INFO_LIST
+                    ))
+                )
+            }catch (e: Exception) {
+                e.printStackTrace()
+                updateState((Response.Error("${e.message}")))
             }
         }
     }

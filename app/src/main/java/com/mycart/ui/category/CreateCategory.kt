@@ -20,15 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.mycart.R
+import com.mycart.domain.model.CategoryInfo
 import com.mycart.domain.model.User
 import com.mycart.ui.category.viewmodel.CategoryViewModel
 import com.mycart.ui.common.*
 import com.mycart.ui.login.ImageItem
 import org.koin.androidx.compose.get
 import com.mycart.ui.category.utils.*
-import com.mycart.ui.category.utils.CategoryUtils.fetchCategoryImageUrlByCategory
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
-import java.util.*
+
 
 @Composable
 fun CreateCategory(
@@ -40,13 +40,12 @@ fun CreateCategory(
     var storeName by rememberSaveable { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val defaultCategoryImageURL =
-        fetchCategoryImageUrlByCategory(CategoryUtils.fetchCategoryList()[0])
+
     var selectedCategory by rememberSaveable {
-        mutableStateOf(CategoryUtils.fetchCategoryList()[0])
+        mutableStateOf("")
     }
     var selectedCategoryUrl by rememberSaveable {
-        mutableStateOf(defaultCategoryImageURL)
+        mutableStateOf("")
     }
     var newCategory by rememberSaveable {
         mutableStateOf("")
@@ -60,6 +59,11 @@ fun CreateCategory(
     }
 
     var showProgress by rememberSaveable { mutableStateOf(false) }
+
+    var categoryInfoList by rememberSaveable { mutableStateOf(listOf<CategoryInfo>()) }
+    var categoryInfoMap by rememberSaveable {
+        mutableStateOf(mapOf<String,String>())
+    }
     val currentState by categoryViewModel.state.collectAsState()
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -92,6 +96,7 @@ fun CreateCategory(
                         val user = (currentState as Response.Success).data as User
                         storeLocation = user.userStoreLocation
                         storeName = user.userStore
+                        categoryViewModel.fetchCategoryInfoList()
                     }
 
                     else -> {
@@ -99,6 +104,23 @@ fun CreateCategory(
                     }
                 }
                 showProgress = false
+            }
+            is Response.SuccessList -> {
+                when ((currentState as Response.SuccessList).dataType) {
+                    DataType.CATEGORY_INFO_LIST -> {
+                         categoryInfoList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<CategoryInfo>()
+                        if(categoryInfoList.isNotEmpty()){
+                            categoryInfoMap =
+                                categoryInfoList.associate { it.categoryName to it.categoryImage }
+                        }
+                        println("Received CategoryInfo map is $categoryInfoMap")
+                        showProgress = false
+                    }
+                    else -> {
+
+                    }
+                }
             }
 
             else -> {
@@ -132,7 +154,9 @@ fun CreateCategory(
         }
 
         Box(
-            modifier = Modifier.fillMaxSize().padding(bottom = 60.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 60.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(
@@ -171,11 +195,13 @@ fun CreateCategory(
                         color = Color.Blue,
                     )
                 )
-
-                ExposedDropDownMenu(options = CategoryUtils.fetchCategoryList()) {
-                    println("Selected Items is $it")
-                    selectedCategory = it
-                }
+               if(categoryInfoList.isNotEmpty()) {
+                 //  selectedCategory = categoryInfoList[0].categoryName
+                   ExposedDropDownMenu(options = categoryInfoList.map { it.categoryName }) {
+                       println("Selected Items is $it")
+                       selectedCategory = it
+                   }
+               }
 
                 Text(
                     text = "Category Not in above List?",
@@ -190,7 +216,9 @@ fun CreateCategory(
                         color = Color.Blue,
                     )
                 )
-                OutlinedTextField(value = newCategory, onValueChange = { newCategory = it },modifier =  Modifier.fillMaxWidth().padding(start = 50.dp, end = 50.dp),
+                OutlinedTextField(value = newCategory, onValueChange = { newCategory = it },modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 50.dp, end = 50.dp),
                     label = { Text("Create New Category ") }, singleLine = true)
                 Text(
                     text = "Category Image",
@@ -206,9 +234,19 @@ fun CreateCategory(
                     )
                 )
                 selectedCategoryUrl = if(!TextUtils.isEmpty(newCategory)){
-                   "https://firebasestorage.googleapis.com/v0/b/mycart-45ee2.appspot.com/o/Categories%2Fmycart.png?alt=media"
+                    CategoryUtils.DEFAULT_CATEGORY_IMAGE_URL
                 } else{
-                    fetchCategoryImageUrlByCategory(selectedCategory)
+
+                    if(categoryInfoMap.isNotEmpty()) {
+                        if(selectedCategory.isEmpty()){
+                            categoryInfoMap[categoryInfoList[0].categoryName]?:CategoryUtils.DEFAULT_CATEGORY_IMAGE_URL
+                        }else {
+                            categoryInfoMap[selectedCategory]?:CategoryUtils.DEFAULT_CATEGORY_IMAGE_URL
+                        }
+                    }
+                    else{
+                        CategoryUtils.DEFAULT_CATEGORY_IMAGE_URL
+                    }
                 }
 
                 Row(
@@ -218,6 +256,7 @@ fun CreateCategory(
                         .height(50.dp)
                         .padding(start = 50.dp, end = 50.dp)
                 ) {
+                    println("selectedCategoryUrl is $selectedCategoryUrl")
                     selectedCategoryUrl?.let { it1 -> FetchImageFromURLWithPlaceHolder(imageUrl = it1) }
                 }
                 Row(

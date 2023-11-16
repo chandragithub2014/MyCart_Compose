@@ -29,7 +29,6 @@ import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
 import com.mycart.ui.utils.DisplayHeaderLabel
 import com.mycart.ui.utils.DisplayLabel
-import com.mycart.ui.utils.DisplayOutLinedLabel
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
 
 
@@ -200,7 +199,7 @@ fun Category(
                     CategoryScreen(
                         categoryList, isAdmin,
                         onEdit = { categoryName: String, storeName: String ->
-                            navigateToEditCategory(navController, categoryName, storeName)
+                            navigateToEditCategory(navController, categoryName, storeName,userEmail?:"")
                         },
                         onClick = { categoryName: String, storeName: String ->
                             navigateToProductList(navController, categoryName, storeName, userEmail)
@@ -441,10 +440,15 @@ fun ShowLogOutDialog(categoryViewModel: CategoryViewModel, canShowDialog: (Boole
 fun navigateToEditCategory(
     navController: NavHostController,
     categoryName: String,
-    storeName: String
+    storeName: String,
+    userEmail:String
 ) {
     navController.popBackStack()
-    navController.navigate("edit/${categoryName}/${storeName}")
+    if(userEmail.isNotEmpty()){
+        navController.navigate("edit/${categoryName}/${storeName}/${userEmail}")
+    }
+
+
 }
 
 
