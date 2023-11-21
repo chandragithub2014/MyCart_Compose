@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.mycart.domain.model.Category
 import com.mycart.domain.model.Store
 import com.mycart.domain.model.User
 import com.mycart.ui.common.*
@@ -46,17 +45,19 @@ fun StoreList(
 
     val currentState by storeViewModel.state.collectAsState()
     LaunchedEffect(key1 = currentState) {
-        when(currentState){
+        when (currentState) {
             is Response.Loading -> {
                 showProgress = true
             }
+
             is Response.Error -> {
                 val errorMessage = (currentState as Response.Error).errorMessage
                 Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 showProgress = false
             }
+
             is Response.SignOut -> {
-                navController.navigate("loginScreen"){
+                navController.navigate("loginScreen") {
                     popUpTo("loginScreen") {
                         inclusive = true
                     }
@@ -66,7 +67,7 @@ fun StoreList(
 
             is Response.Success -> {
 
-                when((currentState as Response.Success).data){
+                when ((currentState as Response.Success).data) {
                     is User -> {
                         val user = (currentState as Response.Success).data as User
                         if (user.admin) {
@@ -77,10 +78,11 @@ fun StoreList(
                     }
 
                     is Store -> {
-                        val store  =  (currentState as Response.Success).data as Store
+                        val store = (currentState as Response.Success).data as Store
                         storeList = listOf(store)
                         showProgress = false
                     }
+
                     else -> {
                         showProgress = false
                     }
@@ -88,11 +90,13 @@ fun StoreList(
             }
 
             is Response.SuccessList -> {
-                when((currentState as Response.SuccessList).dataType){
+                when ((currentState as Response.SuccessList).dataType) {
                     DataType.STORE -> {
-                        storeList =   (currentState as Response.SuccessList).dataList.filterIsInstance<Store>()
+                        storeList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<Store>()
                         showProgress = false
                     }
+
                     else -> {
                         showProgress = false
                     }
@@ -105,9 +109,9 @@ fun StoreList(
         }
     }
 
-  /* BackHandler(true) {
+    /* BackHandler(true) {
 
-    }*/
+      }*/
 
     AppScaffold(
         title = "Stores",
@@ -146,7 +150,7 @@ fun StoreList(
                     positiveButtonTitle = "OK",
                     negativeButtonTitle = "Cancel",
                     onPositiveButtonClick = {
-                       storeViewModel.signOut()
+                        storeViewModel.signOut()
 
                     },
                     onNegativeButtonClick = {
@@ -165,6 +169,7 @@ fun StoreList(
 @Composable
 fun DisplayStore(store: Store, email: String, navController: NavHostController) {
     val name = store.storeName
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,12 +189,21 @@ fun DisplayStore(store: Store, email: String, navController: NavHostController) 
 
 
         // Display the store name
-        Text(
-            text = store.storeName,
+        Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 16.dp)
-        )
+        ) {
+            Text(
+                text = store.storeName,
+
+                )
+            Text(
+                text = "${store.storeLoc} - ${store.pinCode}",
+
+                )
+        }
+
 
         FetchImageFromDrawable(imageName = "ic_detail")
     }

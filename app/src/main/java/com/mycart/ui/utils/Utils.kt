@@ -35,6 +35,7 @@ import com.mycart.R
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.random.Random
 
 @Composable
 fun FetchImageFromURLWithPlaceHolder(imageUrl : String,modifier: Modifier = Modifier){
@@ -52,10 +53,10 @@ fun FetchImageFromURLWithPlaceHolder(imageUrl : String,modifier: Modifier = Modi
 }
 
 @Composable
-fun FetchImageFromUrl(imageUrl: String) {
+fun FetchImageFromUrl(imageUrl: String,modifier: Modifier=Modifier,imageSize:Dp = 50.dp) {
     val painter: Painter = rememberAsyncImagePainter(imageUrl)
     Image(
-        painter = painter, contentDescription = null, modifier = Modifier.size(50.dp),
+        painter = painter, contentDescription = null, modifier = modifier.size(imageSize),
         colorFilter = ColorFilter.tint(Color.Blue)
     )
 }
@@ -250,4 +251,18 @@ fun generateKeywords(name: String): List<String> {
         }
     }
     return keywords
+}
+
+fun getRandomColor(): Color {
+    val randomIsWhite = Random.nextBoolean()
+    return if (randomIsWhite) {
+        Color.White
+    } else {
+        // You can choose any shade of grey here
+        Color.Gray
+    }
+}
+
+fun getColorFromHex(hex: String): Color {
+    return Color(android.graphics.Color.parseColor(hex))
 }
