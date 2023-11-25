@@ -24,4 +24,5 @@
     <string name="cancel_product">Cancel</string>
     <string name="additonal_info_hint">Additional Info</string>
     <string name="login_label">Login</string>
+    <string name="product_Qty_hint_text">Product Quantity</string>
 </resources>

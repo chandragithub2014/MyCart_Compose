@@ -48,6 +48,9 @@ fun EditProduct(
     var selectedProductName by rememberSaveable { mutableStateOf("") }
     var productCost by rememberSaveable { mutableStateOf("") }
     var productDiscountedCost by rememberSaveable { mutableStateOf("") }
+    var productQuantity by rememberSaveable {
+        mutableStateOf("")
+    }
 
     var selectedQty by rememberSaveable {
         mutableStateOf(ProductUtils.fetchProductQty()[0])
@@ -78,7 +81,7 @@ fun EditProduct(
                         productDiscountedCost = product.productDiscountedPrice
                         selectedProductName = product.productName
                         productCost = product.productOriginalPrice
-
+                        productQuantity = product.productQty.toString()
                        /* isSeasonal = category.seasonal
                         isDeal = category.deal
                         dealInfo = category.dealInfo*/
@@ -144,7 +147,7 @@ fun EditProduct(
                 label = { Text(stringResource(R.string.product_name_hint_text)) })
 
             Text(
-                text = "Select Product Quantity",
+                text = "Product Quantity",
                 modifier = Modifier.layoutId("productQuantityText"),
                 fontSize = 16.sp,
                 color = Color.Blue
@@ -154,7 +157,7 @@ fun EditProduct(
                 ProductUtils.fetchProductQty().indexOf(product.productQty.toString())
                     .takeIf { it != -1 } ?: 0
             println("productViewModel.selectedQtyIndex.value is ${productViewModel.selectedQtyIndex.value}")
-            if (productViewModel.selectedQtyIndex.value != -1) {
+           /* if (productViewModel.selectedQtyIndex.value != -1) {
                 ExposedDropDownMenu(
                     options = ProductUtils.fetchProductQty(),
                     modifier = Modifier.layoutId("productQtyDropDown"),
@@ -164,7 +167,12 @@ fun EditProduct(
                     println("Selected Items is $it")
                     selectedQty = it
                 }
-            }
+            }*/
+            OutlinedTextField(value = productQuantity,
+                onValueChange = { newValue -> productQuantity = newValue },
+                modifier = Modifier.layoutId("productQtyDropDown"),
+                label = { Text(stringResource(R.string.product_Qty_hint_text)) })
+
             if (productViewModel.selectedQtyUnitIndex.value != -1) {
                 val selectedProductQtyUnits =
                     ProductUtils.fetchProductQtyInUnits().indexOf(product.productQtyUnits)
@@ -241,7 +249,7 @@ fun EditProduct(
                                     categoryName = product.categoryName,
                                     storeName = product.storeName,
                                     productName = selectedProductName.lowercase(Locale.getDefault()),
-                                    productQty = selectedQty.toInt(),
+                                    productQty = productQuantity.toInt(),
                                     productQtyUnits = selectedQtyUnits,
                                     productOriginalPrice = productCost,
                                     productDiscountedPrice = productDiscountedCost,
