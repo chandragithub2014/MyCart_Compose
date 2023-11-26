@@ -75,7 +75,7 @@ fun ProductListItem(category: Category, product: Product,userSelectedQty:Int = 0
                 fontSize = 16.sp, color = Color.Gray
             )
             Text(
-                text = product.productDiscountedPrice,
+                text = "₹${product.productDiscountedPrice}",
                 modifier = Modifier.layoutId("productDiscountedCost"),
                 fontSize = 16.sp,
                 color = Color.Blue,
