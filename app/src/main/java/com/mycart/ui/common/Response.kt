@@ -25,6 +25,7 @@ enum class DataType {
     ORDER,
     ORDER_DETAIL,
     ORDER_HISTORY,
-    CATEGORY_INFO_LIST
+    CATEGORY_INFO_LIST,
+    PRODUCT_UNIT_LIST
     // Add more types as needed
 }

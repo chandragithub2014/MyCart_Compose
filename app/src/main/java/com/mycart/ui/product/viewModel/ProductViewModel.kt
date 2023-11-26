@@ -4,12 +4,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.mycart.domain.model.Product
+import com.mycart.domain.model.ProductUnit
 import com.mycart.domain.repository.firebase.MyCartAuthenticationRepository
 import com.mycart.domain.repository.firebase.MyCartFireStoreRepository
 import com.mycart.ui.common.BaseViewModel
 import com.mycart.ui.common.DataType
 import com.mycart.ui.common.Response
-import com.mycart.ui.product.utils.ProductUtils
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -176,7 +176,8 @@ class ProductViewModel(
     fun fetchProductInfoByCategoryStore(
         categoryName: String,
         storeName: String,
-        productName: String
+        productName: String,
+        productUnitList : List<ProductUnit>
     ) {
         viewModelScope.launch {
             try {
@@ -184,10 +185,16 @@ class ProductViewModel(
                 val receivedCategory =
                     myCartFireStoreRepository.fetchProductInfo(categoryName, storeName, productName)
                 receivedCategory?.let { selectedProduct ->
-                    _selectedQtyIndex.value = ProductUtils.fetchProductQty()
-                        .indexOf(selectedProduct.productQty.toString()).takeIf { it != -1 } ?: 0
-                    _selectedQtyUnitIndex.value = ProductUtils.fetchProductQtyInUnits()
-                        .indexOf(selectedProduct.productQtyUnits).takeIf { it != -1 } ?: 0
+                   /* _selectedQtyIndex.value = ProductUtils.fetchProductQty()
+                        .indexOf(selectedProduct.productQty.toString()).takeIf { it != -1 } ?: 0*/
+                   /* _selectedQtyUnitIndex.value = productUnitList//ProductUtils.fetchProductQtyInUnits()
+                        .indexOf(selectedProduct.productQtyUnits).takeIf { it != -1 } ?: */
+
+                    val index = productUnitList.indexOfFirst { it.unit == selectedProduct.productQtyUnits }
+
+// If the element is found, index will be the position in the list; otherwise, it will be -1
+                    _selectedQtyUnitIndex.value = if (index != -1) index else 0
+
                     //  _state.value = Response.Success(selectedProduct)
                     updateState((Response.Success(selectedProduct)))
                 } ?: run {
@@ -259,6 +266,24 @@ class ProductViewModel(
                   updateState(Response.Empty)
               }
             } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
+    fun fetchProductUnitList(){
+        viewModelScope.launch {
+            try {
+                updateState(Response.Loading)
+                val productUnitList = myCartFireStoreRepository.fetchProductUnitInfo()
+                updateState(
+                    (Response.SuccessList(
+                        productUnitList.sortedBy { it.unit },
+                        DataType.PRODUCT_UNIT_LIST
+                    ))
+                )
+            }catch (e: Exception) {
+                e.printStackTrace()
                 updateState((Response.Error("${e.message}")))
             }
         }

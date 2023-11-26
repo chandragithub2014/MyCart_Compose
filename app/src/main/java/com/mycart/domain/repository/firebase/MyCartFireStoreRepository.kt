@@ -80,4 +80,6 @@ interface MyCartFireStoreRepository {
     suspend fun fetchProductsBySearchForStore(searchProduct:String,categoryName: String,store: String) : List<Product>
 
     suspend fun fetchCategoryInfo():List<CategoryInfo>
+
+    suspend fun fetchProductUnitInfo():List<ProductUnit>
 }

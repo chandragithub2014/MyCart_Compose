@@ -763,4 +763,16 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
         return categoryInfoList
     }
 
+    override suspend fun fetchProductUnitInfo(): List<ProductUnit> {
+        val productUnitList: MutableList<ProductUnit>
+        val querySnapshot = fireStore.collection("productUnits")
+            .get()
+            .await()
+        val productUnitInfo: List<ProductUnit> = querySnapshot.documents.mapNotNull { documentSnapshot ->
+            documentSnapshot.toObject(ProductUnit::class.java)
+        }
+        productUnitList = productUnitInfo.toMutableList()
+        return productUnitList
+    }
+
 }

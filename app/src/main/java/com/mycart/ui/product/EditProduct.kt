@@ -2,6 +2,7 @@ package com.mycart.ui.product
 
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,9 +25,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Product
+import com.mycart.domain.model.ProductUnit
 import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
-import com.mycart.ui.product.utils.ProductUtils
 import com.mycart.ui.product.viewModel.ProductViewModel
 import com.mycart.ui.utils.generateKeywords
 import org.koin.androidx.compose.get
@@ -52,18 +53,16 @@ fun EditProduct(
         mutableStateOf("")
     }
 
-    var selectedQty by rememberSaveable {
-        mutableStateOf(ProductUtils.fetchProductQty()[0])
+    var selectedQtyUnits by rememberSaveable {
+        mutableStateOf("")
     }
 
-    var selectedQtyUnits by rememberSaveable {
-        mutableStateOf(ProductUtils.fetchProductQtyInUnits()[0])
-    }
+    var productUnitsList by rememberSaveable { mutableStateOf(listOf<ProductUnit>()) }
 
     var showDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit){
-        productViewModel.fetchProductInfoByCategoryStore(selectedCategory, store, productName)
+        productViewModel.fetchProductUnitList()
     }
     val currentState by productViewModel.state.collectAsState()
     LaunchedEffect(key1 = currentState ){
@@ -85,6 +84,26 @@ fun EditProduct(
                        /* isSeasonal = category.seasonal
                         isDeal = category.deal
                         dealInfo = category.dealInfo*/
+                    }
+                }
+            }
+            is Response.SuccessList -> {
+                when ((currentState as Response.SuccessList).dataType) {
+                    DataType.PRODUCT_UNIT_LIST -> {
+                        productUnitsList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<ProductUnit>()
+                        if(productUnitsList.isNotEmpty()) {
+                            productViewModel.fetchProductInfoByCategoryStore(
+                                selectedCategory,
+                                store,
+                                productName,
+                                productUnitsList
+                            )
+                        }
+                        showProgress = false
+                    }
+                    else -> {
+                        showProgress = false
                     }
                 }
             }
@@ -110,7 +129,11 @@ fun EditProduct(
             }
         }
     }
-
+    BackHandler(true) {
+        userEmail?.let { email ->
+            navigateToProductList(navController, selectedCategory, store, email)
+        }
+    }
     AppScaffold(
         title = "Edit Product",
         onCartClick = {
@@ -130,12 +153,6 @@ fun EditProduct(
         }
 
         val constraints = decoupledConstraints()
-        /*Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-        ) {
-*/
         ConstraintLayout(
             constraints, modifier = Modifier
                 .fillMaxSize()
@@ -153,10 +170,8 @@ fun EditProduct(
                 color = Color.Blue
             )
 
-            val selectedIndex =
-                ProductUtils.fetchProductQty().indexOf(product.productQty.toString())
-                    .takeIf { it != -1 } ?: 0
-            println("productViewModel.selectedQtyIndex.value is ${productViewModel.selectedQtyIndex.value}")
+
+
            /* if (productViewModel.selectedQtyIndex.value != -1) {
                 ExposedDropDownMenu(
                     options = ProductUtils.fetchProductQty(),
@@ -174,11 +189,8 @@ fun EditProduct(
                 label = { Text(stringResource(R.string.product_Qty_hint_text)) })
 
             if (productViewModel.selectedQtyUnitIndex.value != -1) {
-                val selectedProductQtyUnits =
-                    ProductUtils.fetchProductQtyInUnits().indexOf(product.productQtyUnits)
-                        .takeIf { it != -1 } ?: 0
                 ExposedDropDownMenu(
-                    options = ProductUtils.fetchProductQtyInUnits(),
+                    options = productUnitsList.map { it.unit },
                     modifier = Modifier.layoutId("productQtyUnitDropDown"),
                     label = "Units",
                     selectedItemPosition = productViewModel.selectedQtyUnitIndex.value
@@ -274,7 +286,6 @@ fun EditProduct(
 
         }
         }
-  //  }
 }
 
 

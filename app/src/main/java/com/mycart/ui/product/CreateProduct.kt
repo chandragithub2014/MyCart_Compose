@@ -31,9 +31,9 @@ import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
+import com.mycart.domain.model.ProductUnit
 import com.mycart.navigator.navigateToProductList
 import com.mycart.ui.common.*
-import com.mycart.ui.product.utils.ProductUtils
 import com.mycart.ui.product.viewModel.ProductViewModel
 import com.mycart.ui.utils.generateKeywords
 import org.koin.androidx.compose.get
@@ -58,7 +58,7 @@ fun CreateProduct(
     }
 
     var selectedQtyUnits by rememberSaveable {
-        mutableStateOf(ProductUtils.fetchProductQtyInUnits()[0])
+        mutableStateOf("")
     }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -67,12 +67,9 @@ fun CreateProduct(
 
     val context = LocalContext.current
     val currentState by productViewModel.state.collectAsState()
-
+    var productUnitsList by rememberSaveable { mutableStateOf(listOf<ProductUnit>()) }
     LaunchedEffect(key1 = Unit) {
-        productViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(
-            category,
-            storeName
-        )
+        productViewModel.fetchProductUnitList()
     }
 
     LaunchedEffect(key1 = currentState) {
@@ -103,6 +100,24 @@ fun CreateProduct(
 
                 }
                 showProgress = false
+            }
+            is Response.SuccessList -> {
+                when ((currentState as Response.SuccessList).dataType) {
+                    DataType.PRODUCT_UNIT_LIST -> {
+                        productUnitsList =
+                            (currentState as Response.SuccessList).dataList.filterIsInstance<ProductUnit>()
+                        if(productUnitsList.isNotEmpty()) {
+                            productViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(
+                                category,
+                                storeName
+                            )
+                        }
+                        showProgress = false
+                    }
+                    else -> {
+                        showProgress = false
+                    }
+                }
             }
             else -> {
                 showProgress = false
@@ -170,13 +185,15 @@ fun CreateProduct(
                     }
                 )
             )
-            ExposedDropDownMenu(
-                options = ProductUtils.fetchProductQtyInUnits(),
-                modifier = Modifier.layoutId("productQtyUnitDropDown"),
-                label = "Units"
-            ) {
-                println("Selected Items is $it")
-                selectedQtyUnits = it
+            if(productUnitsList.isNotEmpty()) {
+                ExposedDropDownMenu(
+                    options = productUnitsList.map { it.unit },
+                    modifier = Modifier.layoutId("productQtyUnitDropDown"),
+                    label = "Units"
+                ) {
+                    println("Selected Items is $it")
+                    selectedQtyUnits = it
+                }
             }
 
             OutlinedTextField(value = productCost, onValueChange = { productCost = it },
