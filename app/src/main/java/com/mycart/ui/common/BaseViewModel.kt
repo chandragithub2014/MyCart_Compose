@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
-import kotlin.math.log
 
 open class BaseViewModel(
     private val myCartAuthenticationRepository: MyCartAuthenticationRepository,
@@ -173,6 +172,7 @@ open class BaseViewModel(
                                     productOriginalPrice = product.productOriginalPrice,
                                     productQtyUnits = product.productQtyUnits,
                                     productQty = product.productQty,
+                                    productPerUnit = product.productPerUnit,
                                     userSelectedProductQty = 1,
                                     categoryName = product.categoryName,
                                     storeName = product.storeName

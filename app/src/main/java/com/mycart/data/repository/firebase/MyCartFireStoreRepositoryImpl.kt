@@ -344,6 +344,7 @@ class MyCartFireStoreRepositoryImpl(private val fireStore: FirebaseFirestore) :
                 "productQtyUnits" to product.productQtyUnits,
                 "productDiscountedPrice" to product.productDiscountedPrice,
                 "productOriginalPrice" to product.productOriginalPrice,
+                "productPerUnit" to product.productPerUnit,
                 "keywords" to product.keywords
             )
         ).await()

@@ -18,5 +18,6 @@ data class Product(
     val productOriginalPrice: String = "",
     val productQtyUnits: String = "",//Kgs,gms,units
     val userSelectedProductQty: Int = 0,
+    val productPerUnit:String = "",
     val keywords: List<String> = mutableListOf()
 )

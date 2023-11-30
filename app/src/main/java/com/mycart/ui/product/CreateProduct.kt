@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -68,6 +70,8 @@ fun CreateProduct(
     val context = LocalContext.current
     val currentState by productViewModel.state.collectAsState()
     var productUnitsList by rememberSaveable { mutableStateOf(listOf<ProductUnit>()) }
+    var productPerUnit by rememberSaveable { mutableStateOf("1") }
+    var isPerUnitValueEntered by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = Unit) {
         productViewModel.fetchProductUnitList()
     }
@@ -77,11 +81,13 @@ fun CreateProduct(
             is Response.Loading -> {
                 showProgress = true
             }
+
             is Response.Error -> {
                 val errorMessage = (currentState as Response.Error).errorMessage
                 Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                 showProgress = false
             }
+
             is Response.SuccessConfirmation -> {
                 val successMessage = (currentState as Response.SuccessConfirmation).successMessage
                 Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
@@ -91,6 +97,7 @@ fun CreateProduct(
 
 
             }
+
             is Response.Success -> {
                 when ((currentState as Response.Success).data) {
                     is Category -> {
@@ -101,12 +108,13 @@ fun CreateProduct(
                 }
                 showProgress = false
             }
+
             is Response.SuccessList -> {
                 when ((currentState as Response.SuccessList).dataType) {
                     DataType.PRODUCT_UNIT_LIST -> {
                         productUnitsList =
                             (currentState as Response.SuccessList).dataList.filterIsInstance<ProductUnit>()
-                        if(productUnitsList.isNotEmpty()) {
+                        if (productUnitsList.isNotEmpty()) {
                             productViewModel.fetchCategoryInfoByCategoryNameAndStoreNumber(
                                 category,
                                 storeName
@@ -114,11 +122,13 @@ fun CreateProduct(
                         }
                         showProgress = false
                     }
+
                     else -> {
                         showProgress = false
                     }
                 }
             }
+
             else -> {
                 showProgress = false
             }
@@ -168,7 +178,7 @@ fun CreateProduct(
             )
 
             Text(
-                text = "Enter Product Quantity",
+                text = "Enter Total Product Quantity",
                 modifier = Modifier.layoutId("productQuantityText"),
                 fontSize = 16.sp,
                 color = Color.Blue
@@ -185,7 +195,7 @@ fun CreateProduct(
                     }
                 )
             )
-            if(productUnitsList.isNotEmpty()) {
+            if (productUnitsList.isNotEmpty()) {
                 ExposedDropDownMenu(
                     options = productUnitsList.map { it.unit },
                     modifier = Modifier.layoutId("productQtyUnitDropDown"),
@@ -224,7 +234,44 @@ fun CreateProduct(
                     }
                 )
             )
+            Text(
+                text = "Enter Product per unit",
+                modifier = Modifier.layoutId("productCostPerUnitLabel"),
+                fontSize = 16.sp,
+                color = Color.Blue
+            )
+            OutlinedTextField(value = productPerUnit,
+                onValueChange = {
+                    productPerUnit = it
+                    isPerUnitValueEntered = it.isNotBlank()
+                },
+                modifier = Modifier
+                    .layoutId("productCostPerUnitValue"),
+                textStyle = TextStyle(color = Color.Blue, fontSize = 16.sp,fontWeight = FontWeight.Bold ),
+                label = {
+                    Text(
+                        "Enter PerUnit ",
+                        color = if (isPerUnitValueEntered) Color.Blue else Color.Red
+                    )
+                },
 
+                trailingIcon = {
+                    Text(
+                        text = selectedQtyUnits, // Your prepopulated text
+                        color = if (isPerUnitValueEntered) Color.Blue else Color.Red,
+                        modifier = Modifier.padding(8.dp) // Adjust the padding as needed
+                    )
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Number // or any other type you need
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
+            )
 
             OutlinedButton(
                 onClick = {
@@ -252,7 +299,10 @@ fun CreateProduct(
                         // Action to perform when "OK" button is clicked
                         userEmail?.let { email ->
 
-                            if (!TextUtils.isEmpty(productName) && !TextUtils.isEmpty(productCost) && !TextUtils.isEmpty(selectedQty)) {
+                            if (!TextUtils.isEmpty(productName) && !TextUtils.isEmpty(productCost) && !TextUtils.isEmpty(
+                                    selectedQty
+                                )
+                            ) {
 
                                 val product = Product(
                                     categoryName = category,
@@ -264,6 +314,7 @@ fun CreateProduct(
                                     productQtyUnits = selectedQtyUnits,
                                     productOriginalPrice = productCost,
                                     productDiscountedPrice = productDiscountedCost,
+                                    productPerUnit = productPerUnit,
                                     keywords = generateKeywords(productName.lowercase(Locale.getDefault()))
                                 )
                                 productViewModel.createProduct(product)
@@ -303,6 +354,8 @@ private fun decoupledConstraints(): ConstraintSet {
         val productCostRef = createRefFor("productCostTextField")
         val productDiscountCostRef = createRefFor("productDiscountCostTextField")
         val createProductRef = createRefFor("createProductButton")
+        val costPerUnitLabel = createRefFor("productCostPerUnitLabel")
+        val costPerUnitValue = createRefFor("productCostPerUnitValue")
 
         constrain(productNameRef) {
             top.linkTo(parent.top, 20.dp)
@@ -345,9 +398,22 @@ private fun decoupledConstraints(): ConstraintSet {
             end.linkTo(parent.end)
 
         }
+        constrain(costPerUnitLabel) {
+            top.linkTo(productDiscountCostRef.bottom, 10.dp)
+            start.linkTo(productDiscountCostRef.start)
+            end.linkTo(parent.end)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(costPerUnitValue) {
+            top.linkTo(costPerUnitLabel.bottom, 10.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+
+        }
 
         constrain(createProductRef) {
-            top.linkTo(productDiscountCostRef.bottom, 10.dp)
+            top.linkTo(costPerUnitValue.bottom, 10.dp)
             start.linkTo(parent.start)
             end.linkTo(parent.end)
 

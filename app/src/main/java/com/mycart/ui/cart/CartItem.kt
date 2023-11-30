@@ -17,7 +17,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import com.mycart.domain.model.Cart
-import com.mycart.domain.model.Category
 import com.mycart.domain.model.Product
 import com.mycart.ui.common.MinusNumberPlusLayout
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
@@ -60,7 +59,7 @@ fun CartListItem(loggedInUserEmail:String, store:String, cart: Cart, onPlusClick
                 fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold
             )
             Text(
-                text = cart.product.productQtyUnits, modifier = Modifier.layoutId("productUnit"),
+                text = "${cart.product.productPerUnit}${cart.product.productQtyUnits}", modifier = Modifier.layoutId("productUnit"),
                 fontSize = 16.sp, color = Color.Gray
             )
             Text(

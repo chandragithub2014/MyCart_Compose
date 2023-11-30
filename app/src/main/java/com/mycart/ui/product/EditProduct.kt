@@ -4,7 +4,10 @@ import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.OutlinedButton
@@ -12,11 +15,17 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -33,6 +42,7 @@ import com.mycart.ui.utils.generateKeywords
 import org.koin.androidx.compose.get
 import java.util.Locale
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditProduct(
     selectedCategory: String,
@@ -61,6 +71,9 @@ fun EditProduct(
 
     var showDialog by remember { mutableStateOf(false) }
 
+    var productPerUnit by rememberSaveable { mutableStateOf("1") }
+    var isPerUnitValueEntered by remember { mutableStateOf(false) }
+
     LaunchedEffect(key1 = Unit){
         productViewModel.fetchProductUnitList()
     }
@@ -81,9 +94,8 @@ fun EditProduct(
                         selectedProductName = product.productName
                         productCost = product.productOriginalPrice
                         productQuantity = product.productQty.toString()
-                       /* isSeasonal = category.seasonal
-                        isDeal = category.deal
-                        dealInfo = category.dealInfo*/
+                        productPerUnit = product.productPerUnit
+                        selectedQtyUnits = product.productQtyUnits
                     }
                 }
             }
@@ -151,7 +163,7 @@ fun EditProduct(
         if (showProgress) {
             ProgressBar()
         }
-
+        val keyboardController = LocalSoftwareKeyboardController.current
         val constraints = decoupledConstraints()
         ConstraintLayout(
             constraints, modifier = Modifier
@@ -210,6 +222,37 @@ fun EditProduct(
                 modifier = Modifier.layoutId("productDiscountCostTextField"),
                 label = { Text(stringResource(R.string.discounted_cost_hint)) })
 
+            OutlinedTextField(value = productPerUnit,
+                onValueChange = {
+                    newValue -> productPerUnit = newValue
+                    isPerUnitValueEntered = newValue.isNotBlank()
+                },
+                modifier = Modifier
+                    .layoutId("productCostPerUnitValue"),
+                textStyle = TextStyle(color = Color.Blue, fontSize = 16.sp,fontWeight = FontWeight.Bold ),
+                label = {
+                    Text(
+                        "Enter PerUnit ",
+                        color = if (isPerUnitValueEntered) Color.Blue else Color.Red
+                    )
+                },
+                trailingIcon = {
+                    Text(
+                        text = selectedQtyUnits,
+                        color = if (isPerUnitValueEntered) Color.Blue else Color.Red,
+                        modifier = Modifier.padding(8.dp) // Adjust the padding as needed
+                    )
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Number // or any other type you need
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                    }
+                )
+            )
 
             OutlinedButton(
                 onClick = {
@@ -266,6 +309,7 @@ fun EditProduct(
                                     productOriginalPrice = productCost,
                                     productDiscountedPrice = productDiscountedCost,
                                     productId = product.productId,
+                                    productPerUnit = productPerUnit,
                                     keywords = generateKeywords(selectedProductName.lowercase(Locale.getDefault()))
                                 )
                                 productViewModel.updateSelectedProduct(editedProduct)
@@ -302,6 +346,8 @@ private fun decoupledConstraints(): ConstraintSet {
         val createProductRef = createRefFor("createProductButton")
         val cancelProductRef = createRefFor("cancelProductButton")
         val horizontalGuideline = createGuidelineFromStart(0.5f)
+        val costPerUnitLabel = createRefFor("productCostPerUnitLabel")
+        val costPerUnitValue = createRefFor("productCostPerUnitValue")
 
         constrain(productNameRef) {
             top.linkTo(parent.top, 20.dp)
@@ -344,9 +390,22 @@ private fun decoupledConstraints(): ConstraintSet {
             end.linkTo(parent.end)
 
         }
+        constrain(costPerUnitLabel) {
+            top.linkTo(productDiscountCostRef.bottom, 10.dp)
+            start.linkTo(productDiscountCostRef.start)
+            end.linkTo(parent.end)
+            width = Dimension.fillToConstraints
+        }
+
+        constrain(costPerUnitValue) {
+            top.linkTo(costPerUnitLabel.bottom, 10.dp)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+
+        }
 
         constrain(createProductRef){
-            top.linkTo(productDiscountCostRef.bottom,10.dp)
+            top.linkTo(costPerUnitValue.bottom,10.dp)
             start.linkTo(parent.start,50.dp)
             end.linkTo(horizontalGuideline)
             width = Dimension.fillToConstraints
@@ -354,7 +413,7 @@ private fun decoupledConstraints(): ConstraintSet {
         }
 
         constrain(cancelProductRef){
-            top.linkTo(productDiscountCostRef.bottom,10.dp)
+            top.linkTo(costPerUnitValue.bottom,10.dp)
             start.linkTo(horizontalGuideline,5.dp)
             end.linkTo(parent.end,50.dp)
             width = Dimension.fillToConstraints

@@ -71,7 +71,7 @@ fun ProductListItem(category: Category, product: Product,userSelectedQty:Int = 0
                 fontSize = 16.sp, color = Color.Blue, fontWeight = FontWeight.Bold
             )
             Text(
-                text = product.productQtyUnits, modifier = Modifier.layoutId("productUnit"),
+                text = "${product.productPerUnit}${product.productQtyUnits}", modifier = Modifier.layoutId("productUnit"),
                 fontSize = 16.sp, color = Color.Gray
             )
             Text(

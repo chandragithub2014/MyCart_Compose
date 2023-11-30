@@ -7,11 +7,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,15 +32,12 @@ import com.mycart.R
 import com.mycart.bottomnavigation.Screen
 import com.mycart.domain.model.Order
 import com.mycart.domain.model.OrderDetail
-import com.mycart.domain.model.Product
 import com.mycart.domain.model.User
 import com.mycart.navigator.navigateToOrders
-import com.mycart.ui.category.navigateToCategory
 import com.mycart.ui.common.*
 import com.mycart.ui.orderDetail.viewModel.OrderDetailViewModel
 import com.mycart.ui.utils.DisplayLabel
 import com.mycart.ui.utils.FetchImageFromURLWithPlaceHolder
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -64,8 +58,7 @@ fun OrderDetailComposable(
     val currentState by orderDetailViewModel.state.collectAsState()
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val scrollState = rememberScrollState()
-    val scaffoldState = rememberScaffoldState()
+
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -301,14 +294,14 @@ fun OrderDetailComposable(
             )
         }
     }
-    val coroutineScope = rememberCoroutineScope()
+  /*  val coroutineScope = rememberCoroutineScope()
     if (scrollState.value > 200) {
         scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
         // Launch a coroutine to close the drawer
         coroutineScope.launch {
             scaffoldState.drawerState.close()
         }
-    }
+    }*/
 }
 
 @Composable
@@ -316,7 +309,7 @@ fun DisplayOrderDetail(orderDetail: OrderDetail, email: String, navController: N
     val constraintSet = orderDetailItemConstraints()
     BoxWithConstraints(
         modifier = Modifier
-            .padding(top = 0.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
+            .padding(top = 5.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
             .border(
                 BorderStroke(1.dp, Color.LightGray),
                 shape = RoundedCornerShape(8.dp)
@@ -340,7 +333,7 @@ fun DisplayOrderDetail(orderDetail: OrderDetail, email: String, navController: N
                 color = Color.Gray
             )
             Text(
-                text = "Quantity:${orderDetail.product.userSelectedProductQty} in ${orderDetail.product.productQtyUnits}",
+                text = "Quantity:${orderDetail.product.userSelectedProductQty} in  ${orderDetail.product.productPerUnit} ${orderDetail.product.productQtyUnits}",
                 modifier = Modifier.layoutId("productQty"),
                 fontSize = 16.sp,
                 color = Color.Black
