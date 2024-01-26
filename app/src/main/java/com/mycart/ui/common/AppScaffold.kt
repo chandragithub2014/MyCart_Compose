@@ -32,6 +32,7 @@ fun AppScaffold(
     store: String = "",
     selectedScreen: Screen = Screen.Home,
     cartItemCount: Int = 0,
+    orderCount:Int = 0,
     onCartClick: () -> Unit,
     onLogoutClick: () -> Unit,
     floatingActionButton: @Composable (() -> Unit)? = null,
@@ -109,7 +110,8 @@ fun AppScaffold(
                         selectedScreen = selectedScreen,
                         navController = navController,
                         userEmail,
-                        store
+                        store,
+                        orderCount = orderCount,
                     )
                 }
             }

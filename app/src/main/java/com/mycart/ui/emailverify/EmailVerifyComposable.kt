@@ -10,11 +10,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.mycart.R
 import com.mycart.ui.login.ImageItem
-import com.mycart.ui.login.viewmodel.LoginViewModel
-import org.koin.androidx.compose.get
+
 
 @Composable
 fun EmailVerify(navController: NavHostController) {
@@ -31,9 +31,10 @@ fun EmailVerify(navController: NavHostController) {
             // Display the store name
             Text(
                 text = "An email verification link has been sent to registered email for verification. Please click on link verify email and then Login",
+                fontSize = 15.sp,
                 modifier = Modifier
                     .padding(start = 16.dp),
-                color = Color.Green
+                color = Color.Blue
 
             )
 

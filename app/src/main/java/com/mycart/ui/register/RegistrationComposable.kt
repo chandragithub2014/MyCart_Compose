@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.mycart.R
+import com.mycart.registerutils.RegistrationUtils
 import com.mycart.ui.common.InputTextField
 import com.mycart.ui.common.ProgressBar
 import com.mycart.ui.common.Response
@@ -30,11 +31,11 @@ import com.mycart.ui.register.viewmodel.RegistrationViewModel
 import org.koin.androidx.compose.get
 
 @Composable
-fun Register(navController: NavHostController, registrationViewModel: RegistrationViewModel = get()) {
+fun Register(navController: NavHostController, registrationViewModel: RegistrationViewModel = get(), isOwner:Boolean = RegistrationUtils.IS_OWNER) {
 
 // Observe the validationResult from the ViewModel
 
-    var isAdmin by rememberSaveable { mutableStateOf(false) }
+    val isAdmin by rememberSaveable { mutableStateOf(isOwner) }
     val context = LocalContext.current
     val localFocus = LocalFocusManager.current
     var showProgress by rememberSaveable { mutableStateOf(false) }
@@ -132,7 +133,7 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
 
 
 
-            Row(
+           /* Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
@@ -149,8 +150,9 @@ fun Register(navController: NavHostController, registrationViewModel: Registrati
                 )
 
 
-            }
+            }*/
             if (isAdmin) {
+                registrationViewModel.onAction(RegistrationEvent.AdminChanged(true))
                 InputTextField(
                     onValueChanged = {
                         registrationViewModel.onAction(

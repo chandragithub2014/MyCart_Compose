@@ -22,6 +22,29 @@ android {
         }
     }
 
+    flavorDimensions += "mycart_user_type"
+    productFlavors {
+
+        create("customer") {
+            // Assigns this product flavor to the "version" flavor dimension.
+            // If you are using only one dimension, this property is optional,
+            // and the plugin automatically assigns all the module's flavors to
+            // that dimension.
+            dimension = "mycart_user_type"
+            versionNameSuffix = "-customer"
+
+        }
+        create("owner") {
+            dimension = "mycart_user_type"
+            versionNameSuffix = "-owner"
+
+        }
+    }
+
+
+
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -46,6 +69,36 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+
+    // ... (other configurations)
+
+// Define a custom task to copy google-services.json
+    task copyGoogleServicesJson(type: Copy) {
+        from '.'
+        into "src"
+        include "google-services.json"
+    }
+
+// Ensure the custom task runs before the process* tasks for each flavor
+    tasks.whenTaskAdded { task ->
+        if (task.name.startsWith('process') && task.name.endsWith('GoogleServices')) {
+            task.dependsOn copyGoogleServicesJson
+        }
+
+        // Add explicit dependencies for mergeCustomerDebugShaders and mergeCustomerDebugJniLibFolders
+        if (task.name.startsWith('mergeCustomerDebugShaders') ||
+                task.name.startsWith('mergeCustomerDebugJniLibFolders') ||
+                task.name.startsWith('mergeCustomerReleaseShaders') ||
+                task.name.startsWith('mergeCustomerReleaseJniLibFolders') ||
+                task.name.startsWith('mergeOwnerDebugShaders') ||
+                task.name.startsWith('mergeOwnerDebugJniLibFolders') ||
+                task.name.startsWith('mergeOwnerReleaseShaders') ||
+                task.name.startsWith('mergeOwnerReleaseJniLibFolders')) {
+            task.dependsOn copyGoogleServicesJson
+        }
+    }
+
+
 }
 
 dependencies {
@@ -100,3 +153,4 @@ dependencies {
 
 
 }
+

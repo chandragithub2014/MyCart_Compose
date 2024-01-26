@@ -54,8 +54,12 @@ fun Category(
     val currentState by categoryViewModel.state.collectAsState()
     var isLogOut by remember { mutableStateOf(false) }
     var cartCount by remember {
-        mutableStateOf(0)
+        mutableIntStateOf(0)
     }
+    var orderCount by remember {
+        mutableIntStateOf(0)
+    }
+
 
     LaunchedEffect(key1 = Unit) {
         userEmail?.let { email ->
@@ -108,6 +112,7 @@ fun Category(
                         userEmail?.let { email ->
                             categoryViewModel.fetchProductListFromCart(email, storeName)
                         }
+
                     }
 
                     DataType.DEALS -> {
@@ -125,6 +130,18 @@ fun Category(
                     }
                     DataType.CART -> {
                         cartCount = categoryViewModel.cartCount.value
+                        showProgress = false
+                        if(isAdmin){
+                            categoryViewModel.fetchOrderListCountByStore(storeName)
+                        }else{
+                            userEmail?.let { email ->
+                                categoryViewModel.fetchOrderLisCountByLoggedInUser(email)
+                            }
+
+                        }
+                    }
+                    DataType.ORDER -> {
+                        orderCount = categoryViewModel.orderCount.value
                         showProgress = false
                     }
                     else -> {
@@ -148,6 +165,7 @@ fun Category(
         store = storeName,
         canShowCart = true,
         cartItemCount = cartCount,
+        orderCount = orderCount,
         onCartClick = {
             navigateToCart(navController, "NONE", storeName, userEmail)
         },

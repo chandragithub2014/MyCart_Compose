@@ -1,6 +1,7 @@
 package com.mycart.ui.common
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
@@ -37,6 +38,9 @@ open class BaseViewModel(
 
     private var _maxProductAddCountWarning = mutableStateOf(0)
     val maxProductAddCountWarning:State<Int> = _maxProductAddCountWarning
+
+    private var _orderCount = mutableIntStateOf(0)
+    val orderCount: State<Int> = _orderCount
 
     fun checkForAdmin(email: String) {
         viewModelScope.launch {
@@ -252,7 +256,7 @@ open class BaseViewModel(
         }
     }
 
-    private var _cartCount = mutableStateOf(0)
+    private var _cartCount = mutableIntStateOf(0)
     val cartCount: State<Int> = _cartCount
 
 
@@ -315,5 +319,43 @@ open class BaseViewModel(
 
     fun updateState(response: Response<Any>) {
         _state.value = response
+    }
+
+
+    fun fetchOrderLisCountByLoggedInUser(userEmail: String) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderList(email = userEmail)
+                updateState(
+                    (Response.SuccessList(
+                        orderList,
+                        DataType.ORDER
+                    ))
+                )
+                println("OrderList Count for LoggedInUser is ${orderList.size}")
+                _orderCount.intValue = orderList.size
+            } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
+    }
+
+    fun fetchOrderListCountByStore(store: String) {
+        viewModelScope.launch {
+            try {
+                updateState((Response.Loading))
+                val orderList = myCartFireStoreRepository.fetchOrderListByStore(store = store)
+                updateState(
+                    (Response.SuccessList(
+                        orderList,
+                        DataType.ORDER
+                    ))
+                )
+                _orderCount.intValue = orderList.size
+            } catch (e: Exception) {
+                updateState((Response.Error("${e.message}")))
+            }
+        }
     }
 }
